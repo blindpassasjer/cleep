@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ColorPicker } from './ColorPicker';
 import { api } from '../api/client';
+import { IconArchive, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
 import type { Label, Note, NoteColor, View } from '../types';
 
 interface Props {
@@ -13,12 +14,21 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
+const EXIT_ANIMATION_MS = 160;
+
 export function NoteCard({ note, view, labels, onUpdate, onTrash, onRestore, onDelete }: Props) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [labelIds, setLabelIds] = useState(note.labelIds);
   const [showLabels, setShowLabels] = useState(false);
+  const [showColors, setShowColors] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
+  function leaveThen(action: () => void) {
+    setLeaving(true);
+    setTimeout(action, EXIT_ANIMATION_MS);
+  }
 
   function save() {
     if (title !== note.title || content !== note.content) {
@@ -26,6 +36,7 @@ export function NoteCard({ note, view, labels, onUpdate, onTrash, onRestore, onD
     }
     setEditing(false);
     setShowLabels(false);
+    setShowColors(false);
   }
 
   async function toggleLabel(labelId: string) {
@@ -45,7 +56,7 @@ export function NoteCard({ note, view, labels, onUpdate, onTrash, onRestore, onD
   const editable = view.kind === 'notes' || view.kind === 'archive' || view.kind === 'label';
 
   return (
-    <div className={`note-card color-${note.color}`}>
+    <div className={`note-card color-${note.color} ${leaving ? 'note-leaving' : ''}`}>
       {editing ? (
         <>
           <input className="note-title" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
@@ -70,8 +81,20 @@ export function NoteCard({ note, view, labels, onUpdate, onTrash, onRestore, onD
         </div>
       )}
 
-      {editing && showLabels && (
-        <div className="note-labels-editor">
+      {showColors && editable && (
+        <div className="note-inline-picker" onClick={(e) => e.stopPropagation()}>
+          <ColorPicker
+            value={note.color as NoteColor}
+            onChange={(color) => {
+              onUpdate(note.id, { color });
+              setShowColors(false);
+            }}
+          />
+        </div>
+      )}
+
+      {(editing || showLabels) && editable && (
+        <div className="note-labels-editor" onClick={(e) => e.stopPropagation()}>
           {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}
           {labels.map((label) => (
             <label key={label.id} className="note-label-toggle">
@@ -83,40 +106,74 @@ export function NoteCard({ note, view, labels, onUpdate, onTrash, onRestore, onD
       )}
 
       <div className="note-footer">
-        {editing ? (
+        {view.kind === 'trash' ? (
           <>
-            <ColorPicker value={note.color as NoteColor} onChange={(color) => onUpdate(note.id, { color })} />
-            <button type="button" title="Collections" onClick={() => setShowLabels((v) => !v)}>
-              🏷️
-            </button>
-            <button type="button" onClick={save}>
-              Done
-            </button>
-          </>
-        ) : view.kind === 'trash' ? (
-          <>
-            <button type="button" onClick={() => onRestore(note.id)}>
+            <button type="button" className="text-action" onClick={() => leaveThen(() => onRestore(note.id))}>
               Restore
             </button>
-            <button type="button" onClick={() => onDelete(note.id)}>
+            <button type="button" className="text-action" onClick={() => leaveThen(() => onDelete(note.id))}>
               Delete forever
             </button>
           </>
         ) : (
           <>
-            <button type="button" title={note.pinned ? 'Unpin' : 'Pin'} onClick={() => onUpdate(note.id, { pinned: !note.pinned })}>
-              {note.pinned ? '📌' : '📍'}
+            <button
+              type="button"
+              title={note.pinned ? 'Unpin' : 'Pin'}
+              onClick={(e) => {
+                e.stopPropagation();
+                onUpdate(note.id, { pinned: !note.pinned });
+              }}
+            >
+              {note.pinned ? <IconPinFilled /> : <IconPin />}
+            </button>
+            <button
+              type="button"
+              title="Color"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowColors((v) => !v);
+                setShowLabels(false);
+              }}
+            >
+              <IconPalette />
+            </button>
+            <button
+              type="button"
+              title="Collections"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowLabels((v) => !v);
+                setShowColors(false);
+              }}
+            >
+              <IconTag />
             </button>
             <button
               type="button"
               title={note.archived ? 'Unarchive' : 'Archive'}
-              onClick={() => onUpdate(note.id, { archived: !note.archived })}
+              onClick={(e) => {
+                e.stopPropagation();
+                leaveThen(() => onUpdate(note.id, { archived: !note.archived }));
+              }}
             >
-              {note.archived ? '📤' : '🗄️'}
+              <IconArchive />
             </button>
-            <button type="button" title="Delete" onClick={() => onTrash(note.id)}>
-              🗑️
+            <button
+              type="button"
+              title="Delete"
+              onClick={(e) => {
+                e.stopPropagation();
+                leaveThen(() => onTrash(note.id));
+              }}
+            >
+              <IconTrash />
             </button>
+            {editing && (
+              <button type="button" className="text-action" onClick={save}>
+                Done
+              </button>
+            )}
           </>
         )}
       </div>

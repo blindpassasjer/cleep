@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IconArchive, IconClose, IconNotes, IconPlus, IconTag, IconTrash } from './Icons';
 import type { Label, View } from '../types';
 
 interface Props {
@@ -34,20 +35,20 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel }
   return (
     <nav className="sidebar">
       <button className={view.kind === 'notes' ? 'active' : ''} onClick={() => onChange({ kind: 'notes' })}>
-        💡 Notes
+        <IconNotes /> Notes
       </button>
       <button className={view.kind === 'archive' ? 'active' : ''} onClick={() => onChange({ kind: 'archive' })}>
-        🗄️ Archive
+        <IconArchive /> Archive
       </button>
       <button className={view.kind === 'trash' ? 'active' : ''} onClick={() => onChange({ kind: 'trash' })}>
-        🗑️ Trash
+        <IconTrash /> Trash
       </button>
 
       <div className="sidebar-section-label">Collections</div>
       {labels.map((label) => (
         <div key={label.id} className={`sidebar-label-row ${view.kind === 'label' && view.id === label.id ? 'active' : ''}`}>
           <button className="sidebar-label-name" onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}>
-            🏷️ {label.name}
+            <IconTag /> {label.name}
           </button>
           <button
             className="sidebar-label-delete"
@@ -57,7 +58,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel }
               onDeleteLabel(label.id);
             }}
           >
-            ×
+            <IconClose width={14} height={14} />
           </button>
         </div>
       ))}
@@ -76,7 +77,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel }
         </form>
       ) : (
         <button className="sidebar-add-label-btn" onClick={() => setAdding(true)}>
-          + New collection
+          <IconPlus width={14} height={14} /> New collection
         </button>
       )}
       {error && <div className="sidebar-label-error">{error}</div>}

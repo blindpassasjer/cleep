@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ColorPicker } from './ColorPicker';
+import { IconPlus } from './Icons';
 import type { NoteColor } from '../types';
 
 export function NoteComposer({ onCreate }: { onCreate: (title: string, content: string, color: NoteColor) => Promise<void> }) {
@@ -35,6 +36,7 @@ export function NoteComposer({ onCreate }: { onCreate: (title: string, content: 
     return (
       <div className="composer collapsed" onClick={() => setExpanded(true)}>
         <span>Take a note…</span>
+        <IconPlus className="composer-plus" />
       </div>
     );
   }
