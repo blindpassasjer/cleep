@@ -1018,7 +1018,7 @@ body {
 .note-select-toggle {
   position: absolute;
   top: 0.55rem;
-  right: 2.1rem;
+  left: 0.55rem;
   z-index: 1;
   border: none;
   background: transparent;
