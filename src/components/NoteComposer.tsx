@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { FlipModal, type CloseFn } from './FlipModal';
 import { ColorPicker } from './ColorPicker';
 import { ChecklistEditor } from './ChecklistEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
@@ -19,7 +20,10 @@ interface Props {
 }
 
 export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props) {
+  const collapsedRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
   const [expanded, setExpanded] = useState(false);
+  const [originRect, setOriginRect] = useState<DOMRect | null>(null);
   const [isChecklist, setIsChecklist] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -30,9 +34,22 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
   const [startWith, setStartWith] = useState<'image' | 'audio' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const contentRef = useRef<HTMLTextAreaElement>(null);
 
-  function reset() {
+  function open(startWithMode: 'image' | 'audio' | null = null) {
+    setOriginRect(collapsedRef.current?.getBoundingClientRect() ?? null);
+    setStartWith(startWithMode);
+    setExpanded(true);
+  }
+
+  function startChecklist() {
+    setIsChecklist(true);
+    setItems([{ id: crypto.randomUUID(), text: '', checked: false }]);
+    open();
+  }
+
+  // Called once the close animation has fully finished -- safe to tear down all state now that
+  // nothing is still visible mid-flight.
+  function finalize() {
     setTitle('');
     setContent('');
     setItems([]);
@@ -42,22 +59,7 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
     setDraftNoteId(null);
     setStartWith(null);
     setExpanded(false);
-  }
-
-  function startChecklist() {
-    setIsChecklist(true);
-    setItems([{ id: crypto.randomUUID(), text: '', checked: false }]);
-    setExpanded(true);
-  }
-
-  function startWithImage() {
-    setExpanded(true);
-    setStartWith('image');
-  }
-
-  function startWithAudio() {
-    setExpanded(true);
-    setStartWith('audio');
+    setOriginRect(null);
   }
 
   // Attachments belong to a note, so the first one made while composing forces the note into
@@ -82,13 +84,17 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
     if (draftNoteId) await api.deleteAttachment(draftNoteId, attachmentId);
   }
 
-  async function close() {
+  // Shared by the Close button, Escape, and backdrop-click: try to save (when there's anything to
+  // save) and only actually animate the modal away on success, so a failed create leaves the modal
+  // open with the error and the user's text/attachments intact instead of losing them.
+  async function attemptClose(close: CloseFn) {
     const cleanedItems = items.filter((item) => item.text.trim().length > 0);
     const isEmpty = isChecklist ? cleanedItems.length === 0 && !title.trim() : !title.trim() && !content.trim();
 
     if (draftNoteId) {
       // The note already exists on the server (an attachment forced it into being) -- finalize it
-      // rather than creating a second note.
+      // rather than creating a second note. This mutation is fire-and-forget, same as editing an
+      // existing note elsewhere in the app, so it's safe to close immediately.
       if (isEmpty && attachments.length === 0) {
         onDiscardDraft(draftNoteId);
       } else {
@@ -98,12 +104,12 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
           ...(isChecklist ? { isChecklist: true, items: cleanedItems } : {}),
         });
       }
-      reset();
+      close();
       return;
     }
 
     if (isEmpty) {
-      reset();
+      close();
       return;
     }
 
@@ -111,7 +117,7 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
     setError(null);
     try {
       await onCreate(title.trim(), content.trim(), color, isChecklist ? { isChecklist: true, items: cleanedItems } : undefined);
-      reset();
+      close();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save the note. Please try again.');
     } finally {
@@ -121,61 +127,66 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
 
   if (!expanded) {
     return (
-      <div className="composer collapsed">
-        <span onClick={() => setExpanded(true)}>Take a note…</span>
+      <div className="composer collapsed" ref={collapsedRef}>
+        <span onClick={() => open()}>Take a note…</span>
         <div className="composer-collapsed-actions">
           <button type="button" title="New list" onClick={startChecklist}>
             <IconChecklist width={18} height={18} />
           </button>
-          <button type="button" title="Add image" onClick={startWithImage}>
+          <button type="button" title="Add image" onClick={() => open('image')}>
             <IconImage width={18} height={18} />
           </button>
-          <button type="button" title="Record audio" onClick={startWithAudio}>
+          <button type="button" title="Record audio" onClick={() => open('audio')}>
             <IconMic width={18} height={18} />
           </button>
-          <IconPlus className="composer-plus" onClick={() => setExpanded(true)} />
+          <IconPlus className="composer-plus" onClick={() => open()} />
         </div>
       </div>
     );
   }
 
+  if (!originRect) return null;
+
   return (
-    <div className={`composer expanded color-${color}`}>
-      <input
-        className="composer-title"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      {isChecklist ? (
-        <ChecklistEditor items={items} onChange={setItems} autoFocusLast />
-      ) : (
-        <textarea
-          ref={contentRef}
-          className="composer-content"
-          placeholder="Take a note…"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={3}
-          autoFocus={startWith === null}
-        />
+    <FlipModal originRect={originRect} panelClassName={`color-${color}`} onClose={finalize} onRequestClose={attemptClose}>
+      {(close) => (
+        <>
+          <input
+            className="composer-title"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          {isChecklist ? (
+            <ChecklistEditor items={items} onChange={setItems} autoFocusLast />
+          ) : (
+            <textarea
+              ref={contentRef}
+              className="note-content note-modal-content"
+              placeholder="Take a note…"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              autoFocus={startWith === null}
+            />
+          )}
+          <AttachmentsPanel
+            attachments={attachments}
+            onUpload={uploadAttachment}
+            onDelete={deleteAttachment}
+            autoOpenFilePicker={startWith === 'image'}
+            autoStartRecording={startWith === 'audio'}
+          >
+            {!isChecklist && <TextFormatToolbar textareaRef={contentRef} value={content} onChange={setContent} />}
+          </AttachmentsPanel>
+          {error && <div className="composer-error">{error}</div>}
+          <div className="note-modal-footer">
+            <ColorPicker value={color} onChange={setColor} />
+            <button type="button" className="text-action" onClick={() => attemptClose(close)} disabled={saving}>
+              {saving ? 'Saving…' : 'Close'}
+            </button>
+          </div>
+        </>
       )}
-      <AttachmentsPanel
-        attachments={attachments}
-        onUpload={uploadAttachment}
-        onDelete={deleteAttachment}
-        autoOpenFilePicker={startWith === 'image'}
-        autoStartRecording={startWith === 'audio'}
-      >
-        {!isChecklist && <TextFormatToolbar textareaRef={contentRef} value={content} onChange={setContent} />}
-      </AttachmentsPanel>
-      {error && <div className="composer-error">{error}</div>}
-      <div className="composer-footer">
-        <ColorPicker value={color} onChange={setColor} />
-        <button type="button" onClick={close} disabled={saving}>
-          {saving ? 'Saving…' : 'Close'}
-        </button>
-      </div>
-    </div>
+    </FlipModal>
   );
 }

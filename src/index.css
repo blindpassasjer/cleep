@@ -445,11 +445,6 @@ body {
   cursor: pointer;
 }
 
-.composer.expanded {
-  box-shadow: var(--shadow-hover);
-  animation: composer-open 0.16s cubic-bezier(0.2, 0.8, 0.4, 1);
-}
-
 @keyframes composer-open {
   from {
     opacity: 0;
@@ -476,48 +471,10 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.composer-content {
-  width: 100%;
-  border: none;
-  outline: none;
-  resize: vertical;
-  background: transparent;
-  color: var(--fg);
-  font-family: inherit;
-  font-size: 0.95rem;
-}
-
 .composer-error {
   color: #ff453a;
   font-size: 0.85rem;
   margin-top: 0.4rem;
-}
-
-.composer-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.6rem;
-}
-
-.composer-footer > button {
-  border: none;
-  background: transparent;
-  color: var(--fg);
-  cursor: pointer;
-  font-weight: 600;
-  padding: 0.3rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  transition: background-color 0.12s ease, transform 0.1s ease;
-}
-
-.composer-footer > button:hover:not(:disabled) {
-  background: var(--surface);
-}
-
-.composer-footer > button:active:not(:disabled) {
-  transform: scale(0.95);
 }
 
 /* Notes grid */
