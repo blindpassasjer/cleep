@@ -3,8 +3,8 @@ import { ColorPicker } from './ColorPicker';
 import { NoteModal } from './NoteModal';
 import { MarkdownText } from './MarkdownText';
 import { api } from '../api/client';
-import { IconArchive, IconDragHandle, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
-import type { ChecklistItem, Label, Note, NoteColor, View } from '../types';
+import { IconArchive, IconDragHandle, IconMic, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash, IconVideo } from './Icons';
+import type { Attachment, ChecklistItem, Label, Note, NoteColor, View } from '../types';
 
 interface Props {
   note: Note;
@@ -52,6 +52,7 @@ export function NoteCard({
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [items, setItems] = useState<ChecklistItem[]>(note.items);
+  const [attachments, setAttachments] = useState<Attachment[]>(note.attachments);
   const [labelIds, setLabelIds] = useState(note.labelIds);
   const [showLabels, setShowLabels] = useState(false);
   const [showColors, setShowColors] = useState(false);
@@ -72,6 +73,7 @@ export function NoteCard({
     setTitle(note.title);
     setContent(note.content);
     setItems(note.items);
+    setAttachments(note.attachments);
     setOriginRect(cardRef.current?.getBoundingClientRect() ?? null);
     setSourceHidden(true);
     setEditing(true);
@@ -103,6 +105,20 @@ export function NoteCard({
     }
   }
 
+  async function uploadAttachment(file: File | Blob, filename?: string) {
+    const { attachment } = await api.uploadAttachment(note.id, file, filename);
+    setAttachments((prev) => [...prev, attachment]);
+  }
+
+  async function deleteAttachment(attachmentId: string) {
+    setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
+    try {
+      await api.deleteAttachment(note.id, attachmentId);
+    } catch {
+      setAttachments(note.attachments);
+    }
+  }
+
   function toggleChecklistItem(itemId: string) {
     const updated = note.items.map((item) => (item.id === itemId ? { ...item, checked: !item.checked } : item));
     onUpdate(note.id, { items: updated });
@@ -110,6 +126,9 @@ export function NoteCard({
 
   const previewItems = note.items.slice(0, CHECKLIST_PREVIEW_LIMIT);
   const hiddenItemCount = note.items.length - previewItems.length;
+  const coverImage = note.attachments.find((a) => a.kind === 'image');
+  const videoCount = note.attachments.filter((a) => a.kind === 'video').length;
+  const audioCount = note.attachments.filter((a) => a.kind === 'audio').length;
 
   return (
     <>
@@ -139,6 +158,25 @@ export function NoteCard({
         </button>
 
         <div onClick={openEditor}>
+          {coverImage && (
+            <div className="note-cover">
+              <img src={coverImage.url} alt="" />
+            </div>
+          )}
+          {(videoCount > 0 || audioCount > 0) && (
+            <div className="note-media-badges">
+              {videoCount > 0 && (
+                <span className="note-media-badge">
+                  <IconVideo width={14} height={14} /> {videoCount}
+                </span>
+              )}
+              {audioCount > 0 && (
+                <span className="note-media-badge">
+                  <IconMic width={14} height={14} /> {audioCount}
+                </span>
+              )}
+            </div>
+          )}
           {note.title && <div className="note-title">{note.title}</div>}
           {note.isChecklist ? (
             <div className="note-checklist-preview">
@@ -279,12 +317,15 @@ export function NoteCard({
           pinned={note.pinned}
           labels={labels}
           labelIds={labelIds}
+          attachments={attachments}
           onTitleChange={setTitle}
           onContentChange={setContent}
           onItemsChange={setItems}
           onColorChange={(color) => onUpdate(note.id, { color })}
           onTogglePin={() => onUpdate(note.id, { pinned: !note.pinned })}
           onToggleLabel={toggleLabel}
+          onUploadAttachment={uploadAttachment}
+          onDeleteAttachment={deleteAttachment}
           onArchive={() => leaveThen(() => onUpdate(note.id, { archived: !note.archived }))}
           onTrash={() => leaveThen(() => onTrash(note.id))}
           onClose={closeEditor}

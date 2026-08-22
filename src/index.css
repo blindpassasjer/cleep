@@ -1221,3 +1221,161 @@ body {
   font-size: 1.1rem;
   padding: 0.2rem 0.5rem !important;
 }
+
+/* Grid preview: cover image + media badges */
+.note-cover {
+  margin: -0.9rem -1.1rem 0.4rem;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  max-height: 220px;
+}
+
+.note-cover img {
+  width: 100%;
+  height: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.note-media-badges {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.note-media-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: var(--surface);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+/* Attachments panel (inside the note modal) */
+.attachments-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.attachment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.5rem;
+}
+
+.attachment-thumb {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: var(--surface);
+}
+
+.attachment-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.attachment-media-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.attachment-media-row video {
+  max-width: 100%;
+  max-height: 260px;
+  border-radius: 10px;
+  background: #000;
+}
+
+.attachment-media-row audio {
+  flex: 1;
+  height: 36px;
+}
+
+.attachment-remove {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+}
+
+.attachment-media-row .attachment-remove {
+  position: static;
+  background: transparent;
+  color: var(--muted);
+  width: auto;
+  height: auto;
+  padding: 0.3rem;
+}
+
+.attachment-media-row .attachment-remove:hover {
+  color: var(--fg);
+}
+
+.attachments-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.attachments-toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+}
+
+.attachments-toolbar button:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.attachments-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.attachments-toolbar button.recording {
+  color: #ff453a;
+  animation: recording-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes recording-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.attachments-uploading {
+  font-size: 0.82rem;
+  color: var(--muted);
+}

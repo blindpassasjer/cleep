@@ -25,10 +25,13 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
       SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
+      ATTACHMENTS_DIR: /data/attachments
       PORT: ${PORT:-6169}
       NODE_ENV: production
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    volumes:
+      - ./data/attachments:/data/attachments
     ports:
       - "${PORT:-6169}:${PORT:-6169}"

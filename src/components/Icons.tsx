@@ -153,3 +153,40 @@ export function IconDragHandle(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function IconImage(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <circle cx="8.5" cy="9.5" r="1.4" fill="currentColor" stroke="none" />
+      <path d="M4 17l5.2-5.2a1.5 1.5 0 0 1 2.1 0L15 15.5M14.5 14l1.4-1.4a1.5 1.5 0 0 1 2.1 0L20.5 15" />
+    </Icon>
+  );
+}
+
+export function IconVideo(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x="3.5" y="6" width="12.5" height="12" rx="2" />
+      <path d="M16 10.5 20 8v8l-4-2.5" />
+    </Icon>
+  );
+}
+
+export function IconMic(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x="9.5" y="3.5" width="5" height="10" rx="2.5" />
+      <path d="M6 11.5a6 6 0 0 0 12 0" />
+      <path d="M12 17.5v3M9 20.5h6" />
+    </Icon>
+  );
+}
+
+export function IconStop(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon fill="currentColor" {...props}>
+      <rect x="6" y="6" width="12" height="12" rx="2" />
+    </Icon>
+  );
+}

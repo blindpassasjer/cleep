@@ -17,6 +17,19 @@ export interface ChecklistItem {
   checked: boolean;
 }
 
+export type AttachmentKind = 'image' | 'video' | 'audio';
+
+export interface Attachment {
+  id: string;
+  noteId: string;
+  kind: AttachmentKind;
+  name: string;
+  mimeType: string;
+  sizeBytes: number;
+  url: string;
+  createdAt: string;
+}
+
 export interface Note {
   id: string;
   userId: string;
@@ -32,6 +45,7 @@ export interface Note {
   createdAt: string;
   updatedAt: string;
   labelIds: string[];
+  attachments: Attachment[];
 }
 
 export interface Label {

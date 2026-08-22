@@ -1,4 +1,4 @@
-import type { ChecklistItem, Note, Label, PublicUser, View } from '../types';
+import type { Attachment, ChecklistItem, Note, Label, PublicUser, View } from '../types';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
@@ -9,6 +9,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data?.error ?? 'Request failed.');
+  }
+  return data as T;
+}
+
+async function upload<T>(path: string, formData: FormData): Promise<T> {
+  const res = await fetch(`/api${path}`, { method: 'POST', body: formData, credentials: 'same-origin' });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data?.error ?? 'Upload failed.');
   }
   return data as T;
 }
@@ -41,4 +50,13 @@ export const api = {
   deleteLabel: (id: string) => request<{ ok: true }>(`/labels/${id}`, { method: 'DELETE' }),
   attachLabel: (noteId: string, labelId: string) => request<{ ok: true }>(`/notes/${noteId}/labels/${labelId}`, { method: 'PUT' }),
   detachLabel: (noteId: string, labelId: string) => request<{ ok: true }>(`/notes/${noteId}/labels/${labelId}`, { method: 'DELETE' }),
+
+  listAttachments: (noteId: string) => request<{ attachments: Attachment[] }>(`/notes/${noteId}/attachments`),
+  uploadAttachment: (noteId: string, file: File | Blob, filename?: string) => {
+    const formData = new FormData();
+    formData.append('file', file, filename);
+    return upload<{ attachment: Attachment }>(`/notes/${noteId}/attachments`, formData);
+  },
+  deleteAttachment: (noteId: string, attachmentId: string) =>
+    request<{ ok: true }>(`/notes/${noteId}/attachments/${attachmentId}`, { method: 'DELETE' }),
 };

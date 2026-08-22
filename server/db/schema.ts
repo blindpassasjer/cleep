@@ -76,3 +76,19 @@ export const noteLabels = pgTable(
     pk: primaryKey({ columns: [table.noteId, table.labelId] }),
   }),
 );
+
+export const attachments = pgTable('attachments', {
+  id: text('id').primaryKey(),
+  noteId: text('note_id')
+    .notNull()
+    .references(() => notes.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  kind: text('kind').notNull(), // 'image' | 'video' | 'audio'
+  originalName: text('original_name').notNull(),
+  storageKey: text('storage_key').notNull(),
+  mimeType: text('mime_type').notNull(),
+  sizeBytes: bigint('size_bytes', { mode: 'number' }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});

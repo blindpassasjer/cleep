@@ -7,6 +7,8 @@ import { authRateLimit } from './middleware/rateLimit.js';
 import { authRouter } from './routes/auth.js';
 import { notesRouter } from './routes/notes.js';
 import { labelsRouter } from './routes/labels.js';
+import { noteAttachmentsRouter } from './routes/noteAttachments.js';
+import { attachmentFilesRouter } from './routes/attachmentFiles.js';
 import { purgeExpiredTrash } from './db/purgeTrash.js';
 
 if (!process.env.DATABASE_URL) {
@@ -14,6 +16,9 @@ if (!process.env.DATABASE_URL) {
 }
 if (!process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET environment variable is required.');
+}
+if (!process.env.ATTACHMENTS_DIR) {
+  throw new Error('ATTACHMENTS_DIR environment variable is required.');
 }
 if (Boolean(process.env.ADMIN_EMAIL) !== Boolean(process.env.ADMIN_PASSWORD)) {
   throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must both be set, or both left unset.');
@@ -30,8 +35,10 @@ app.use(cookieParser(process.env.SESSION_SECRET));
 app.use(attachSession);
 
 app.use('/api/auth', authRateLimit, authRouter);
+app.use('/api/notes/:noteId/attachments', noteAttachmentsRouter);
 app.use('/api/notes', notesRouter);
 app.use('/api/labels', labelsRouter);
+app.use('/api/attachments', attachmentFilesRouter);
 
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) {

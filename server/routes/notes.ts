@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { and, desc, eq, isNull, isNotNull, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, isNotNull, inArray } from 'drizzle-orm';
 import { db } from '../db/client.js';
-import { notes, noteLabels, type ChecklistItem } from '../db/schema.js';
+import { notes, noteLabels, attachments, type ChecklistItem } from '../db/schema.js';
 import { requireAuth } from '../middleware/session.js';
+import { attachmentToApi, deleteAttachmentFilesForNotes } from '../lib/attachments.js';
 
 const MAX_ITEMS = 300;
 
@@ -77,7 +78,24 @@ notesRouter.get('/', async (req, res) => {
       labelsByNote.set(lr.noteId, list);
     }
 
-    res.json({ notes: rows.map((n) => ({ ...n, labelIds: labelsByNote.get(n.id) ?? [] })) });
+    const attachmentRows = noteIds.length
+      ? await db.select().from(attachments).where(inArray(attachments.noteId, noteIds)).orderBy(asc(attachments.createdAt))
+      : [];
+
+    const attachmentsByNote = new Map<string, ReturnType<typeof attachmentToApi>[]>();
+    for (const ar of attachmentRows) {
+      const list = attachmentsByNote.get(ar.noteId) ?? [];
+      list.push(attachmentToApi(ar));
+      attachmentsByNote.set(ar.noteId, list);
+    }
+
+    res.json({
+      notes: rows.map((n) => ({
+        ...n,
+        labelIds: labelsByNote.get(n.id) ?? [],
+        attachments: attachmentsByNote.get(n.id) ?? [],
+      })),
+    });
   } catch (err) {
     console.error('List notes failed:', err);
     res.status(500).json({ error: 'Something went wrong. Please try again.' });
@@ -185,15 +203,14 @@ notesRouter.post('/:id/restore', async (req, res) => {
 
 notesRouter.delete('/:id', async (req, res) => {
   try {
-    const [row] = await db
-      .delete(notes)
-      .where(and(eq(notes.id, req.params.id), eq(notes.userId, req.userId!)))
-      .returning();
-
-    if (!row) {
+    if (!(await assertOwnsNote(req.userId!, req.params.id))) {
       res.status(404).json({ error: 'Note not found.' });
       return;
     }
+    // Must run before the note row is deleted -- the attachments row cascades away with it at the
+    // DB level, but nothing else would clean up the actual file on disk.
+    await deleteAttachmentFilesForNotes([req.params.id]);
+    await db.delete(notes).where(and(eq(notes.id, req.params.id), eq(notes.userId, req.userId!)));
     res.json({ ok: true });
   } catch (err) {
     console.error('Delete note failed:', err);

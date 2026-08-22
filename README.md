@@ -5,7 +5,9 @@ A self-hostable, open-source clone of Google Keep. React + Express + Postgres, p
 ## Features
 
 - Create, edit, pin, color, archive, and trash notes
-- Labels
+- Checklists, drag-to-reorder, undo for archive/trash/delete
+- Photo, video, and audio attachments (recorded straight from the browser for audio)
+- Labels (collections) and multi-select bulk actions
 - Multi-user accounts with session-based auth
 - Search across your notes
 
@@ -29,6 +31,11 @@ A self-hostable, open-source clone of Google Keep. React + Express + Postgres, p
 
 3. Open `http://<host>:6169` and sign in with the admin account you configured.
 
+Attachments (photos, videos, audio recordings) are stored under `./data/attachments` on the host
+— a plain, browsable folder tree (`<user-id>/<note-id>/<file>`), not hidden inside a Docker-managed
+volume, so you can inspect or back it up directly from the NAS's own file browser. Postgres data
+lives the same way under `./data/postgres`.
+
 See [.env.example](.env.example) for details on every variable, including `COOKIE_SECURE` for
 deployments behind a reverse proxy.
 
@@ -45,8 +52,8 @@ npm run server:dev   # API server on :6169
 npm run dev           # Vite dev server on :5173, proxies /api to :6169
 ```
 
-Point `DATABASE_URL` at a local Postgres instance and run `npm run db:migrate` before starting
-the server.
+Point `DATABASE_URL` at a local Postgres instance, set `SESSION_SECRET` and `ATTACHMENTS_DIR`
+(any local folder for uploaded files), and run `npm run db:migrate` before starting the server.
 
 ## License
 

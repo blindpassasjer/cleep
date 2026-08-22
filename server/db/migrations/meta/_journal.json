@@ -22,6 +22,13 @@
       "when": 1787400509153,
       "tag": "0002_chilly_shape",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787403408595,
+      "tag": "0003_fair_dark_beast",
+      "breakpoints": true
     }
   ]
 }

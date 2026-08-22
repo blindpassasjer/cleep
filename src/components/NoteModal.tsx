@@ -3,8 +3,9 @@ import { createPortal } from 'react-dom';
 import { ColorPicker } from './ColorPicker';
 import { ChecklistEditor } from './ChecklistEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
+import { AttachmentsPanel } from './AttachmentsPanel';
 import { IconArchive, IconClose, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
-import type { ChecklistItem, Label, NoteColor } from '../types';
+import type { Attachment, ChecklistItem, Label, NoteColor } from '../types';
 
 const FLIP_OPEN_MS = 220;
 const FLIP_CLOSE_MS = 180;
@@ -19,12 +20,15 @@ interface Props {
   pinned: boolean;
   labels: Label[];
   labelIds: string[];
+  attachments: Attachment[];
   onTitleChange: (value: string) => void;
   onContentChange: (value: string) => void;
   onItemsChange: (items: ChecklistItem[]) => void;
   onColorChange: (color: NoteColor) => void;
   onTogglePin: () => void;
   onToggleLabel: (labelId: string) => void;
+  onUploadAttachment: (file: File | Blob, filename?: string) => Promise<void>;
+  onDeleteAttachment: (attachmentId: string) => void;
   onArchive: () => void;
   onTrash: () => void;
   onClose: () => void;
@@ -49,12 +53,15 @@ export function NoteModal({
   pinned,
   labels,
   labelIds,
+  attachments,
   onTitleChange,
   onContentChange,
   onItemsChange,
   onColorChange,
   onTogglePin,
   onToggleLabel,
+  onUploadAttachment,
+  onDeleteAttachment,
   onArchive,
   onTrash,
   onClose,
@@ -148,6 +155,7 @@ export function NoteModal({
             <TextFormatToolbar textareaRef={contentRef} value={content} onChange={onContentChange} />
           </>
         )}
+        <AttachmentsPanel attachments={attachments} onUpload={onUploadAttachment} onDelete={onDeleteAttachment} />
         {showLabels && (
           <div className="note-labels-editor">
             {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}
