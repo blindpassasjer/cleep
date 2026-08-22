@@ -47,6 +47,7 @@ export function NoteCard({
 }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
+  const [sourceHidden, setSourceHidden] = useState(false);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
@@ -72,6 +73,7 @@ export function NoteCard({
     setContent(note.content);
     setItems(note.items);
     setOriginRect(cardRef.current?.getBoundingClientRect() ?? null);
+    setSourceHidden(true);
     setEditing(true);
   }
 
@@ -113,7 +115,7 @@ export function NoteCard({
     <>
       <div
         ref={cardRef}
-        className={`note-card color-${note.color} ${leaving ? 'note-leaving' : ''} ${editing ? 'note-editing-source' : ''} ${selected ? 'note-selected' : ''}`}
+        className={`note-card color-${note.color} ${leaving ? 'note-leaving' : ''} ${sourceHidden ? 'note-editing-source' : ''} ${selected ? 'note-selected' : ''}`}
         draggable={draggable}
         onDragStart={onDragStart}
         onDragOver={onDragOver}
@@ -286,6 +288,7 @@ export function NoteCard({
           onArchive={() => leaveThen(() => onUpdate(note.id, { archived: !note.archived }))}
           onTrash={() => leaveThen(() => onTrash(note.id))}
           onClose={closeEditor}
+          onCloseStart={() => setSourceHidden(false)}
         />
       )}
     </>

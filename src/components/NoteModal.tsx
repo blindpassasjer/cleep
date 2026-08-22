@@ -28,6 +28,7 @@ interface Props {
   onArchive: () => void;
   onTrash: () => void;
   onClose: () => void;
+  onCloseStart: () => void;
 }
 
 function flipTransform(from: DOMRect, to: DOMRect) {
@@ -57,6 +58,7 @@ export function NoteModal({
   onArchive,
   onTrash,
   onClose,
+  onCloseStart,
 }: Props) {
   const modalRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -81,6 +83,10 @@ export function NoteModal({
 
   function requestClose(mode: 'flip' | 'fade' = 'flip') {
     setClosing(mode);
+    // Reveal the grid card immediately (not after the animation finishes) so it's already sitting
+    // in place — visible or mid-leave-animation — by the time the modal finishes flying back onto
+    // it. Waiting until onClose() (post-animation) left a gap where neither was visible.
+    onCloseStart();
     const el = modalRef.current;
     if (el && mode === 'flip') {
       const currentRect = el.getBoundingClientRect();
