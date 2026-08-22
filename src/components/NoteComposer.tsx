@@ -146,7 +146,6 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
         placeholder="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        autoFocus={startWith === null}
       />
       {isChecklist ? (
         <ChecklistEditor items={items} onChange={setItems} autoFocusLast />
@@ -159,6 +158,7 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={3}
+            autoFocus={startWith === null}
           />
           <TextFormatToolbar textareaRef={contentRef} value={content} onChange={setContent} />
         </>
