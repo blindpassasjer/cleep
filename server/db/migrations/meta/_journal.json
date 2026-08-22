@@ -29,6 +29,13 @@
       "when": 1787403408595,
       "tag": "0003_fair_dark_beast",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787405731142,
+      "tag": "0004_volatile_xorn",
+      "breakpoints": true
     }
   ]
 }

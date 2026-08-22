@@ -71,9 +71,9 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
     return note.id;
   }
 
-  async function uploadAttachment(file: File | Blob, filename?: string) {
+  async function uploadAttachment(file: File | Blob, filename?: string, waveformPeaks?: number[]) {
     const noteId = await ensureDraftNote();
-    const { attachment } = await api.uploadAttachment(noteId, file, filename);
+    const { attachment } = await api.uploadAttachment(noteId, file, filename, waveformPeaks);
     setAttachments((prev) => [...prev, attachment]);
   }
 

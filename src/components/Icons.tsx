@@ -190,3 +190,20 @@ export function IconStop(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function IconPlay(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon fill="currentColor" stroke="none" {...props}>
+      <path d="M7 5.5v13a1 1 0 0 0 1.53.85l10.5-6.5a1 1 0 0 0 0-1.7l-10.5-6.5A1 1 0 0 0 7 5.5Z" />
+    </Icon>
+  );
+}
+
+export function IconPause(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon fill="currentColor" stroke="none" {...props}>
+      <rect x="6.5" y="5" width="4" height="14" rx="1" />
+      <rect x="13.5" y="5" width="4" height="14" rx="1" />
+    </Icon>
+  );
+}

@@ -52,9 +52,10 @@ export const api = {
   detachLabel: (noteId: string, labelId: string) => request<{ ok: true }>(`/notes/${noteId}/labels/${labelId}`, { method: 'DELETE' }),
 
   listAttachments: (noteId: string) => request<{ attachments: Attachment[] }>(`/notes/${noteId}/attachments`),
-  uploadAttachment: (noteId: string, file: File | Blob, filename?: string) => {
+  uploadAttachment: (noteId: string, file: File | Blob, filename?: string, waveformPeaks?: number[]) => {
     const formData = new FormData();
     formData.append('file', file, filename);
+    if (waveformPeaks) formData.append('waveformPeaks', JSON.stringify(waveformPeaks));
     return upload<{ attachment: Attachment }>(`/notes/${noteId}/attachments`, formData);
   },
   deleteAttachment: (noteId: string, attachmentId: string) =>

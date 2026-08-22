@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconClose, IconImage, IconMic, IconStop } from './Icons';
+import { WaveformPlayer } from './WaveformPlayer';
+import { computeWaveformPeaksFromBlob } from '../lib/waveform';
 import type { Attachment } from '../types';
 
 interface Props {
   attachments: Attachment[];
-  onUpload: (file: File | Blob, filename?: string) => Promise<void>;
+  onUpload: (file: File | Blob, filename?: string, waveformPeaks?: number[]) => Promise<void>;
   onDelete: (attachmentId: string) => void;
   /** Opens the file picker as soon as this instance mounts (used by the composer's collapsed-row image icon). */
   autoOpenFilePicker?: boolean;
@@ -56,7 +58,8 @@ export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFile
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
         setUploading(true);
         try {
-          await onUpload(blob, `recording-${Date.now()}.webm`);
+          const peaks = await computeWaveformPeaksFromBlob(blob).catch(() => undefined);
+          await onUpload(blob, `recording-${Date.now()}.webm`, peaks);
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Upload failed.');
         } finally {
@@ -106,7 +109,7 @@ export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFile
 
       {audios.map((a) => (
         <div key={a.id} className="attachment-media-row">
-          <audio src={a.url} controls />
+          <WaveformPlayer src={a.url} waveformPeaks={a.waveformPeaks} ariaLabel={a.name} />
           <button type="button" className="attachment-remove" title="Remove" onClick={() => onDelete(a.id)}>
             <IconClose width={14} height={14} />
           </button>

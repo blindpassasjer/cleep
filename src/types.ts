@@ -26,6 +26,7 @@ export interface Attachment {
   name: string;
   mimeType: string;
   sizeBytes: number;
+  waveformPeaks: number[] | null;
   url: string;
   createdAt: string;
 }

@@ -105,8 +105,8 @@ export function NoteCard({
     }
   }
 
-  async function uploadAttachment(file: File | Blob, filename?: string) {
-    const { attachment } = await api.uploadAttachment(note.id, file, filename);
+  async function uploadAttachment(file: File | Blob, filename?: string, waveformPeaks?: number[]) {
+    const { attachment } = await api.uploadAttachment(note.id, file, filename, waveformPeaks);
     setAttachments((prev) => [...prev, attachment]);
   }
 

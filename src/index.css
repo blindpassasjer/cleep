@@ -1297,9 +1297,69 @@ body {
   background: #000;
 }
 
-.attachment-media-row audio {
+.waveform-player {
   flex: 1;
-  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.waveform-play-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #1d1d1f;
+  cursor: pointer;
+}
+
+.waveform-play-btn:hover {
+  filter: brightness(1.05);
+}
+
+.waveform-progress {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.3rem 0.4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.waveform-progress__bars {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.5px;
+}
+
+.waveform-progress__bar {
+  flex: 1;
+  min-width: 1.5px;
+  min-height: 12%;
+  align-self: center;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background-color 0.08s ease;
+}
+
+.waveform-progress__bar--played {
+  background: var(--accent);
+}
+
+.waveform-progress__bar--hover {
+  background: var(--muted);
 }
 
 .attachment-remove {

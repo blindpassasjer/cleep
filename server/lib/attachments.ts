@@ -54,6 +54,21 @@ export function sanitizeFilenameForPath(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120) || 'file';
 }
 
+const MAX_WAVEFORM_SAMPLES = 200;
+
+/** Parses the optional multipart "waveformPeaks" field (a JSON array of 0..1 numbers) the client sends for recorded audio. */
+export function parseWaveformPeaks(value: unknown): number[] | null {
+  if (typeof value !== 'string') return null;
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return null;
+    const peaks = parsed.slice(0, MAX_WAVEFORM_SAMPLES).filter((n) => typeof n === 'number' && Number.isFinite(n));
+    return peaks.length > 0 ? peaks.map((n) => Math.max(0, Math.min(1, n))) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function sanitizeFilenameForHeader(name: string): string {
   return name.replace(/[\r\n"]/g, '').trim() || 'attachment';
 }
@@ -66,6 +81,7 @@ export function attachmentToApi(row: AttachmentRow) {
     name: row.originalName,
     mimeType: row.mimeType,
     sizeBytes: row.sizeBytes,
+    waveformPeaks: row.waveformPeaks ?? null,
     url: `/api/attachments/${row.id}/file`,
     createdAt: row.createdAt.toISOString(),
   };

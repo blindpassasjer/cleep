@@ -4,7 +4,7 @@ import { db } from '../db/client.js';
 import { attachments, notes } from '../db/schema.js';
 import { requireAuth } from '../middleware/session.js';
 import { localStorageAdapter } from '../storage/localStorageAdapter.js';
-import { attachmentToApi, kindFromMime, sanitizeFilenameForPath, uploadSingleAttachment } from '../lib/attachments.js';
+import { attachmentToApi, kindFromMime, parseWaveformPeaks, sanitizeFilenameForPath, uploadSingleAttachment } from '../lib/attachments.js';
 
 export const noteAttachmentsRouter = Router({ mergeParams: true });
 noteAttachmentsRouter.use(requireAuth);
@@ -66,6 +66,7 @@ noteAttachmentsRouter.post('/', uploadSingleAttachment, async (req, res) => {
         storageKey,
         mimeType: file.mimetype,
         sizeBytes: file.size,
+        waveformPeaks: kind === 'audio' ? parseWaveformPeaks(req.body?.waveformPeaks) : null,
       })
       .returning();
 

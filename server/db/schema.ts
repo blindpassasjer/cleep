@@ -90,5 +90,6 @@ export const attachments = pgTable('attachments', {
   storageKey: text('storage_key').notNull(),
   mimeType: text('mime_type').notNull(),
   sizeBytes: bigint('size_bytes', { mode: 'number' }).notNull(),
+  waveformPeaks: jsonb('waveform_peaks').$type<number[] | null>(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
