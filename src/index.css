@@ -759,7 +759,6 @@ body {
   max-height: min(80vh, 640px);
   overflow-y: auto;
   border-radius: 20px;
-  background: var(--bg);
   box-shadow: var(--shadow-hover);
   padding: 1.1rem 1.4rem 1.25rem;
   display: flex;
