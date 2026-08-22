@@ -8,9 +8,10 @@ interface Props {
   labels: Label[];
   onCreateLabel: (name: string) => Promise<string | null>;
   onDeleteLabel: (id: string) => void;
+  open: boolean;
 }
 
-export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel }: Props) {
+export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel, open }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +34,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel }
   }
 
   return (
-    <nav className="sidebar">
+    <nav className={`sidebar ${open ? 'open' : ''}`}>
       <button className={view.kind === 'notes' ? 'active' : ''} onClick={() => onChange({ kind: 'notes' })}>
         <IconNotes /> Notes
       </button>

@@ -18,6 +18,7 @@ export default function App() {
   const [view, setView] = useState<View>({ kind: 'notes' });
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { toast, show, dismiss } = useToast();
   const { notes, error, reload, createNote, discardDraftNote, updateNote, reorderNotes, trashNote, restoreNote, deleteNote } = useNotes(
     view,
@@ -27,6 +28,7 @@ export default function App() {
 
   useEffect(() => {
     setSelectedIds(new Set());
+    setSidebarOpen(false);
   }, [view]);
 
   const filtered = useMemo(() => {
@@ -94,10 +96,24 @@ export default function App() {
 
   return (
     <div className="app">
-      <TopBar user={user} search={search} onSearchChange={setSearch} onLogout={logout} />
+      <TopBar
+        user={user}
+        search={search}
+        onSearchChange={setSearch}
+        onLogout={logout}
+        onToggleSidebar={() => setSidebarOpen((v) => !v)}
+      />
       {error && <div className="error-banner">{error}</div>}
       <div className="app-body">
-        <Sidebar view={view} onChange={setView} labels={labels} onCreateLabel={createLabel} onDeleteLabel={deleteLabel} />
+        {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
+        <Sidebar
+          view={view}
+          onChange={setView}
+          labels={labels}
+          onCreateLabel={createLabel}
+          onDeleteLabel={deleteLabel}
+          open={sidebarOpen}
+        />
         <main className="main">
           {selectedIds.size > 0 ? (
             <BulkActionsBar

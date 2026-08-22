@@ -207,3 +207,11 @@ export function IconPause(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function IconMenu(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M4 6.5h16M4 12h16M4 17.5h16" />
+    </Icon>
+  );
+}

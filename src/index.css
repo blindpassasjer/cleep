@@ -153,6 +153,23 @@ body {
   z-index: 2;
 }
 
+.sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle:hover {
+  background: var(--surface);
+}
+
 .brand {
   font-size: 1.15rem;
   font-weight: 600;
@@ -357,6 +374,10 @@ body {
   padding: 0.25rem 0.75rem;
   color: #ff453a;
   font-size: 0.8rem;
+}
+
+.sidebar-backdrop {
+  display: none;
 }
 
 .main {
@@ -1398,4 +1419,105 @@ body {
 .attachments-uploading {
   font-size: 0.82rem;
   color: var(--muted);
+}
+
+/* Mobile layout */
+@media (max-width: 760px) {
+  .sidebar-toggle {
+    display: flex;
+  }
+
+  .topbar {
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+  }
+
+  .brand {
+    display: none;
+  }
+
+  .search-wrap {
+    max-width: none;
+  }
+
+  .user-menu span {
+    display: none;
+  }
+
+  .user-menu button {
+    padding: 0.4rem 0.6rem;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(78vw, 280px);
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: var(--shadow-hover);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 49;
+    animation: backdrop-in 0.15s ease;
+  }
+
+  .main {
+    padding: 1rem 0.85rem;
+  }
+
+  .notes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.7rem;
+  }
+
+  .composer,
+  .bulk-bar {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .bulk-bar-row {
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+  }
+
+  .bulk-bar-actions {
+    margin-left: 0;
+  }
+
+  /* The note modal becomes a full-screen sheet rather than a centered card, matching how Keep's
+     own mobile web view handles note editing -- there's rarely enough width for a floating card. */
+  .note-modal-backdrop {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .note-modal {
+    width: 100%;
+    max-height: 100vh;
+    height: 100%;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .composer-collapsed-actions button:not(:last-child) {
+    padding: 0.25rem;
+  }
+
+  .note-cover {
+    max-height: 160px;
+  }
 }

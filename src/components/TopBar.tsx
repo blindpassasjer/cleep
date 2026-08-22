@@ -1,4 +1,4 @@
-import { IconSearch } from './Icons';
+import { IconMenu, IconSearch } from './Icons';
 import type { PublicUser } from '../types';
 
 interface Props {
@@ -6,11 +6,15 @@ interface Props {
   search: string;
   onSearchChange: (value: string) => void;
   onLogout: () => void;
+  onToggleSidebar: () => void;
 }
 
-export function TopBar({ user, search, onSearchChange, onLogout }: Props) {
+export function TopBar({ user, search, onSearchChange, onLogout, onToggleSidebar }: Props) {
   return (
     <header className="topbar">
+      <button type="button" className="sidebar-toggle" title="Menu" onClick={onToggleSidebar}>
+        <IconMenu />
+      </button>
       <div className="brand">Cleep</div>
       <div className="search-wrap">
         <IconSearch className="search-icon" />
