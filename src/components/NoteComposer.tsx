@@ -150,18 +150,15 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
       {isChecklist ? (
         <ChecklistEditor items={items} onChange={setItems} autoFocusLast />
       ) : (
-        <>
-          <textarea
-            ref={contentRef}
-            className="composer-content"
-            placeholder="Take a note…"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={3}
-            autoFocus={startWith === null}
-          />
-          <TextFormatToolbar textareaRef={contentRef} value={content} onChange={setContent} />
-        </>
+        <textarea
+          ref={contentRef}
+          className="composer-content"
+          placeholder="Take a note…"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          rows={3}
+          autoFocus={startWith === null}
+        />
       )}
       <AttachmentsPanel
         attachments={attachments}
@@ -169,7 +166,9 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
         onDelete={deleteAttachment}
         autoOpenFilePicker={startWith === 'image'}
         autoStartRecording={startWith === 'audio'}
-      />
+      >
+        {!isChecklist && <TextFormatToolbar textareaRef={contentRef} value={content} onChange={setContent} />}
+      </AttachmentsPanel>
       {error && <div className="composer-error">{error}</div>}
       <div className="composer-footer">
         <ColorPicker value={color} onChange={setColor} />

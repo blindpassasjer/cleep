@@ -144,18 +144,17 @@ export function NoteModal({
         {isChecklist ? (
           <ChecklistEditor items={items} onChange={onItemsChange} autoFocusLast />
         ) : (
-          <>
-            <textarea
-              ref={contentRef}
-              className="note-content note-modal-content"
-              placeholder="Take a note…"
-              value={content}
-              onChange={(e) => onContentChange(e.target.value)}
-            />
-            <TextFormatToolbar textareaRef={contentRef} value={content} onChange={onContentChange} />
-          </>
+          <textarea
+            ref={contentRef}
+            className="note-content note-modal-content"
+            placeholder="Take a note…"
+            value={content}
+            onChange={(e) => onContentChange(e.target.value)}
+          />
         )}
-        <AttachmentsPanel attachments={attachments} onUpload={onUploadAttachment} onDelete={onDeleteAttachment} />
+        <AttachmentsPanel attachments={attachments} onUpload={onUploadAttachment} onDelete={onDeleteAttachment}>
+          {!isChecklist && <TextFormatToolbar textareaRef={contentRef} value={content} onChange={onContentChange} />}
+        </AttachmentsPanel>
         {showLabels && (
           <div className="note-labels-editor">
             {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}

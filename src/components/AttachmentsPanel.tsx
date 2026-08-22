@@ -12,9 +12,11 @@ interface Props {
   autoOpenFilePicker?: boolean;
   /** Starts recording as soon as this instance mounts (used by the composer's collapsed-row mic icon). */
   autoStartRecording?: boolean;
+  /** Rendered inline in the same toolbar row as the image/mic buttons (the text formatting toolbar). */
+  children?: React.ReactNode;
 }
 
-export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFilePicker, autoStartRecording }: Props) {
+export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFilePicker, autoStartRecording, children }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -46,6 +48,14 @@ export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFile
 
   async function startRecording() {
     setError(null);
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError(
+        window.isSecureContext
+          ? 'Audio recording is not supported in this browser.'
+          : 'Audio recording requires HTTPS (the browser blocks microphone access on a plain http:// connection, except at localhost). Set up a reverse proxy with TLS in front of Cleep to enable it.',
+      );
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
@@ -69,8 +79,14 @@ export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFile
       mediaRecorderRef.current = recorder;
       recorder.start();
       setRecording(true);
-    } catch {
-      setError('Could not access the microphone.');
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'NotAllowedError') {
+        setError("Microphone access was denied. Check this site's microphone permission in your browser settings.");
+      } else if (err instanceof DOMException && err.name === 'NotFoundError') {
+        setError('No microphone was found on this device.');
+      } else {
+        setError('Could not access the microphone.');
+      }
     }
   }
 
@@ -117,6 +133,7 @@ export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFile
       ))}
 
       <div className="attachments-toolbar">
+        {children}
         <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => handleFiles(e.target.files)} />
         <button
           type="button"
