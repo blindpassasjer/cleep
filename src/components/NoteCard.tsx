@@ -1,28 +1,56 @@
 import { useRef, useState } from 'react';
 import { ColorPicker } from './ColorPicker';
 import { NoteModal } from './NoteModal';
+import { MarkdownText } from './MarkdownText';
 import { api } from '../api/client';
-import { IconArchive, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
-import type { Label, Note, NoteColor, View } from '../types';
+import { IconArchive, IconDragHandle, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
+import type { ChecklistItem, Label, Note, NoteColor, View } from '../types';
 
 interface Props {
   note: Note;
   view: View;
   labels: Label[];
-  onUpdate: (id: string, patch: Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived'>>) => void;
+  selected: boolean;
+  selectionActive: boolean;
+  onToggleSelect: (id: string) => void;
+  onUpdate: (
+    id: string,
+    patch: Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived' | 'isChecklist' | 'items'>>,
+  ) => void;
   onTrash: (id: string) => void;
   onRestore: (id: string) => void;
   onDelete: (id: string) => void;
+  draggable?: boolean;
+  onDragStart?: () => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDrop?: () => void;
 }
 
+const CHECKLIST_PREVIEW_LIMIT = 6;
 const EXIT_ANIMATION_MS = 160;
 
-export function NoteCard({ note, view, labels, onUpdate, onTrash, onRestore, onDelete }: Props) {
+export function NoteCard({
+  note,
+  view,
+  labels,
+  selected,
+  selectionActive,
+  onToggleSelect,
+  onUpdate,
+  onTrash,
+  onRestore,
+  onDelete,
+  draggable,
+  onDragStart,
+  onDragOver,
+  onDrop,
+}: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
+  const [items, setItems] = useState<ChecklistItem[]>(note.items);
   const [labelIds, setLabelIds] = useState(note.labelIds);
   const [showLabels, setShowLabels] = useState(false);
   const [showColors, setShowColors] = useState(false);
@@ -35,15 +63,26 @@ export function NoteCard({ note, view, labels, onUpdate, onTrash, onRestore, onD
   }
 
   function openEditor() {
+    if (selectionActive) {
+      onToggleSelect(note.id);
+      return;
+    }
     if (!editable) return;
+    setTitle(note.title);
+    setContent(note.content);
+    setItems(note.items);
     setOriginRect(cardRef.current?.getBoundingClientRect() ?? null);
     setEditing(true);
   }
 
   function closeEditor() {
-    if (title !== note.title || content !== note.content) {
-      onUpdate(note.id, { title, content });
+    const patch: Partial<Pick<Note, 'title' | 'content' | 'items'>> = {};
+    if (title !== note.title) patch.title = title;
+    if (!note.isChecklist && content !== note.content) patch.content = content;
+    if (note.isChecklist && JSON.stringify(items) !== JSON.stringify(note.items)) {
+      patch.items = items.filter((item) => item.text.trim().length > 0);
     }
+    if (Object.keys(patch).length > 0) onUpdate(note.id, patch);
     setEditing(false);
     setOriginRect(null);
   }
@@ -62,15 +101,64 @@ export function NoteCard({ note, view, labels, onUpdate, onTrash, onRestore, onD
     }
   }
 
+  function toggleChecklistItem(itemId: string) {
+    const updated = note.items.map((item) => (item.id === itemId ? { ...item, checked: !item.checked } : item));
+    onUpdate(note.id, { items: updated });
+  }
+
+  const previewItems = note.items.slice(0, CHECKLIST_PREVIEW_LIMIT);
+  const hiddenItemCount = note.items.length - previewItems.length;
+
   return (
     <>
       <div
         ref={cardRef}
-        className={`note-card color-${note.color} ${leaving ? 'note-leaving' : ''} ${editing ? 'note-editing-source' : ''}`}
+        className={`note-card color-${note.color} ${leaving ? 'note-leaving' : ''} ${editing ? 'note-editing-source' : ''} ${selected ? 'note-selected' : ''}`}
+        draggable={draggable}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
       >
+        {draggable && (
+          <div className="note-drag-handle" title="Drag to reorder">
+            <IconDragHandle width={14} height={14} />
+          </div>
+        )}
+        <button
+          type="button"
+          className={`note-select-toggle ${selectionActive || selected ? 'visible' : ''}`}
+          title={selected ? 'Deselect' : 'Select'}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect(note.id);
+          }}
+        >
+          <span className={`select-checkbox ${selected ? 'checked' : ''}`} />
+        </button>
+
         <div onClick={openEditor}>
           {note.title && <div className="note-title">{note.title}</div>}
-          {note.content && <div className="note-content">{note.content}</div>}
+          {note.isChecklist ? (
+            <div className="note-checklist-preview">
+              {previewItems.map((item) => (
+                <label
+                  key={item.id}
+                  className={`checklist-row preview ${item.checked ? 'checked' : ''}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input type="checkbox" checked={item.checked} onChange={() => toggleChecklistItem(item.id)} />
+                  <span>{item.text}</span>
+                </label>
+              ))}
+              {hiddenItemCount > 0 && <div className="checklist-more">+{hiddenItemCount} more</div>}
+            </div>
+          ) : (
+            note.content && (
+              <div className="note-content">
+                <MarkdownText text={note.content} />
+              </div>
+            )
+          )}
           {labelIds.length > 0 && (
             <div className="note-labels">
               {labelIds.map((id) => {
@@ -183,12 +271,15 @@ export function NoteCard({ note, view, labels, onUpdate, onTrash, onRestore, onD
           originRect={originRect}
           title={title}
           content={content}
+          isChecklist={note.isChecklist}
+          items={items}
           color={note.color as NoteColor}
           pinned={note.pinned}
           labels={labels}
           labelIds={labelIds}
           onTitleChange={setTitle}
           onContentChange={setContent}
+          onItemsChange={setItems}
           onColorChange={(color) => onUpdate(note.id, { color })}
           onTogglePin={() => onUpdate(note.id, { pinned: !note.pinned })}
           onToggleLabel={toggleLabel}

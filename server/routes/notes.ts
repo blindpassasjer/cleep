@@ -1,8 +1,22 @@
 import { Router } from 'express';
 import { and, desc, eq, isNull, isNotNull, inArray } from 'drizzle-orm';
 import { db } from '../db/client.js';
-import { notes, noteLabels } from '../db/schema.js';
+import { notes, noteLabels, type ChecklistItem } from '../db/schema.js';
 import { requireAuth } from '../middleware/session.js';
+
+const MAX_ITEMS = 300;
+
+function parseChecklistItems(value: unknown): ChecklistItem[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const items: ChecklistItem[] = [];
+  for (const raw of value.slice(0, MAX_ITEMS)) {
+    if (typeof raw !== 'object' || raw === null) continue;
+    const { id, text, checked } = raw as Record<string, unknown>;
+    if (typeof id !== 'string' || typeof text !== 'string') continue;
+    items.push({ id, text: text.slice(0, 500), checked: Boolean(checked) });
+  }
+  return items;
+}
 
 export const notesRouter = Router();
 notesRouter.use(requireAuth);
@@ -72,7 +86,7 @@ notesRouter.get('/', async (req, res) => {
 
 notesRouter.post('/', async (req, res) => {
   try {
-    const { title, content, color } = (req.body ?? {}) as Record<string, unknown>;
+    const { title, content, color, isChecklist, items } = (req.body ?? {}) as Record<string, unknown>;
     const id = crypto.randomUUID();
 
     const [row] = await db
@@ -83,6 +97,8 @@ notesRouter.post('/', async (req, res) => {
         title: typeof title === 'string' ? title.slice(0, 300) : '',
         content: typeof content === 'string' ? content.slice(0, 20000) : '',
         color: typeof color === 'string' && VALID_COLORS.has(color) ? color : 'default',
+        isChecklist: Boolean(isChecklist),
+        items: parseChecklistItems(items) ?? [],
         position: Date.now(),
       })
       .returning();
@@ -96,7 +112,7 @@ notesRouter.post('/', async (req, res) => {
 
 notesRouter.patch('/:id', async (req, res) => {
   try {
-    const { title, content, color, pinned, archived } = (req.body ?? {}) as Record<string, unknown>;
+    const { title, content, color, pinned, archived, isChecklist, items, position } = (req.body ?? {}) as Record<string, unknown>;
     const updates: Partial<typeof notes.$inferInsert> = { updatedAt: new Date() };
 
     if (title !== undefined) updates.title = typeof title === 'string' ? title.slice(0, 300) : '';
@@ -104,6 +120,12 @@ notesRouter.patch('/:id', async (req, res) => {
     if (color !== undefined && typeof color === 'string' && VALID_COLORS.has(color)) updates.color = color;
     if (pinned !== undefined) updates.pinned = Boolean(pinned);
     if (archived !== undefined) updates.archived = Boolean(archived);
+    if (isChecklist !== undefined) updates.isChecklist = Boolean(isChecklist);
+    if (items !== undefined) {
+      const parsed = parseChecklistItems(items);
+      if (parsed) updates.items = parsed;
+    }
+    if (typeof position === 'number' && Number.isFinite(position)) updates.position = position;
 
     const [row] = await db
       .update(notes)

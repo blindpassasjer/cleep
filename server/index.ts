@@ -7,6 +7,7 @@ import { authRateLimit } from './middleware/rateLimit.js';
 import { authRouter } from './routes/auth.js';
 import { notesRouter } from './routes/notes.js';
 import { labelsRouter } from './routes/labels.js';
+import { purgeExpiredTrash } from './db/purgeTrash.js';
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is required.');
@@ -54,3 +55,9 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 app.listen(PORT, () => {
   console.log(`Cleep self-host server listening on port ${PORT}`);
 });
+
+const TRASH_PURGE_INTERVAL_MS = 60 * 60 * 1000;
+purgeExpiredTrash().catch((err) => console.error('Initial trash purge failed:', err));
+setInterval(() => {
+  purgeExpiredTrash().catch((err) => console.error('Scheduled trash purge failed:', err));
+}, TRASH_PURGE_INTERVAL_MS);

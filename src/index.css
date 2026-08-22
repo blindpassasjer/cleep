@@ -401,7 +401,6 @@ body {
 }
 
 .composer.collapsed {
-  cursor: text;
   color: var(--muted);
   box-shadow: var(--shadow);
   display: flex;
@@ -413,8 +412,37 @@ body {
   box-shadow: var(--shadow-hover);
 }
 
+.composer.collapsed > span {
+  cursor: text;
+  flex: 1;
+}
+
+.composer-collapsed-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.composer-collapsed-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 8px;
+}
+
+.composer-collapsed-actions button:hover {
+  background: var(--surface);
+  color: var(--fg);
+}
+
 .composer-plus {
   color: var(--muted);
+  cursor: pointer;
 }
 
 .composer.expanded {
@@ -855,4 +883,341 @@ body {
 
 .note-modal-footer .text-action:active {
   transform: scale(0.95);
+}
+
+/* Markdown-lite rendering */
+.md-bullets {
+  margin: 0.15rem 0;
+  padding-left: 1.2rem;
+}
+
+.md-bullets li {
+  font-size: 0.92rem;
+}
+
+.md-line {
+  min-height: 1.1em;
+}
+
+/* Checklists */
+.checklist-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.checklist-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checklist-row.checked .checklist-text,
+.checklist-row.checked.preview span {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.checklist-text {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.92rem;
+  padding: 0.2rem 0;
+}
+
+.checklist-remove {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem;
+  border-radius: 6px;
+  visibility: hidden;
+}
+
+.checklist-row:hover .checklist-remove {
+  visibility: visible;
+}
+
+.checklist-remove:hover {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.checklist-add {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.3rem 0;
+}
+
+.checklist-add:hover {
+  color: var(--fg);
+}
+
+.note-checklist-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.2rem;
+}
+
+.checklist-row.preview {
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.checklist-row.preview input {
+  cursor: pointer;
+}
+
+.checklist-more {
+  color: var(--muted);
+  font-size: 0.8rem;
+  padding-left: 1.6rem;
+}
+
+/* Text format toolbar */
+.format-toolbar {
+  display: flex;
+  gap: 0.2rem;
+  margin-top: 0.2rem;
+}
+
+.format-toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+}
+
+.format-toolbar button:hover {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+/* Multi-select */
+.note-select-toggle {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 1;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.15rem;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.note-card:hover .note-select-toggle,
+.note-select-toggle.visible {
+  opacity: 1;
+}
+
+.select-checkbox {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--muted);
+  background: var(--bg);
+}
+
+.select-checkbox.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.note-card.note-selected {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* Drag reorder */
+.note-drag-handle {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  color: var(--muted);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.note-card:hover .note-drag-handle {
+  opacity: 0.6;
+}
+
+.note-card[draggable='true']:active {
+  cursor: grabbing;
+}
+
+/* Bulk actions bar */
+.bulk-bar {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  padding: 0.7rem 1rem;
+  animation: composer-open 0.15s ease;
+}
+
+.bulk-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bulk-bar-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 8px;
+}
+
+.bulk-bar-close:hover {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.bulk-bar-count {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.bulk-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-left: auto;
+}
+
+.bulk-bar-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+}
+
+.bulk-bar-actions button:hover {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.bulk-bar-panel {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+  animation: drop-in 0.15s ease;
+}
+
+.bulk-bar-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.bulk-bar-label {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.bulk-bar-label:hover {
+  background: var(--surface);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.75rem;
+  transform: translateX(-50%);
+  background: #1d1d1f;
+  color: #f5f5f7;
+  padding: 0.7rem 0.6rem 0.7rem 1.1rem;
+  border-radius: 999px;
+  box-shadow: var(--shadow-hover);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+  z-index: 1100;
+  animation: toast-in 0.2s cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .toast {
+    background: #f5f5f7;
+    color: #1d1d1f;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.toast button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.toast button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+@media (prefers-color-scheme: dark) {
+  .toast button:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+}
+
+.toast-close {
+  font-size: 1.1rem;
+  padding: 0.2rem 0.5rem !important;
 }

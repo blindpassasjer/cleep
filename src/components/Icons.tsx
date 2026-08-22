@@ -99,3 +99,57 @@ export function IconSearch(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function IconChecklist(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M4.5 6.5 6 8l3-3" />
+      <path d="M11 6h9" />
+      <path d="M4.5 12.5 6 14l3-3" />
+      <path d="M11 12h9" />
+      <path d="M4.5 18.5 6 20l3-3" />
+      <path d="M11 18h9" />
+    </Icon>
+  );
+}
+
+export function IconBold(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M7 4h6a3.5 3.5 0 0 1 0 7H7z" />
+      <path d="M7 11h7a3.5 3.5 0 0 1 0 7H7z" />
+    </Icon>
+  );
+}
+
+export function IconItalic(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M11 4h6M7 20h6M14 4l-4 16" />
+    </Icon>
+  );
+}
+
+export function IconBulletList(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx="5" cy="6.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="5" cy="17.5" r="1.1" fill="currentColor" stroke="none" />
+      <path d="M9.5 6.5h10M9.5 12h10M9.5 17.5h10" />
+    </Icon>
+  );
+}
+
+export function IconDragHandle(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx="9" cy="6" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="6" r="1" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="18" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="18" r="1" fill="currentColor" stroke="none" />
+    </Icon>
+  );
+}

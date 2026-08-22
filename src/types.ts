@@ -11,11 +11,19 @@ export type NoteColor =
   | 'brown'
   | 'gray';
 
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;
+}
+
 export interface Note {
   id: string;
   userId: string;
   title: string;
   content: string;
+  isChecklist: boolean;
+  items: ChecklistItem[];
   color: NoteColor;
   pinned: boolean;
   archived: boolean;

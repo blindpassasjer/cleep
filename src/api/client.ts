@@ -1,4 +1,4 @@
-import type { Note, Label, PublicUser, View } from '../types';
+import type { ChecklistItem, Note, Label, PublicUser, View } from '../types';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
@@ -26,10 +26,12 @@ export const api = {
     const qs = view.kind === 'archive' ? '?view=archive' : view.kind === 'trash' ? '?view=trash' : view.kind === 'label' ? `?label=${encodeURIComponent(view.id)}` : '';
     return request<{ notes: Note[] }>(`/notes${qs}`);
   },
-  createNote: (title: string, content: string, color: string) =>
-    request<{ note: Note }>('/notes', { method: 'POST', body: JSON.stringify({ title, content, color }) }),
-  updateNote: (id: string, patch: Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived'>>) =>
-    request<{ note: Note }>(`/notes/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+  createNote: (title: string, content: string, color: string, extra?: { isChecklist?: boolean; items?: ChecklistItem[] }) =>
+    request<{ note: Note }>('/notes', { method: 'POST', body: JSON.stringify({ title, content, color, ...extra }) }),
+  updateNote: (
+    id: string,
+    patch: Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived' | 'isChecklist' | 'items' | 'position'>>,
+  ) => request<{ note: Note }>(`/notes/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   trashNote: (id: string) => request<{ note: Note }>(`/notes/${id}/trash`, { method: 'POST' }),
   restoreNote: (id: string) => request<{ note: Note }>(`/notes/${id}/restore`, { method: 'POST' }),
   deleteNote: (id: string) => request<{ ok: true }>(`/notes/${id}`, { method: 'DELETE' }),

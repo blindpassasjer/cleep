@@ -1,8 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ColorPicker } from './ColorPicker';
+import { ChecklistEditor } from './ChecklistEditor';
+import { TextFormatToolbar } from './TextFormatToolbar';
 import { IconArchive, IconClose, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
-import type { Label, NoteColor } from '../types';
+import type { ChecklistItem, Label, NoteColor } from '../types';
 
 const FLIP_OPEN_MS = 220;
 const FLIP_CLOSE_MS = 180;
@@ -11,12 +13,15 @@ interface Props {
   originRect: DOMRect;
   title: string;
   content: string;
+  isChecklist: boolean;
+  items: ChecklistItem[];
   color: NoteColor;
   pinned: boolean;
   labels: Label[];
   labelIds: string[];
   onTitleChange: (value: string) => void;
   onContentChange: (value: string) => void;
+  onItemsChange: (items: ChecklistItem[]) => void;
   onColorChange: (color: NoteColor) => void;
   onTogglePin: () => void;
   onToggleLabel: (labelId: string) => void;
@@ -37,12 +42,15 @@ export function NoteModal({
   originRect,
   title,
   content,
+  isChecklist,
+  items,
   color,
   pinned,
   labels,
   labelIds,
   onTitleChange,
   onContentChange,
+  onItemsChange,
   onColorChange,
   onTogglePin,
   onToggleLabel,
@@ -51,6 +59,7 @@ export function NoteModal({
   onClose,
 }: Props) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
   const [closing, setClosing] = useState<'flip' | 'fade' | null>(null);
   const [showLabels, setShowLabels] = useState(false);
 
@@ -119,12 +128,20 @@ export function NoteModal({
           onChange={(e) => onTitleChange(e.target.value)}
           autoFocus
         />
-        <textarea
-          className="note-content note-modal-content"
-          placeholder="Take a note…"
-          value={content}
-          onChange={(e) => onContentChange(e.target.value)}
-        />
+        {isChecklist ? (
+          <ChecklistEditor items={items} onChange={onItemsChange} autoFocusLast />
+        ) : (
+          <>
+            <textarea
+              ref={contentRef}
+              className="note-content note-modal-content"
+              placeholder="Take a note…"
+              value={content}
+              onChange={(e) => onContentChange(e.target.value)}
+            />
+            <TextFormatToolbar textareaRef={contentRef} value={content} onChange={onContentChange} />
+          </>
+        )}
         {showLabels && (
           <div className="note-labels-editor">
             {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}

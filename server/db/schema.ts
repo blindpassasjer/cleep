@@ -1,4 +1,10 @@
-import { pgTable, text, timestamp, boolean, bigint, uniqueIndex, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, bigint, jsonb, uniqueIndex, primaryKey } from 'drizzle-orm/pg-core';
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;
+}
 
 export const users = pgTable(
   'users',
@@ -31,6 +37,8 @@ export const notes = pgTable('notes', {
     .references(() => users.id, { onDelete: 'cascade' }),
   title: text('title').notNull().default(''),
   content: text('content').notNull().default(''),
+  isChecklist: boolean('is_checklist').notNull().default(false),
+  items: jsonb('items').$type<ChecklistItem[]>().notNull().default([]),
   color: text('color').notNull().default('default'),
   pinned: boolean('pinned').notNull().default(false),
   archived: boolean('archived').notNull().default(false),

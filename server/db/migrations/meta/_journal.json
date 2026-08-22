@@ -15,6 +15,13 @@
       "when": 1787392253754,
       "tag": "0001_robust_crystal",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787400509153,
+      "tag": "0002_chilly_shape",
+      "breakpoints": true
     }
   ]
 }
