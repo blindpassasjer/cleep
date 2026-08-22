@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useNotes } from './hooks/useNotes';
+import { useLabels } from './hooks/useLabels';
 import { LoginPage } from './components/LoginPage';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
@@ -10,9 +11,10 @@ import type { View } from './types';
 
 export default function App() {
   const { user, setUser, loading, logout } = useAuth();
-  const [view, setView] = useState<View>('notes');
+  const [view, setView] = useState<View>({ kind: 'notes' });
   const [search, setSearch] = useState('');
-  const { notes, createNote, updateNote, trashNote, restoreNote, deleteNote } = useNotes(view);
+  const { notes, error, createNote, updateNote, trashNote, restoreNote, deleteNote } = useNotes(view);
+  const { labels, createLabel, deleteLabel } = useLabels();
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -31,16 +33,18 @@ export default function App() {
   return (
     <div className="app">
       <TopBar user={user} search={search} onSearchChange={setSearch} onLogout={logout} />
+      {error && <div className="error-banner">{error}</div>}
       <div className="app-body">
-        <Sidebar view={view} onChange={setView} />
+        <Sidebar view={view} onChange={setView} labels={labels} onCreateLabel={createLabel} onDeleteLabel={deleteLabel} />
         <main className="main">
-          {view === 'notes' && <NoteComposer onCreate={createNote} />}
+          {view.kind === 'notes' && <NoteComposer onCreate={createNote} />}
           <div className="notes-grid">
             {filtered.map((note) => (
               <NoteCard
                 key={note.id}
                 note={note}
                 view={view}
+                labels={labels}
                 onUpdate={updateNote}
                 onTrash={trashNote}
                 onRestore={restoreNote}

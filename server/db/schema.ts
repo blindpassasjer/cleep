@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer, uniqueIndex, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, bigint, uniqueIndex, primaryKey } from 'drizzle-orm/pg-core';
 
 export const users = pgTable(
   'users',
@@ -35,7 +35,7 @@ export const notes = pgTable('notes', {
   pinned: boolean('pinned').notNull().default(false),
   archived: boolean('archived').notNull().default(false),
   trashedAt: timestamp('trashed_at', { withTimezone: true }),
-  position: integer('position').notNull().default(0),
+  position: bigint('position', { mode: 'number' }).notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

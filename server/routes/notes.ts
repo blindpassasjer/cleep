@@ -23,10 +23,18 @@ const VALID_COLORS = new Set([
 
 notesRouter.get('/', async (req, res) => {
   try {
-    const { view } = req.query;
+    const { view, label } = req.query;
     const filters = [eq(notes.userId, req.userId!)];
 
-    if (view === 'trash') {
+    if (typeof label === 'string' && label) {
+      const labeledRows = await db.select({ noteId: noteLabels.noteId }).from(noteLabels).where(eq(noteLabels.labelId, label));
+      const noteIds = labeledRows.map((r) => r.noteId);
+      if (noteIds.length === 0) {
+        res.json({ notes: [] });
+        return;
+      }
+      filters.push(inArray(notes.id, noteIds), isNull(notes.trashedAt), eq(notes.archived, false));
+    } else if (view === 'trash') {
       filters.push(isNotNull(notes.trashedAt));
     } else {
       filters.push(isNull(notes.trashedAt));

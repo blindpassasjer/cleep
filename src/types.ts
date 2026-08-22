@@ -39,4 +39,4 @@ export interface PublicUser {
   role: string;
 }
 
-export type View = 'notes' | 'archive' | 'trash';
+export type View = { kind: 'notes' } | { kind: 'archive' } | { kind: 'trash' } | { kind: 'label'; id: string; name: string };

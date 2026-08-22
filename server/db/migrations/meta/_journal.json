@@ -8,6 +8,13 @@
       "when": 1787335165000,
       "tag": "0000_rich_stature",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787392253754,
+      "tag": "0001_robust_crystal",
+      "breakpoints": true
     }
   ]
 }

@@ -1,17 +1,85 @@
-import type { View } from '../types';
+import { useState } from 'react';
+import type { Label, View } from '../types';
 
-export function Sidebar({ view, onChange }: { view: View; onChange: (view: View) => void }) {
+interface Props {
+  view: View;
+  onChange: (view: View) => void;
+  labels: Label[];
+  onCreateLabel: (name: string) => Promise<string | null>;
+  onDeleteLabel: (id: string) => void;
+}
+
+export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel }: Props) {
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  async function submitLabel(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setAdding(false);
+      return;
+    }
+    const err = await onCreateLabel(trimmed);
+    if (err) {
+      setError(err);
+      return;
+    }
+    setName('');
+    setAdding(false);
+    setError(null);
+  }
+
   return (
     <nav className="sidebar">
-      <button className={view === 'notes' ? 'active' : ''} onClick={() => onChange('notes')}>
+      <button className={view.kind === 'notes' ? 'active' : ''} onClick={() => onChange({ kind: 'notes' })}>
         💡 Notes
       </button>
-      <button className={view === 'archive' ? 'active' : ''} onClick={() => onChange('archive')}>
+      <button className={view.kind === 'archive' ? 'active' : ''} onClick={() => onChange({ kind: 'archive' })}>
         🗄️ Archive
       </button>
-      <button className={view === 'trash' ? 'active' : ''} onClick={() => onChange('trash')}>
+      <button className={view.kind === 'trash' ? 'active' : ''} onClick={() => onChange({ kind: 'trash' })}>
         🗑️ Trash
       </button>
+
+      <div className="sidebar-section-label">Collections</div>
+      {labels.map((label) => (
+        <div key={label.id} className={`sidebar-label-row ${view.kind === 'label' && view.id === label.id ? 'active' : ''}`}>
+          <button className="sidebar-label-name" onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}>
+            🏷️ {label.name}
+          </button>
+          <button
+            className="sidebar-label-delete"
+            title="Delete collection"
+            onClick={() => {
+              if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
+              onDeleteLabel(label.id);
+            }}
+          >
+            ×
+          </button>
+        </div>
+      ))}
+
+      {adding ? (
+        <form className="sidebar-add-label" onSubmit={submitLabel}>
+          <input
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => {
+              if (!name.trim()) setAdding(false);
+            }}
+            placeholder="Collection name"
+          />
+        </form>
+      ) : (
+        <button className="sidebar-add-label-btn" onClick={() => setAdding(true)}>
+          + New collection
+        </button>
+      )}
+      {error && <div className="sidebar-label-error">{error}</div>}
     </nav>
   );
 }

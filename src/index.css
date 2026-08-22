@@ -176,10 +176,100 @@ body {
   font-weight: 600;
 }
 
+.sidebar-section-label {
+  margin: 1rem 1.25rem 0.25rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.sidebar-label-row {
+  display: flex;
+  align-items: center;
+  border-radius: 0 20px 20px 0;
+}
+
+.sidebar-label-row.active {
+  background: var(--surface);
+}
+
+.sidebar-label-row.active .sidebar-label-name {
+  font-weight: 600;
+}
+
+.sidebar-label-name {
+  flex: 1;
+  text-align: left;
+  padding: 0.5rem 0.5rem 0.5rem 1.25rem;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.sidebar-label-delete {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 1rem 0 0;
+  font-size: 1rem;
+  visibility: hidden;
+}
+
+.sidebar-label-row:hover .sidebar-label-delete {
+  visibility: visible;
+}
+
+.sidebar-add-label-btn {
+  text-align: left;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.sidebar-add-label {
+  padding: 0.25rem 1.25rem;
+}
+
+.sidebar-add-label input {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.sidebar-label-error {
+  padding: 0.25rem 1.25rem;
+  color: #d93025;
+  font-size: 0.8rem;
+}
+
 .main {
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
+}
+
+.error-banner {
+  background: #fce8e6;
+  color: #d93025;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .error-banner {
+    background: #442726;
+    color: #f28b82;
+  }
 }
 
 .empty-state {
@@ -227,6 +317,11 @@ body {
   color: var(--fg);
   font-family: inherit;
   font-size: 0.95rem;
+}
+
+.composer-error {
+  color: #d93025;
+  font-size: 0.85rem;
 }
 
 .composer-footer {
@@ -287,6 +382,42 @@ body {
 .note-card input.note-title {
   font-weight: 600;
   font-size: 1rem;
+}
+
+.note-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+
+.note-label-chip {
+  font-size: 0.75rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.note-labels-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.note-label-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.note-labels-empty {
+  color: var(--muted);
+  font-size: 0.8rem;
 }
 
 .note-footer {

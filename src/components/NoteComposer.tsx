@@ -2,20 +2,33 @@ import { useState } from 'react';
 import { ColorPicker } from './ColorPicker';
 import type { NoteColor } from '../types';
 
-export function NoteComposer({ onCreate }: { onCreate: (title: string, content: string, color: NoteColor) => void }) {
+export function NoteComposer({ onCreate }: { onCreate: (title: string, content: string, color: NoteColor) => Promise<void> }) {
   const [expanded, setExpanded] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [color, setColor] = useState<NoteColor>('default');
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  function close() {
-    if (title.trim() || content.trim()) {
-      onCreate(title.trim(), content.trim(), color);
+  async function close() {
+    if (!title.trim() && !content.trim()) {
+      setExpanded(false);
+      return;
     }
-    setTitle('');
-    setContent('');
-    setColor('default');
-    setExpanded(false);
+
+    setSaving(true);
+    setError(null);
+    try {
+      await onCreate(title.trim(), content.trim(), color);
+      setTitle('');
+      setContent('');
+      setColor('default');
+      setExpanded(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save the note. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (!expanded) {
@@ -42,10 +55,11 @@ export function NoteComposer({ onCreate }: { onCreate: (title: string, content: 
         onChange={(e) => setContent(e.target.value)}
         rows={3}
       />
+      {error && <div className="composer-error">{error}</div>}
       <div className="composer-footer">
         <ColorPicker value={color} onChange={setColor} />
-        <button type="button" onClick={close}>
-          Close
+        <button type="button" onClick={close} disabled={saving}>
+          {saving ? 'Saving…' : 'Close'}
         </button>
       </div>
     </div>
