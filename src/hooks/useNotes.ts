@@ -30,14 +30,28 @@ export function useNotes(view: View, notify: NotifyFn) {
     reload();
   }, [reload]);
 
-  async function createNote(title: string, content: string, color: NoteColor, extra?: { isChecklist?: boolean; items?: ChecklistItem[] }) {
+  async function createNote(
+    title: string,
+    content: string,
+    color: NoteColor,
+    extra?: { isChecklist?: boolean; items?: ChecklistItem[] },
+  ): Promise<Note> {
     setError(null);
     try {
-      await api.createNote(title, content, color, extra);
+      const { note } = await api.createNote(title, content, color, extra);
       await reload();
+      return note;
     } catch (err) {
       setError(errorMessage(err));
       throw err;
+    }
+  }
+
+  async function discardDraftNote(id: string) {
+    try {
+      await api.deleteNote(id);
+    } finally {
+      await reload();
     }
   }
 
@@ -141,5 +155,5 @@ export function useNotes(view: View, notify: NotifyFn) {
     });
   }
 
-  return { notes, loading, error, reload, createNote, updateNote, reorderNotes, trashNote, restoreNote, deleteNote };
+  return { notes, loading, error, reload, createNote, discardDraftNote, updateNote, reorderNotes, trashNote, restoreNote, deleteNote };
 }

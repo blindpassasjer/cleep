@@ -19,7 +19,10 @@ export default function App() {
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { toast, show, dismiss } = useToast();
-  const { notes, error, reload, createNote, updateNote, reorderNotes, trashNote, restoreNote, deleteNote } = useNotes(view, show);
+  const { notes, error, reload, createNote, discardDraftNote, updateNote, reorderNotes, trashNote, restoreNote, deleteNote } = useNotes(
+    view,
+    show,
+  );
   const { labels, createLabel, deleteLabel } = useLabels();
 
   useEffect(() => {
@@ -107,7 +110,9 @@ export default function App() {
               onLabel={bulkLabel}
             />
           ) : (
-            view.kind === 'notes' && <NoteComposer onCreate={createNote} />
+            view.kind === 'notes' && (
+              <NoteComposer onCreate={createNote} onUpdateDraft={updateNote} onDiscardDraft={discardDraftNote} />
+            )
           )}
           <NotesGrid
             notes={filtered}

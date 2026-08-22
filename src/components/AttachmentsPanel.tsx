@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { IconClose, IconImage, IconMic, IconStop } from './Icons';
 import type { Attachment } from '../types';
 
@@ -6,15 +6,25 @@ interface Props {
   attachments: Attachment[];
   onUpload: (file: File | Blob, filename?: string) => Promise<void>;
   onDelete: (attachmentId: string) => void;
+  /** Opens the file picker as soon as this instance mounts (used by the composer's collapsed-row image icon). */
+  autoOpenFilePicker?: boolean;
+  /** Starts recording as soon as this instance mounts (used by the composer's collapsed-row mic icon). */
+  autoStartRecording?: boolean;
 }
 
-export function AttachmentsPanel({ attachments, onUpload, onDelete }: Props) {
+export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFilePicker, autoStartRecording }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const [recording, setRecording] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (autoOpenFilePicker) fileInputRef.current?.click();
+    if (autoStartRecording) startRecording();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once on mount only, not on every prop change
+  }, []);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
