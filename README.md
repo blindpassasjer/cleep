@@ -10,6 +10,7 @@ A self-hostable, open-source clone of Google Keep. React + Express + Postgres, p
 - Labels (collections) and multi-select bulk actions
 - Multi-user accounts with session-based auth
 - Search across your notes
+- Installable as a PWA (add to home screen, offline shell) — requires HTTPS, see below
 
 ## Self-hosting with Docker Compose
 
@@ -43,6 +44,16 @@ The `docker-publish.yml` GitHub Actions workflow builds and pushes `ghcr.io/blin
 on every push to `main`. GHCR packages default to private on first publish even in a public repo —
 after the first workflow run, open the package settings on GitHub and set its visibility to public
 so `docker compose pull` works without authentication.
+
+### PWA and HTTPS
+
+Cleep is installable as a Progressive Web App (an "Install"/"Add to Home Screen" prompt, its own
+window, an offline app shell). This — like microphone access for audio recordings — only works over
+a **secure context**: HTTPS, or `localhost`. Browsers won't register a service worker at all on a
+plain `http://<nas-ip>:6169` origin, so on the default setup above neither installability nor
+offline support will be available, even though the app itself works fine. Put a reverse proxy
+(Nginx Proxy Manager, Caddy, Traefik, your NAS's built-in one, etc.) with a TLS certificate in front
+of Cleep to enable both.
 
 ## Local development
 
