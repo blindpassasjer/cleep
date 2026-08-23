@@ -300,6 +300,99 @@ body {
   transition: background-color 0.12s ease, transform 0.1s ease;
 }
 
+.user-menu button.icon-only.active {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+/* Buy-me-a-coffee popover */
+.coffee-menu {
+  position: relative;
+}
+
+.coffee-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  width: min(300px, calc(100vw - 1.5rem));
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-hover);
+  overflow: hidden;
+  z-index: 60;
+  animation: composer-open 0.14s cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+
+.coffee-popover-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.coffee-popover-avatar {
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+.coffee-popover-header h2 {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.coffee-popover-header p {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.coffee-popover-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+}
+
+.coffee-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.12s ease, transform 0.1s ease;
+}
+
+.coffee-option:hover {
+  background: var(--surface);
+}
+
+.coffee-option:active {
+  transform: scale(0.98);
+}
+
+.coffee-option-accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #1d1d1f;
+}
+
+.coffee-option-accent:hover {
+  filter: brightness(0.96);
+  background: var(--accent);
+}
+
 /* Settings modal */
 .settings-modal {
   width: min(420px, 92vw);
@@ -730,7 +823,6 @@ body {
   gap: 1.1rem;
   max-width: 1400px;
   margin: 0 auto;
-  view-transition-name: notes-grid;
 }
 
 .note-card {

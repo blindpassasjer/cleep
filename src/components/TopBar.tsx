@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
-import { IconCoffee, IconMenu, IconMoon, IconSearch, IconSettings, IconSun } from './Icons';
+import { CoffeeMenu } from './CoffeeMenu';
+import { IconMenu, IconMoon, IconSearch, IconSettings, IconSun } from './Icons';
 import type { PublicUser } from '../types';
 
 interface Props {
@@ -47,15 +48,7 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
       </div>
       <div className="user-menu">
         <span>{user.username}</span>
-        <a
-          href="https://buymeacoffee.com/blindpassasjer"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Buy me a coffee"
-          className="icon-only"
-        >
-          <IconCoffee width={18} height={18} />
-        </a>
+        <CoffeeMenu />
         <button
           type="button"
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}

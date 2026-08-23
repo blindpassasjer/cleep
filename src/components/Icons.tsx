@@ -269,6 +269,14 @@ export function IconMoon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function IconArrowUpRight(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M7 17 17 7M9 7h8v8" />
+    </Icon>
+  );
+}
+
 export function IconCoffee(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

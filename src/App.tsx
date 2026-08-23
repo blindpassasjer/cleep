@@ -5,7 +5,7 @@ import { useLabels } from './hooks/useLabels';
 import { useToast } from './hooks/useToast';
 import { useTheme } from './hooks/useTheme';
 import { api } from './api/client';
-import { withViewTransition } from './lib/viewTransition';
+import { withViewTransition, withGridViewTransition } from './lib/viewTransition';
 import { LoginPage } from './components/LoginPage';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
@@ -195,7 +195,9 @@ export default function App() {
         {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
         <Sidebar
           view={view}
-          onChange={(v) => withViewTransition(() => setView(v))}
+          onChange={(v) =>
+            withGridViewTransition(appRef.current?.querySelector('.notes-grid') ?? null, () => setView(v))
+          }
           labels={labels}
           onCreateLabel={createLabel}
           onDeleteLabel={deleteLabel}
