@@ -170,16 +170,37 @@ body {
   background: var(--surface);
 }
 
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.15rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
+.brand-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* Both sides flex equally so the search bar in between sits truly centered in the bar, regardless
+   of how much the brand or user-menu content actually takes up. */
 .search-wrap {
   position: relative;
-  flex: 1;
+  flex: 0 1 560px;
   max-width: 560px;
+  margin: 0 auto;
 }
 
 .search-icon {
@@ -210,7 +231,9 @@ body {
 .user-menu {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.6rem;
+  flex: 1 1 0;
   color: var(--muted);
   font-size: 0.9rem;
 }
@@ -1527,12 +1550,21 @@ body {
     padding: 0.55rem 0.75rem;
   }
 
-  .brand {
+  .brand-text {
     display: none;
   }
 
+  /* On mobile, let the search bar claim the space instead of splitting it evenly with the (now
+     much smaller) brand/user-menu groups. */
+  .topbar-left,
+  .user-menu {
+    flex: 0 0 auto;
+  }
+
   .search-wrap {
+    flex: 1;
     max-width: none;
+    margin: 0;
   }
 
   /* Sized closer to Google Keep's mobile search bar — taller, fully pill-shaped, roomier icon. */

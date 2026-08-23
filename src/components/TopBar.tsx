@@ -13,10 +13,15 @@ interface Props {
 export function TopBar({ user, search, onSearchChange, onLogout, onToggleSidebar, onOpenSettings }: Props) {
   return (
     <header className="topbar">
-      <button type="button" className="sidebar-toggle" title="Menu" onClick={onToggleSidebar}>
-        <IconMenu />
-      </button>
-      <div className="brand">Cleep</div>
+      <div className="topbar-left">
+        <button type="button" className="sidebar-toggle" title="Menu" onClick={onToggleSidebar}>
+          <IconMenu />
+        </button>
+        <div className="brand">
+          <img src="/favicon.svg" alt="" className="brand-icon" />
+          <span className="brand-text">Cleep</span>
+        </div>
+      </div>
       <div className="search-wrap">
         <IconSearch className="search-icon" />
         <input
