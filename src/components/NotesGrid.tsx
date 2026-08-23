@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { NoteCard } from './NoteCard';
+import { useMasonryLayout } from '../hooks/useMasonryLayout';
 import type { Label, Note, View } from '../types';
 
 type NoteUpdatePatch = Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived' | 'isChecklist' | 'items'>>;
@@ -34,6 +35,7 @@ export function NotesGrid({
   onReorder,
 }: Props) {
   const dragId = useRef<string | null>(null);
+  const { containerRef, setCardRef } = useMasonryLayout(notes);
 
   function handleDrop(targetId: string) {
     const draggedId = dragId.current;
@@ -48,28 +50,29 @@ export function NotesGrid({
   }
 
   return (
-    <div className="notes-grid">
+    <div className="notes-grid" ref={containerRef}>
       {notes.map((note) => (
-        <NoteCard
-          key={note.id}
-          note={note}
-          view={view}
-          labels={labels}
-          animateIn={note.id === justCreatedId}
-          selected={selectedIds.has(note.id)}
-          selectionActive={selectedIds.size > 0}
-          onToggleSelect={onToggleSelect}
-          onUpdate={onUpdate}
-          onTrash={onTrash}
-          onRestore={onRestore}
-          onDelete={onDelete}
-          draggable={reorderable}
-          onDragStart={() => {
-            dragId.current = note.id;
-          }}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={() => handleDrop(note.id)}
-        />
+        <div key={note.id} className="notes-grid-item" ref={(el) => setCardRef(note.id, el)}>
+          <NoteCard
+            note={note}
+            view={view}
+            labels={labels}
+            animateIn={note.id === justCreatedId}
+            selected={selectedIds.has(note.id)}
+            selectionActive={selectedIds.size > 0}
+            onToggleSelect={onToggleSelect}
+            onUpdate={onUpdate}
+            onTrash={onTrash}
+            onRestore={onRestore}
+            onDelete={onDelete}
+            draggable={reorderable}
+            onDragStart={() => {
+              dragId.current = note.id;
+            }}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => handleDrop(note.id)}
+          />
+        </div>
       ))}
     </div>
   );

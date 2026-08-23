@@ -828,13 +828,22 @@ body {
 }
 
 /* Notes grid */
+/* Masonry, like Google Keep -- fixed column width but each card keeps its own natural height and
+   packs into whichever column is currently shortest, instead of a CSS grid row stretching every
+   card to match its tallest neighbor. Actual column count/width/gap and each card's position are
+   computed and applied directly by useMasonryLayout (see NotesGrid), not by this stylesheet --
+   .notes-grid just needs to be the positioning root; its real height is also set by that hook,
+   since every child below is taken out of flow. No max-width, so a 4K/ultrawide screen gets as
+   many columns as actually fit instead of being capped regardless of how wide the window is. */
 .notes-grid {
-  display: grid;
-  /* No max-width -- the grid fills whatever width .main actually has, so a 4K/ultrawide screen
-     gets as many 230px+ columns as fit instead of being capped at 5 (1400px / ~247px per column)
-     regardless of how much wider the window actually is. */
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 1.1rem;
+  position: relative;
+}
+
+.notes-grid-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 0.2s ease;
 }
 
 .note-card {
@@ -848,11 +857,11 @@ body {
   background: var(--bg);
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s ease, transform 0.15s ease, opacity 0.16s ease;
-  /* Grid items default to min-width: auto, which lets a card refuse to shrink below its content's
-     intrinsic width (e.g. the footer's row of icon buttons) instead of respecting the track width
-     the grid actually gave it -- letting that content spill past the card's own border as the
-     window narrows. */
+  /* Lets the card shrink below its content's intrinsic width (e.g. the footer's row of icon
+     buttons) instead of that content spilling past its border -- .notes-grid-item sets an exact
+     width via useMasonryLayout, but this still fills 100% of it by default as a plain block child. */
   min-width: 0;
+  width: 100%;
 }
 
 /* Only applied to a note that was *just* created (see useNotes' justCreatedId) -- every other
@@ -2188,13 +2197,6 @@ body {
        width. It still never reflows when the drawer opens, since the sidebar stays out-of-flow
        (position: fixed) throughout and only slides on top of the grid via transform. */
     padding: 1rem 0.85rem;
-  }
-
-  /* Wide single-column cards (like Keep's mobile app/web) instead of a cramped 2-up grid -- narrow
-     cards don't leave room for touch-sized footer controls (pin/color/label/archive/trash). */
-  .notes-grid {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 0.85rem;
   }
 
   .composer,
