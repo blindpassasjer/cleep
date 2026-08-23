@@ -1996,17 +1996,21 @@ h3.md-heading {
     font-size: 0.95rem;
   }
 
-  /* Default (collapsed) state: a slim, always-visible icon-only rail sitting in the normal layout
-     flow -- not hidden off-canvas -- so core navigation stays one tap away without eating much
-     width from the note grid. Tapping the hamburger expands it into a full overlay drawer with
-     labels (below), the same drawer behavior as before. */
+  /* The rail sits fixed at all times (both collapsed and open) rather than only going fixed on
+     open -- otherwise toggling it removed/restored its 84px from the flex layout each time, which
+     made .main (and so the whole notes grid) resize and reflow along with it. Reserving that same
+     84px unconditionally on .main below means opening the drawer only ever changes width *on top
+     of* the grid, as a true overlay, and the grid underneath never has to react to it. */
   .sidebar {
-    position: static;
+    position: fixed;
+    top: var(--topbar-height, 0px);
+    bottom: 0;
+    left: 0;
     width: 84px;
-    flex-shrink: 0;
     padding: 0.85rem 0.4rem;
     transition: width 0.2s ease;
     overflow: hidden;
+    z-index: 40;
   }
 
   .sidebar button,
@@ -2031,11 +2035,6 @@ h3.md-heading {
   }
 
   .sidebar.open {
-    /* Sits right below the topbar (not underneath/behind it) so the open drawer never covers it. */
-    position: fixed;
-    top: var(--topbar-height, 0px);
-    bottom: 0;
-    left: 0;
     width: min(88vw, 340px);
     padding: 0.85rem 0.75rem 1.1rem 0.4rem;
     z-index: 50;
@@ -2122,6 +2121,10 @@ h3.md-heading {
   }
 
   .main {
+    /* Reserves the rail's 84px unconditionally (the sidebar is fixed/out-of-flow at all times on
+       mobile now -- see .sidebar) so this never has to change, and the grid inside never reflows,
+       whether the sidebar is showing its collapsed rail or its opened drawer. */
+    margin-left: 84px;
     padding: 1rem 0.85rem;
   }
 
