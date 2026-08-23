@@ -1700,6 +1700,11 @@ body {
 
   .search-wrap {
     flex: 1;
+    /* Flex items default to min-width: auto, which for a text input means "don't shrink below the
+       intrinsic content width" -- on a narrow phone that alone can exceed the space left after the
+       burger/brand and user-menu icons, pushing the user-menu (settings, theme toggle, account)
+       off the right edge of the bar entirely. Force it to actually respect the flex-basis. */
+    min-width: 0;
     max-width: none;
     margin: 0;
   }
