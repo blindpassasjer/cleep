@@ -241,3 +241,13 @@ export function IconMoon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function IconCoffee(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M5 9h11.5v6a4.5 4.5 0 0 1-4.5 4.5H9.5A4.5 4.5 0 0 1 5 15V9Z" />
+      <path d="M16.5 10.5H18a2.5 2.5 0 0 1 0 5h-1.5" />
+      <path d="M8 3.5c-.6.7-.6 1.3 0 2s.6 1.3 0 2M12 3.5c-.6.7-.6 1.3 0 2s.6 1.3 0 2" />
+    </Icon>
+  );
+}

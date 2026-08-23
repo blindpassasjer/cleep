@@ -14,6 +14,9 @@ interface Props {
 export function SettingsModal({ user, onUserUpdate, onClose }: Props) {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  // See FlipModal for why this is needed: without it, selecting text and releasing the mouse
+  // outside the modal closes it, since the click's target becomes the backdrop either way.
+  const mouseDownOnBackdrop = useRef(false);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -87,7 +90,15 @@ export function SettingsModal({ user, onUserUpdate, onClose }: Props) {
   }
 
   return createPortal(
-    <div className="note-modal-backdrop" onClick={onClose}>
+    <div
+      className="note-modal-backdrop"
+      onMouseDown={(e) => {
+        mouseDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (mouseDownOnBackdrop.current && e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
         <div className="note-modal-header">
           <h2 className="settings-title">Settings</h2>

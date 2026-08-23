@@ -277,20 +277,27 @@ body {
   transition: background-color 0.12s ease, transform 0.1s ease;
 }
 
-.user-menu button:hover {
+.user-menu button:hover,
+.user-menu a.icon-only:hover {
   background: var(--surface);
 }
 
-.user-menu button:active {
+.user-menu button:active,
+.user-menu a.icon-only:active {
   transform: scale(0.96);
 }
 
-.user-menu button.icon-only {
+.user-menu button.icon-only,
+.user-menu a.icon-only {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0.4rem;
   border: none;
+  color: var(--fg);
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background-color 0.12s ease, transform 0.1s ease;
 }
 
 /* Settings modal */
@@ -2015,14 +2022,16 @@ body {
   /* Top bar's primary controls get the biggest targets on mobile -- these are the first things a
      thumb reaches for on every screen. */
   .sidebar-toggle,
-  .user-menu button.icon-only {
+  .user-menu button.icon-only,
+  .user-menu a.icon-only {
     min-width: 48px;
     min-height: 48px;
     padding: 0.6rem;
   }
 
   .sidebar-toggle svg,
-  .user-menu button.icon-only svg {
+  .user-menu button.icon-only svg,
+  .user-menu a.icon-only svg {
     width: 24px;
     height: 24px;
   }

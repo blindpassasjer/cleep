@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { FlipModal, type CloseFn } from './FlipModal';
 import { ColorPicker } from './ColorPicker';
 import { ChecklistEditor } from './ChecklistEditor';
@@ -19,7 +19,14 @@ interface Props {
   onDiscardDraft: (id: string) => void;
 }
 
-export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props) {
+export interface NoteComposerHandle {
+  open: () => void;
+}
+
+export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteComposer(
+  { onCreate, onUpdateDraft, onDiscardDraft },
+  handleRef,
+) {
   const collapsedRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -41,6 +48,8 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
     setStartWith(startWithMode);
     setExpanded(true);
   }
+
+  useImperativeHandle(handleRef, () => ({ open: () => open() }));
 
   function startChecklist() {
     setIsChecklist(true);
@@ -197,4 +206,4 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
       )}
     </FlipModal>
   );
-}
+});

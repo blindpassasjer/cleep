@@ -33,6 +33,10 @@ function flipTransform(from: DOMRect, to: DOMRect) {
 export function FlipModal({ originRect, panelClassName, onClose, onCloseStart, onRequestClose, children }: Props) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [closing, setClosing] = useState<'flip' | 'fade' | null>(null);
+  // Tracks whether the mousedown that led to this click actually started on the backdrop itself,
+  // not inside the modal -- otherwise selecting text and releasing the mouse outside the modal
+  // (a normal drag-to-select gesture) reports its click target as the backdrop and closes the note.
+  const mouseDownOnBackdrop = useRef(false);
 
   useLayoutEffect(() => {
     const el = modalRef.current;
@@ -86,7 +90,15 @@ export function FlipModal({ originRect, panelClassName, onClose, onCloseStart, o
   }, []);
 
   return createPortal(
-    <div className={`note-modal-backdrop ${closing ? 'closing' : ''}`} onClick={() => requestCloseRef.current()}>
+    <div
+      className={`note-modal-backdrop ${closing ? 'closing' : ''}`}
+      onMouseDown={(e) => {
+        mouseDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (mouseDownOnBackdrop.current && e.target === e.currentTarget) requestCloseRef.current();
+      }}
+    >
       <div
         className={`note-modal ${panelClassName ?? ''} ${closing === 'fade' ? 'note-modal-fading' : ''}`}
         ref={modalRef}

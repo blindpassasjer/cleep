@@ -1,4 +1,5 @@
-import { IconMenu, IconMoon, IconSearch, IconSettings, IconSun } from './Icons';
+import { forwardRef } from 'react';
+import { IconCoffee, IconMenu, IconMoon, IconSearch, IconSettings, IconSun } from './Icons';
 import type { PublicUser } from '../types';
 
 interface Props {
@@ -12,7 +13,10 @@ interface Props {
   onToggleTheme: () => void;
 }
 
-export function TopBar({ user, search, onSearchChange, onLogout, onToggleSidebar, onOpenSettings, theme, onToggleTheme }: Props) {
+export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
+  { user, search, onSearchChange, onLogout, onToggleSidebar, onOpenSettings, theme, onToggleTheme },
+  searchRef,
+) {
   return (
     <header className="topbar">
       <div className="topbar-left">
@@ -27,14 +31,31 @@ export function TopBar({ user, search, onSearchChange, onLogout, onToggleSidebar
       <div className="search-wrap">
         <IconSearch className="search-icon" />
         <input
+          ref={searchRef}
           className="search"
           placeholder="Search notes"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && search) {
+              e.stopPropagation();
+              onSearchChange('');
+              e.currentTarget.blur();
+            }
+          }}
         />
       </div>
       <div className="user-menu">
         <span>{user.username}</span>
+        <a
+          href="https://buymeacoffee.com/blindpassasjer"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Buy me a coffee"
+          className="icon-only"
+        >
+          <IconCoffee width={18} height={18} />
+        </a>
         <button
           type="button"
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -52,4 +73,4 @@ export function TopBar({ user, search, onSearchChange, onLogout, onToggleSidebar
       </div>
     </header>
   );
-}
+});

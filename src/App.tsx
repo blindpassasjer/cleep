@@ -8,7 +8,7 @@ import { api } from './api/client';
 import { LoginPage } from './components/LoginPage';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
-import { NoteComposer } from './components/NoteComposer';
+import { NoteComposer, type NoteComposerHandle } from './components/NoteComposer';
 import { NotesGrid } from './components/NotesGrid';
 import { BulkActionsBar } from './components/BulkActionsBar';
 import { Toast } from './components/Toast';
@@ -23,12 +23,62 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const appRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const composerRef = useRef<NoteComposerHandle>(null);
+  const [pendingComposerOpen, setPendingComposerOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { toast, show, dismiss } = useToast();
+
+  // Global keyboard shortcuts: "/" focuses search, "c"/"n" starts a new note. Ignored while typing
+  // in any field (except "/", which should work even from another input to jump to search) or
+  // while a modal/dialog is open, since those already own Escape/typing themselves.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement;
+      const isTyping = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+      if (e.key === '/') {
+        if (target === searchInputRef.current) return;
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
+      if (isTyping) return;
+      if (document.querySelector('.note-modal-backdrop, .image-lightbox-backdrop')) return;
+
+      if (e.key === 'c' || e.key === 'n') {
+        e.preventDefault();
+        if (composerRef.current) {
+          composerRef.current.open();
+        } else {
+          // Composer isn't mounted (e.g. we're viewing a label/archive/trash, or bulk-select is
+          // active) -- switch to the notes view and clear selection, then open it once it mounts.
+          setView({ kind: 'notes' });
+          setSelectedIds(new Set());
+          setPendingComposerOpen(true);
+        }
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (pendingComposerOpen && composerRef.current) {
+      composerRef.current.open();
+      setPendingComposerOpen(false);
+    }
+  }, [pendingComposerOpen, view, selectedIds]);
 
   // Exposes the topbar's real rendered height as a CSS variable so the mobile sidebar drawer --
   // which needs to visually extend under the topbar while keeping its icons aligned with the
   // collapsed rail's -- doesn't have to hardcode a guessed pixel value that'd drift out of sync.
+  // Depends on [loading, user] (not []) because the topbar itself doesn't exist yet on the very
+  // first mount -- that render shows the loading screen or the login page instead -- so the effect
+  // has to re-run once the real app tree (and its .topbar) actually appears, on every login.
   useEffect(() => {
     const topbar = appRef.current?.querySelector<HTMLElement>('.topbar');
     if (!topbar) return;
@@ -39,7 +89,7 @@ export default function App() {
     const observer = new ResizeObserver(setHeight);
     observer.observe(topbar);
     return () => observer.disconnect();
-  }, []);
+  }, [loading, user]);
   const {
     notes,
     error,
@@ -129,6 +179,7 @@ export default function App() {
   return (
     <div className="app" ref={appRef}>
       <TopBar
+        ref={searchInputRef}
         user={user}
         search={search}
         onSearchChange={setSearch}
@@ -162,7 +213,7 @@ export default function App() {
             />
           ) : (
             view.kind === 'notes' && (
-              <NoteComposer onCreate={createNote} onUpdateDraft={updateNote} onDiscardDraft={discardDraftNote} />
+              <NoteComposer ref={composerRef} onCreate={createNote} onUpdateDraft={updateNote} onDiscardDraft={discardDraftNote} />
             )
           )}
           <NotesGrid
