@@ -38,6 +38,24 @@ export function FlipModal({ originRect, panelClassName, onClose, onCloseStart, o
   // (a normal drag-to-select gesture) reports its click target as the backdrop and closes the note.
   const mouseDownOnBackdrop = useRef(false);
 
+  // On mobile the modal is a full-screen sheet sized off 100vh/100% (see .note-modal's mobile
+  // rule), which is the *layout* viewport -- most mobile browsers don't shrink that when the
+  // on-screen keyboard opens, so anything near the bottom (the format toolbar, the footer) ends up
+  // hidden behind it. window.visualViewport.height does shrink, reliably, across iOS/Android --
+  // mirror it into a custom property so the mobile CSS can size the sheet against the space
+  // actually visible above the keyboard instead of the full screen.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const el = modalRef.current;
+    if (!vv || !el) return;
+    function update() {
+      el!.style.setProperty('--modal-vvh', `${vv!.height}px`);
+    }
+    update();
+    vv.addEventListener('resize', update);
+    return () => vv.removeEventListener('resize', update);
+  }, []);
+
   useLayoutEffect(() => {
     const el = modalRef.current;
     if (!el) return;
@@ -87,6 +105,28 @@ export function FlipModal({ originRect, panelClassName, onClose, onCloseStart, o
     }
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // Without this, a phone's back gesture/button navigates the browser away from Cleep entirely
+  // (or to whatever page was open before) instead of just closing the note -- there's nothing in a
+  // single-page app to tell the browser "this modal is a screen of its own" otherwise. Pushing a
+  // history entry on open gives it exactly that: back now lands on a popstate here first, which
+  // closes the modal instead. If the modal closes some other way (Done, Escape, backdrop), the
+  // cleanup below consumes that same entry with history.back() so it doesn't linger as a dead
+  // state the user would otherwise have to back through later -- guarded so it doesn't fire when
+  // the close was itself the result of a back navigation (that back already consumed the entry).
+  useEffect(() => {
+    let closedByPopState = false;
+    history.pushState({ cleepModal: true }, '');
+    function onPopState() {
+      closedByPopState = true;
+      requestCloseRef.current();
+    }
+    window.addEventListener('popstate', onPopState);
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+      if (!closedByPopState) history.back();
+    };
   }, []);
 
   return createPortal(

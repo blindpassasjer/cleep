@@ -7,7 +7,6 @@ interface Props {
   user: PublicUser;
   search: string;
   onSearchChange: (value: string) => void;
-  onLogout: () => void;
   onToggleSidebar: () => void;
   onOpenSettings: () => void;
   theme: 'light' | 'dark';
@@ -15,7 +14,7 @@ interface Props {
 }
 
 export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
-  { user, search, onSearchChange, onLogout, onToggleSidebar, onOpenSettings, theme, onToggleTheme },
+  { user, search, onSearchChange, onToggleSidebar, onOpenSettings, theme, onToggleTheme },
   searchRef,
 ) {
   return (
@@ -59,9 +58,6 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
         </button>
         <button type="button" title="Settings" className="icon-only" onClick={onOpenSettings}>
           <IconSettings width={18} height={18} />
-        </button>
-        <button type="button" onClick={onLogout}>
-          Sign out
         </button>
       </div>
     </header>

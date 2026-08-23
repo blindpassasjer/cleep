@@ -181,7 +181,6 @@ export default function App() {
         user={user}
         search={search}
         onSearchChange={setSearch}
-        onLogout={logout}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         onOpenSettings={() => setSettingsOpen(true)}
         theme={theme}
@@ -239,6 +238,7 @@ export default function App() {
           user={user}
           onUserUpdate={setUser}
           onClose={() => setSettingsOpen(false)}
+          onLogout={logout}
           theme={theme}
           onToggleTheme={toggleTheme}
         />

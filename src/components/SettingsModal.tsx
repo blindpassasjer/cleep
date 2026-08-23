@@ -9,11 +9,12 @@ interface Props {
   user: PublicUser;
   onUserUpdate: (user: PublicUser) => void;
   onClose: () => void;
+  onLogout: () => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
 }
 
-export function SettingsModal({ user, onUserUpdate, onClose, theme, onToggleTheme }: Props) {
+export function SettingsModal({ user, onUserUpdate, onClose, onLogout, theme, onToggleTheme }: Props) {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   // See FlipModal for why this is needed: without it, selecting text and releasing the mouse
@@ -219,6 +220,13 @@ export function SettingsModal({ user, onUserUpdate, onClose, theme, onToggleThem
             {saving ? 'Saving…' : 'Update password'}
           </button>
         </form>
+
+        <div className="settings-form">
+          <h3 className="settings-section-title">Account</h3>
+          <button type="button" className="settings-toggle settings-logout" onClick={onLogout}>
+            Sign out
+          </button>
+        </div>
       </div>
     </div>,
     document.body,
