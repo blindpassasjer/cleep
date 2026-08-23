@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
-import { eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { users, sessions } from '../db/schema.js';
 import {
@@ -154,6 +154,15 @@ authRouter.post('/password', requireAuth, async (req, res) => {
 
     const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
     await db.update(users).set({ passwordHash }).where(eq(users.id, req.userId!));
+
+    // Revoke every other session for this account -- a stolen/leaked cookie shouldn't survive a
+    // password change. The session making this request is kept alive so the user isn't logged out
+    // of the device they just used to change it.
+    const currentToken = getSessionToken(req);
+    await db
+      .delete(sessions)
+      .where(currentToken ? and(eq(sessions.userId, req.userId!), ne(sessions.token, currentToken)) : eq(sessions.userId, req.userId!));
+
     res.json({ error: null });
   } catch (err) {
     console.error('Password update failed:', err);

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { and, asc, desc, eq, isNull, isNotNull, inArray } from 'drizzle-orm';
 import { db } from '../db/client.js';
-import { notes, noteLabels, attachments, type ChecklistItem } from '../db/schema.js';
+import { notes, noteLabels, labels, attachments, type ChecklistItem } from '../db/schema.js';
 import { requireAuth } from '../middleware/session.js';
 import { attachmentToApi, deleteAttachmentFilesForNotes } from '../lib/attachments.js';
 
@@ -227,9 +227,18 @@ async function assertOwnsNote(userId: string, noteId: string): Promise<boolean> 
   return rows.length > 0;
 }
 
+async function assertOwnsLabel(userId: string, labelId: string): Promise<boolean> {
+  const rows = await db
+    .select({ id: labels.id })
+    .from(labels)
+    .where(and(eq(labels.id, labelId), eq(labels.userId, userId)))
+    .limit(1);
+  return rows.length > 0;
+}
+
 notesRouter.put('/:id/labels/:labelId', async (req, res) => {
   try {
-    if (!(await assertOwnsNote(req.userId!, req.params.id))) {
+    if (!(await assertOwnsNote(req.userId!, req.params.id)) || !(await assertOwnsLabel(req.userId!, req.params.labelId))) {
       res.status(404).json({ error: 'Note not found.' });
       return;
     }
@@ -246,7 +255,7 @@ notesRouter.put('/:id/labels/:labelId', async (req, res) => {
 
 notesRouter.delete('/:id/labels/:labelId', async (req, res) => {
   try {
-    if (!(await assertOwnsNote(req.userId!, req.params.id))) {
+    if (!(await assertOwnsNote(req.userId!, req.params.id)) || !(await assertOwnsLabel(req.userId!, req.params.labelId))) {
       res.status(404).json({ error: 'Note not found.' });
       return;
     }

@@ -47,7 +47,8 @@ export const api = {
   ) => request<{ note: Note }>(`/notes/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   trashNote: (id: string) => request<{ note: Note }>(`/notes/${id}/trash`, { method: 'POST' }),
   restoreNote: (id: string) => request<{ note: Note }>(`/notes/${id}/restore`, { method: 'POST' }),
-  deleteNote: (id: string) => request<{ ok: true }>(`/notes/${id}`, { method: 'DELETE' }),
+  deleteNote: (id: string, options?: { keepalive?: boolean }) =>
+    request<{ ok: true }>(`/notes/${id}`, { method: 'DELETE', keepalive: options?.keepalive }),
 
   listLabels: () => request<{ labels: Label[] }>('/labels'),
   createLabel: (name: string) => request<{ label: Label | null; error: string | null }>('/labels', { method: 'POST', body: JSON.stringify({ name }) }),

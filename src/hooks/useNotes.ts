@@ -31,6 +31,23 @@ export function useNotes(view: View, notify: NotifyFn) {
     reload();
   }, [reload]);
 
+  // If the tab is closed/navigated away during the undo window, the setTimeout below never gets a
+  // chance to fire, silently leaving "permanently deleted" notes still on the server. `pagehide`
+  // fires reliably in that case (unlike `beforeunload`, which some browsers skip on mobile/bfcache
+  // navigations) -- flush every pending delete immediately with `keepalive` so it survives the
+  // page tearing down mid-request.
+  useEffect(() => {
+    const flushPendingDeletes = () => {
+      for (const [id, timeoutId] of pendingDeletes.current) {
+        clearTimeout(timeoutId);
+        void api.deleteNote(id, { keepalive: true });
+      }
+      pendingDeletes.current.clear();
+    };
+    window.addEventListener('pagehide', flushPendingDeletes);
+    return () => window.removeEventListener('pagehide', flushPendingDeletes);
+  }, []);
+
   async function createNote(
     title: string,
     content: string,
