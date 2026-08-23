@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { IconClose } from './Icons';
+import { IconArrowUpRight, IconClose, IconMoon, IconSun } from './Icons';
 import { api } from '../api/client';
 import { useDateFormat } from '../hooks/useDateFormat';
 import type { PublicUser } from '../types';
@@ -9,9 +9,11 @@ interface Props {
   user: PublicUser;
   onUserUpdate: (user: PublicUser) => void;
   onClose: () => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
-export function SettingsModal({ user, onUserUpdate, onClose }: Props) {
+export function SettingsModal({ user, onUserUpdate, onClose, theme, onToggleTheme }: Props) {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   // See FlipModal for why this is needed: without it, selecting text and releasing the mouse
@@ -141,6 +143,39 @@ export function SettingsModal({ user, onUserUpdate, onClose }: Props) {
             >
               Absolute (Aug 22, 2026)
             </button>
+          </div>
+        </div>
+
+        {/* Only shown on mobile -- on wider screens theme and Buy Me a Coffee already live in the
+            topbar, so repeating them here would just be clutter. */}
+        <div className="settings-form settings-section-mobile-only">
+          <h3 className="settings-section-title">Appearance</h3>
+          <div className="settings-toggle-group">
+            <button type="button" className={`settings-toggle ${theme === 'light' ? 'active' : ''}`} onClick={() => theme === 'dark' && onToggleTheme()}>
+              <IconSun width={16} height={16} /> Light
+            </button>
+            <button type="button" className={`settings-toggle ${theme === 'dark' ? 'active' : ''}`} onClick={() => theme === 'light' && onToggleTheme()}>
+              <IconMoon width={16} height={16} /> Dark
+            </button>
+          </div>
+        </div>
+
+        <div className="settings-form settings-section-mobile-only">
+          <h3 className="settings-section-title">Support</h3>
+          <div className="coffee-popover-options">
+            <a
+              href="https://qr.vipps.no/box/26128ed0-008f-4b5a-bd8d-9a936f58cf83/pay-in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="coffee-option coffee-option-accent"
+            >
+              <span>Vipps me</span>
+              <IconArrowUpRight width={15} height={15} />
+            </a>
+            <a href="https://buymeacoffee.com/blindpassasjer" target="_blank" rel="noopener noreferrer" className="coffee-option">
+              <span>Buy me a coffee</span>
+              <IconArrowUpRight width={15} height={15} />
+            </a>
           </div>
         </div>
 

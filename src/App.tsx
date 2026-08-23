@@ -237,7 +237,15 @@ export default function App() {
         </main>
       </div>
       <Toast toast={toast} onDismiss={dismiss} />
-      {settingsOpen && <SettingsModal user={user} onUserUpdate={setUser} onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && (
+        <SettingsModal
+          user={user}
+          onUserUpdate={setUser}
+          onClose={() => setSettingsOpen(false)}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
+      )}
     </div>
   );
 }

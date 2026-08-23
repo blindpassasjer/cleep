@@ -52,7 +52,7 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
         <button
           type="button"
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          className="icon-only"
+          className="icon-only theme-toggle"
           onClick={onToggleTheme}
         >
           {theme === 'dark' ? <IconMoon width={18} height={18} /> : <IconSun width={18} height={18} />}

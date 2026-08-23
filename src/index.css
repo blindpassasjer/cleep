@@ -359,6 +359,12 @@ body {
   padding: 0.75rem;
 }
 
+/* Reused (unpadded) inside the Settings modal's mobile-only Support section -- .settings-form
+   already handles its own spacing, so the popover's own padding would just be redundant indent. */
+.settings-form .coffee-popover-options {
+  padding: 0;
+}
+
 .coffee-option {
   display: flex;
   align-items: center;
@@ -413,6 +419,15 @@ body {
   font-size: 1.1rem;
 }
 
+/* Theme and Buy Me a Coffee move into Settings only on mobile, where they've been pulled out of
+   the topbar entirely (see .user-menu below) -- on desktop they already live there, so showing
+   them a second time here would just be clutter. */
+@media (min-width: 761px) {
+  .settings-section-mobile-only {
+    display: none;
+  }
+}
+
 .settings-section-title {
   margin: 0.25rem 0 0;
   font-size: 0.9rem;
@@ -460,6 +475,9 @@ body {
 }
 
 .settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   text-align: left;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
@@ -1996,6 +2014,15 @@ h3.md-heading {
     display: none;
   }
 
+  /* Buy Me a Coffee and the theme toggle move into Settings on mobile instead (see
+     .settings-section-mobile-only) -- with the coffee popover, hamburger, brand, search, and the
+     remaining topbar buttons all fighting for a ~360px-wide bar, these two were the lowest-
+     frequency actions and the easiest to make one tap deeper without losing reach to them. */
+  .coffee-menu,
+  .theme-toggle {
+    display: none;
+  }
+
   .user-menu button {
     min-width: 44px;
     min-height: 44px;
@@ -2003,24 +2030,30 @@ h3.md-heading {
     font-size: 0.95rem;
   }
 
-  /* The rail sits fixed at all times (both collapsed and open) rather than only going fixed on
-     open -- otherwise toggling it removed/restored its 84px from the flex layout each time, which
-     made .main (and so the whole notes grid) resize and reflow along with it. Reserving that same
-     84px unconditionally on .main below means opening the drawer only ever changes width *on top
-     of* the grid, as a true overlay, and the grid underneath never has to react to it. */
+  /* No persistent icon rail on mobile any more -- the sidebar is always sized like the full
+     drawer (matching .sidebar.open below) and simply slid off-screen with a transform when closed,
+     rather than shrunk down to an 84px strip of icons. That rail was permanently eating width from
+     an already-narrow viewport for three icons that are one hamburger-tap away regardless; going
+     fully off-canvas gives the notes grid the full width instead. Sliding via transform (rather
+     than animating width, as before) is also what keeps .main's reserved space unconditional -- see
+     .main below -- since the sidebar's layout box is the same size whether it's on- or off-screen. */
   .sidebar {
     position: fixed;
     top: var(--topbar-height, 0px);
     bottom: 0;
     left: 0;
-    width: 84px;
-    padding: 0.85rem 0.4rem;
+    width: min(88vw, 340px);
+    padding: 0.85rem 0.75rem 1.1rem 0.4rem;
     /* A plain, direction-agnostic transition -- collapsing and expanding play the exact same
        animation in reverse, unlike the View Transitions API's image-scale interpolation (used for
        the notes grid instead), which visibly reads differently shrinking vs. growing. */
-    transition: width 0.2s ease, padding 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
     z-index: 40;
+  }
+
+  .sidebar:not(.open) {
+    transform: translateX(-100%);
   }
 
   .sidebar button,
@@ -2131,10 +2164,10 @@ h3.md-heading {
   }
 
   .main {
-    /* Reserves the rail's 84px unconditionally (the sidebar is fixed/out-of-flow at all times on
-       mobile now -- see .sidebar) so this never has to change, and the grid inside never reflows,
-       whether the sidebar is showing its collapsed rail or its opened drawer. */
-    margin-left: 84px;
+    /* No margin reservation needed any more -- the sidebar has no persistent on-screen footprint
+       on mobile now (it's fully off-canvas until opened, see .sidebar), so the grid gets the full
+       width. It still never reflows when the drawer opens, since the sidebar stays out-of-flow
+       (position: fixed) throughout and only slides on top of the grid via transform. */
     padding: 1rem 0.85rem;
   }
 
