@@ -882,43 +882,43 @@ body {
 }
 
 /* Color palette (shared by composer + note cards) */
-.color-default { background: var(--bg); }
-.color-red { background: #ffd6dd; }
-.color-orange { background: #ffe0b8; }
-.color-yellow { background: #fff3b0; }
-.color-green { background: #d7f4c6; }
-.color-teal { background: #c3f0e8; }
-.color-blue { background: #cfe8fb; }
-.color-purple { background: #e5d9fb; }
-.color-pink { background: #fbd9ec; }
-.color-brown { background: #ecdcc8; }
-.color-gray { background: #e7e7ea; }
+.color-default { background: var(--bg); --note-tint: var(--bg); }
+.color-red { background: #ffd6dd; --note-tint: #ffd6dd; }
+.color-orange { background: #ffe0b8; --note-tint: #ffe0b8; }
+.color-yellow { background: #fff3b0; --note-tint: #fff3b0; }
+.color-green { background: #d7f4c6; --note-tint: #d7f4c6; }
+.color-teal { background: #c3f0e8; --note-tint: #c3f0e8; }
+.color-blue { background: #cfe8fb; --note-tint: #cfe8fb; }
+.color-purple { background: #e5d9fb; --note-tint: #e5d9fb; }
+.color-pink { background: #fbd9ec; --note-tint: #fbd9ec; }
+.color-brown { background: #ecdcc8; --note-tint: #ecdcc8; }
+.color-gray { background: #e7e7ea; --note-tint: #e7e7ea; }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .color-default { background: var(--bg); }
-  :root:not([data-theme='light']) .color-red { background: #4a2f34; }
-  :root:not([data-theme='light']) .color-orange { background: #4e3a24; }
-  :root:not([data-theme='light']) .color-yellow { background: #4c452a; }
-  :root:not([data-theme='light']) .color-green { background: #2f4436; }
-  :root:not([data-theme='light']) .color-teal { background: #234b46; }
-  :root:not([data-theme='light']) .color-blue { background: #253d4d; }
-  :root:not([data-theme='light']) .color-purple { background: #392f4c; }
-  :root:not([data-theme='light']) .color-pink { background: #472f42; }
-  :root:not([data-theme='light']) .color-brown { background: #423323; }
-  :root:not([data-theme='light']) .color-gray { background: #3a3a3d; }
+  :root:not([data-theme='light']) .color-default { background: var(--bg); --note-tint: var(--bg); }
+  :root:not([data-theme='light']) .color-red { background: #4a2f34; --note-tint: #4a2f34; }
+  :root:not([data-theme='light']) .color-orange { background: #4e3a24; --note-tint: #4e3a24; }
+  :root:not([data-theme='light']) .color-yellow { background: #4c452a; --note-tint: #4c452a; }
+  :root:not([data-theme='light']) .color-green { background: #2f4436; --note-tint: #2f4436; }
+  :root:not([data-theme='light']) .color-teal { background: #234b46; --note-tint: #234b46; }
+  :root:not([data-theme='light']) .color-blue { background: #253d4d; --note-tint: #253d4d; }
+  :root:not([data-theme='light']) .color-purple { background: #392f4c; --note-tint: #392f4c; }
+  :root:not([data-theme='light']) .color-pink { background: #472f42; --note-tint: #472f42; }
+  :root:not([data-theme='light']) .color-brown { background: #423323; --note-tint: #423323; }
+  :root:not([data-theme='light']) .color-gray { background: #3a3a3d; --note-tint: #3a3a3d; }
 }
 
-:root[data-theme='dark'] .color-default { background: var(--bg); }
-:root[data-theme='dark'] .color-red { background: #4a2f34; }
-:root[data-theme='dark'] .color-orange { background: #4e3a24; }
-:root[data-theme='dark'] .color-yellow { background: #4c452a; }
-:root[data-theme='dark'] .color-green { background: #2f4436; }
-:root[data-theme='dark'] .color-teal { background: #234b46; }
-:root[data-theme='dark'] .color-blue { background: #253d4d; }
-:root[data-theme='dark'] .color-purple { background: #392f4c; }
-:root[data-theme='dark'] .color-pink { background: #472f42; }
-:root[data-theme='dark'] .color-brown { background: #423323; }
-:root[data-theme='dark'] .color-gray { background: #3a3a3d; }
+:root[data-theme='dark'] .color-default { background: var(--bg); --note-tint: var(--bg); }
+:root[data-theme='dark'] .color-red { background: #4a2f34; --note-tint: #4a2f34; }
+:root[data-theme='dark'] .color-orange { background: #4e3a24; --note-tint: #4e3a24; }
+:root[data-theme='dark'] .color-yellow { background: #4c452a; --note-tint: #4c452a; }
+:root[data-theme='dark'] .color-green { background: #2f4436; --note-tint: #2f4436; }
+:root[data-theme='dark'] .color-teal { background: #234b46; --note-tint: #234b46; }
+:root[data-theme='dark'] .color-blue { background: #253d4d; --note-tint: #253d4d; }
+:root[data-theme='dark'] .color-purple { background: #392f4c; --note-tint: #392f4c; }
+:root[data-theme='dark'] .color-pink { background: #472f42; --note-tint: #472f42; }
+:root[data-theme='dark'] .color-brown { background: #423323; --note-tint: #423323; }
+:root[data-theme='dark'] .color-gray { background: #3a3a3d; --note-tint: #3a3a3d; }
 
 /* Color picker swatches */
 .color-picker {
@@ -1445,14 +1445,14 @@ body {
   margin: -0.9rem -1.1rem 0.4rem;
   border-radius: 16px 16px 0 0;
   overflow: hidden;
-  max-height: 220px;
+  height: 220px;
 }
 
 .note-cover img {
   width: 100%;
   height: 100%;
-  max-height: 220px;
   object-fit: cover;
+  object-position: center;
   display: block;
 }
 
@@ -1529,6 +1529,49 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
+  cursor: pointer;
+}
+
+.image-lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  z-index: 1200;
+  animation: backdrop-in 0.15s ease;
+  cursor: zoom-out;
+}
+
+.image-lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 6px;
+  box-shadow: var(--shadow-hover);
+  cursor: default;
+}
+
+.image-lightbox-close {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.image-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .attachment-media-row {
@@ -1580,8 +1623,10 @@ body {
   cursor: pointer;
   border-radius: 8px;
   padding: 0.3rem 0.4rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  /* Tinted with the note's own color instead of a flat neutral, so the track reads as part of the
+     note rather than a generic gray box dropped on top of it. */
+  background: color-mix(in srgb, var(--note-tint, var(--surface)) 55%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--note-tint, var(--border)) 35%, var(--border));
 }
 
 .waveform-progress__bars {
@@ -1598,16 +1643,17 @@ body {
   min-height: 12%;
   align-self: center;
   border-radius: 999px;
-  background: var(--border);
+  /* Contrasts against the tinted track above regardless of which note color that tint is. */
+  background: color-mix(in srgb, var(--fg) 28%, transparent);
   transition: background-color 0.08s ease;
 }
 
 .waveform-progress__bar--played {
-  background: var(--accent);
+  background: var(--fg);
 }
 
 .waveform-progress__bar--hover {
-  background: var(--muted);
+  background: color-mix(in srgb, var(--fg) 55%, transparent);
 }
 
 .attachment-remove {
@@ -2054,6 +2100,6 @@ body {
 
 @media (max-width: 420px) {
   .note-cover {
-    max-height: 160px;
+    height: 160px;
   }
 }

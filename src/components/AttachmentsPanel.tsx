@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconClose, IconImage, IconMic, IconStop } from './Icons';
+import { ImageLightbox } from './ImageLightbox';
 import { WaveformPlayer } from './WaveformPlayer';
 import { computeWaveformPeaksFromBlob } from '../lib/waveform';
 import type { Attachment } from '../types';
@@ -23,6 +24,7 @@ export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFile
   const [recording, setRecording] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewingImage, setViewingImage] = useState<Attachment | null>(null);
 
   useEffect(() => {
     if (autoOpenFilePicker) fileInputRef.current?.click();
@@ -105,7 +107,7 @@ export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFile
         <div className="attachment-grid">
           {images.map((a) => (
             <div key={a.id} className="attachment-thumb">
-              <img src={a.url} alt={a.name} />
+              <img src={a.url} alt={a.name} onClick={() => setViewingImage(a)} />
               <button type="button" className="attachment-remove" title="Remove" onClick={() => onDelete(a.id)}>
                 <IconClose width={14} height={14} />
               </button>
@@ -113,6 +115,8 @@ export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFile
           ))}
         </div>
       )}
+
+      {viewingImage && <ImageLightbox src={viewingImage.url} alt={viewingImage.name} onClose={() => setViewingImage(null)} />}
 
       {videos.map((a) => (
         <div key={a.id} className="attachment-media-row">
