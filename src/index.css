@@ -1647,6 +1647,19 @@ h3.md-heading {
   align-items: center;
   gap: 0.4rem;
   color: var(--muted);
+  /* Grid rows stretch every card to match the tallest one in that row, so a short note (or one
+     with little else above this) can end up with a lot of empty space below it. .note-footer's own
+     margin-top: auto (below) already pins the footer to the bottom of that stretched space -- but
+     without this, the gap lands between the audio preview and the footer, not above the preview,
+     leaving the preview stranded near the top instead of sitting flush just above the toolbar. */
+  margin-top: auto;
+}
+
+/* The audio preview's own auto margin above already pulled it (and everything from here down) to
+   the bottom of the stretched card -- the footer just needs to sit flush right under it now,
+   not add a second helping of the same free space via its own auto margin. */
+.note-audio-preview + .note-footer {
+  margin-top: 0;
 }
 
 .note-audio-count {
