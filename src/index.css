@@ -1409,6 +1409,15 @@ body {
   border-radius: 6px;
 }
 
+.format-toolbar button.active {
+  background: var(--accent);
+  color: #1d1d1f;
+}
+
+.format-toolbar button.active:hover {
+  background: var(--accent);
+}
+
 .format-toolbar button:hover {
   background: var(--surface);
   color: var(--fg);

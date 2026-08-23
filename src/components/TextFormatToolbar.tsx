@@ -1,8 +1,34 @@
+import { useEffect, useState } from 'react';
 import { IconBold, IconBulletList, IconGif, IconHeading, IconItalic, IconNumberedList } from './Icons';
 
 interface Props {
   editorRef: React.RefObject<HTMLDivElement>;
   onChange: (html: string) => void;
+}
+
+interface FormatState {
+  bold: boolean;
+  italic: boolean;
+  bulletList: boolean;
+  orderedList: boolean;
+  heading: 'H1' | 'H2' | 'H3' | null;
+}
+
+const NO_FORMAT: FormatState = { bold: false, italic: false, bulletList: false, orderedList: false, heading: null };
+
+function readFormatState(el: HTMLDivElement): FormatState {
+  // queryCommandState reflects whatever's currently selected/focused *anywhere* in the document,
+  // not specifically in this editor -- gate on it actually being the focused element so switching
+  // focus elsewhere (another note, the title field, ...) doesn't leave stale buttons lit up.
+  if (document.activeElement !== el) return NO_FORMAT;
+  const block = (document.queryCommandValue('formatBlock') || 'P').toUpperCase().replace(/[<>]/g, '');
+  return {
+    bold: document.queryCommandState('bold'),
+    italic: document.queryCommandState('italic'),
+    bulletList: document.queryCommandState('insertUnorderedList'),
+    orderedList: document.queryCommandState('insertOrderedList'),
+    heading: block === 'H1' || block === 'H2' || block === 'H3' ? block : null,
+  };
 }
 
 function escapeAttr(value: string): string {
@@ -36,6 +62,28 @@ function insertImageUrl() {
 }
 
 export function TextFormatToolbar({ editorRef, onChange }: Props) {
+  const [format, setFormat] = useState<FormatState>(NO_FORMAT);
+
+  // Keeps the toolbar's pressed/active look in sync with wherever the caret actually is -- moving
+  // it into bold text should light up the Bold button without any click, same as it disappears
+  // when the caret leaves. selectionchange covers clicks/arrow keys/typing; it fires on the
+  // document regardless of which element the selection is in.
+  useEffect(() => {
+    function update() {
+      const el = editorRef.current;
+      if (el) setFormat(readFormatState(el));
+    }
+    update();
+    document.addEventListener('selectionchange', update);
+    return () => document.removeEventListener('selectionchange', update);
+  }, [editorRef]);
+
+  function run(fn: (el: HTMLDivElement) => void) {
+    withEditor(editorRef, onChange, fn);
+    const el = editorRef.current;
+    if (el) setFormat(readFormatState(el));
+  }
+
   // Clicking a toolbar button would normally blur the editor and collapse its selection before
   // the click handler runs -- preventing that default on mousedown keeps the selection intact so
   // the subsequent execCommand call actually applies to what the user selected.
@@ -43,42 +91,52 @@ export function TextFormatToolbar({ editorRef, onChange }: Props) {
 
   return (
     <div className="format-toolbar">
-      <button type="button" title="Heading" onMouseDown={preserveSelection} onClick={() => withEditor(editorRef, onChange, cycleHeading)}>
+      <button
+        type="button"
+        title="Heading"
+        className={format.heading ? 'active' : ''}
+        onMouseDown={preserveSelection}
+        onClick={() => run(cycleHeading)}
+      >
         <IconHeading width={16} height={16} />
       </button>
       <button
         type="button"
         title="Bold"
+        className={format.bold ? 'active' : ''}
         onMouseDown={preserveSelection}
-        onClick={() => withEditor(editorRef, onChange, () => document.execCommand('bold'))}
+        onClick={() => run(() => document.execCommand('bold'))}
       >
         <IconBold width={16} height={16} />
       </button>
       <button
         type="button"
         title="Italic"
+        className={format.italic ? 'active' : ''}
         onMouseDown={preserveSelection}
-        onClick={() => withEditor(editorRef, onChange, () => document.execCommand('italic'))}
+        onClick={() => run(() => document.execCommand('italic'))}
       >
         <IconItalic width={16} height={16} />
       </button>
       <button
         type="button"
         title="Bullet list"
+        className={format.bulletList ? 'active' : ''}
         onMouseDown={preserveSelection}
-        onClick={() => withEditor(editorRef, onChange, () => document.execCommand('insertUnorderedList'))}
+        onClick={() => run(() => document.execCommand('insertUnorderedList'))}
       >
         <IconBulletList width={16} height={16} />
       </button>
       <button
         type="button"
         title="Numbered list"
+        className={format.orderedList ? 'active' : ''}
         onMouseDown={preserveSelection}
-        onClick={() => withEditor(editorRef, onChange, () => document.execCommand('insertOrderedList'))}
+        onClick={() => run(() => document.execCommand('insertOrderedList'))}
       >
         <IconNumberedList width={16} height={16} />
       </button>
-      <button type="button" title="Insert GIF/image URL" onMouseDown={preserveSelection} onClick={() => withEditor(editorRef, onChange, insertImageUrl)}>
+      <button type="button" title="Insert GIF/image URL" onMouseDown={preserveSelection} onClick={() => run(insertImageUrl)}>
         <IconGif width={16} height={16} />
       </button>
     </div>
