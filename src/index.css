@@ -878,12 +878,16 @@ body {
 }
 
 /* Caps how tall a note's body (title/checklist/text/inline images) can grow before it's clipped
-   with a fade -- without this, a long workout note full of inline GIFs could stretch its card
-   far past its neighbors in the grid. The fade end-color matches the card's own tint so it reads
-   as "content trails off" rather than a hard, visible cut -- and costs nothing when the content is
-   actually short, since the gradient then just sits over already-empty, same-colored space. */
+   with a fade -- without this, a long workout note full of inline GIFs could stretch its card far
+   past its neighbors in the grid. The cap is sized to roughly 10 lines of note text: line-height
+   is fixed here (rather than left to the browser default) so that's an actual, controllable
+   quantity -- 10 * 0.92rem (.note-content's font-size) * 1.35 (this line-height). The fade
+   end-color matches the card's own tint so it reads as "content trails off" rather than a hard,
+   visible cut -- and costs nothing when the content is actually short, since the gradient then
+   just sits over already-empty, same-colored space. */
 .note-body {
-  max-height: 320px;
+  max-height: 12.42rem;
+  line-height: 1.35;
   overflow: hidden;
   position: relative;
 }
@@ -1649,7 +1653,6 @@ h3.md-heading {
   align-items: center;
   gap: 0.4rem;
   color: var(--muted);
-  margin-bottom: 0.2rem;
 }
 
 .note-audio-count {
@@ -2296,9 +2299,5 @@ h3.md-heading {
 @media (max-width: 420px) {
   .note-cover {
     height: 160px;
-  }
-
-  .note-body {
-    max-height: 260px;
   }
 }

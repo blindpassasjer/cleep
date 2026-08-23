@@ -176,13 +176,6 @@ export function NoteCard({
                 </span>
               </div>
             )}
-            {firstAudio && (
-              <div className="note-audio-preview">
-                <IconMic width={14} height={14} />
-                <MiniWaveform peaks={firstAudio.waveformPeaks} />
-                {audioCount > 1 && <span className="note-audio-count">+{audioCount - 1}</span>}
-              </div>
-            )}
             {note.title && <div className="note-title">{note.title}</div>}
             {note.isChecklist ? (
               <div className="note-checklist-preview">
@@ -241,6 +234,14 @@ export function NoteCard({
                 {label.name}
               </label>
             ))}
+          </div>
+        )}
+
+        {firstAudio && (
+          <div className="note-audio-preview">
+            <IconMic width={14} height={14} />
+            <MiniWaveform peaks={firstAudio.waveformPeaks} />
+            {audioCount > 1 && <span className="note-audio-count">+{audioCount - 1}</span>}
           </div>
         )}
 
