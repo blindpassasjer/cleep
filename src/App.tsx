@@ -24,7 +24,19 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { toast, show, dismiss } = useToast();
-  const { notes, error, reload, createNote, discardDraftNote, updateNote, reorderNotes, trashNote, restoreNote, deleteNote } = useNotes(
+  const {
+    notes,
+    error,
+    justCreatedId,
+    reload,
+    createNote,
+    discardDraftNote,
+    updateNote,
+    reorderNotes,
+    trashNote,
+    restoreNote,
+    deleteNote,
+  } = useNotes(
     view,
     show,
   );
@@ -141,6 +153,7 @@ export default function App() {
             notes={filtered}
             view={view}
             labels={labels}
+            justCreatedId={justCreatedId}
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
             onUpdate={updateNote}

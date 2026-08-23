@@ -8,6 +8,7 @@ interface Props {
   notes: Note[];
   view: View;
   labels: Label[];
+  justCreatedId: string | null;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onUpdate: (id: string, patch: NoteUpdatePatch) => void;
@@ -22,6 +23,7 @@ export function NotesGrid({
   notes,
   view,
   labels,
+  justCreatedId,
   selectedIds,
   onToggleSelect,
   onUpdate,
@@ -53,6 +55,7 @@ export function NotesGrid({
           note={note}
           view={view}
           labels={labels}
+          animateIn={note.id === justCreatedId}
           selected={selectedIds.has(note.id)}
           selectionActive={selectedIds.size > 0}
           onToggleSelect={onToggleSelect}

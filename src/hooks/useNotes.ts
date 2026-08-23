@@ -14,6 +14,7 @@ export function useNotes(view: View, notify: NotifyFn) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [justCreatedId, setJustCreatedId] = useState<string | null>(null);
   const pendingDeletes = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
   const reload = useCallback(async () => {
@@ -39,6 +40,11 @@ export function useNotes(view: View, notify: NotifyFn) {
     setError(null);
     try {
       const { note } = await api.createNote(title, content, color, extra);
+      // Explicit "this one just got created" signal for the entrance animation -- distinct from
+      // every other reload() (view switches, search, undo, background sync), which shouldn't
+      // replay the pop-in for the whole grid. Cleared once the grid's had a chance to notice.
+      setJustCreatedId(note.id);
+      setTimeout(() => setJustCreatedId((current) => (current === note.id ? null : current)), 1000);
       await reload();
       return note;
     } catch (err) {
@@ -155,5 +161,18 @@ export function useNotes(view: View, notify: NotifyFn) {
     });
   }
 
-  return { notes, loading, error, reload, createNote, discardDraftNote, updateNote, reorderNotes, trashNote, restoreNote, deleteNote };
+  return {
+    notes,
+    loading,
+    error,
+    justCreatedId,
+    reload,
+    createNote,
+    discardDraftNote,
+    updateNote,
+    reorderNotes,
+    trashNote,
+    restoreNote,
+    deleteNote,
+  };
 }

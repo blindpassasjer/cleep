@@ -656,6 +656,12 @@ body {
   background: var(--bg);
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s ease, transform 0.15s ease, opacity 0.16s ease;
+}
+
+/* Only applied to a note that was *just* created (see useNotes' justCreatedId) -- every other
+   mount (switching views, searching, undo, a background refresh) renders the grid as-is instead
+   of replaying this pop-in for the whole grid at once, which read as a jarring mass "pop". */
+.note-card.note-entering {
   animation: note-in 0.18s cubic-bezier(0.2, 0.8, 0.4, 1);
 }
 

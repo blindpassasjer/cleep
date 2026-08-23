@@ -10,6 +10,7 @@ interface Props {
   note: Note;
   view: View;
   labels: Label[];
+  animateIn: boolean;
   selected: boolean;
   selectionActive: boolean;
   onToggleSelect: (id: string) => void;
@@ -33,6 +34,7 @@ export function NoteCard({
   note,
   view,
   labels,
+  animateIn,
   selected,
   selectionActive,
   onToggleSelect,
@@ -134,7 +136,7 @@ export function NoteCard({
     <>
       <div
         ref={cardRef}
-        className={`note-card color-${note.color} ${leaving ? 'note-leaving' : ''} ${sourceHidden ? 'note-editing-source' : ''} ${selected ? 'note-selected' : ''}`}
+        className={`note-card color-${note.color} ${animateIn ? 'note-entering' : ''} ${leaving ? 'note-leaving' : ''} ${sourceHidden ? 'note-editing-source' : ''} ${selected ? 'note-selected' : ''}`}
         draggable={draggable}
         onDragStart={onDragStart}
         onDragOver={onDragOver}
