@@ -1769,7 +1769,7 @@ body {
   .sidebar button,
   .sidebar-label-name,
   .sidebar-add-label-btn {
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .sidebar-label-text,
