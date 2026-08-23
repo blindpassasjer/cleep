@@ -414,6 +414,7 @@ body {
   display: flex;
   flex: 1;
   overflow: hidden;
+  position: relative;
 }
 
 .sidebar {
@@ -1780,14 +1781,18 @@ body {
   }
 
   .sidebar.open {
-    position: fixed;
+    /* Positioned against .app-body (which itself starts right below the topbar), not the
+       viewport -- position: fixed with top: 0 would start the drawer above the topbar, well
+       above where the collapsed rail's icons actually sit, so every icon would jump downward
+       when the drawer opened. */
+    position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
     width: min(88vw, 340px);
-    /* Left padding matches the collapsed rail's so icons don't shift horizontally when the drawer
-       opens -- only the labels fade/slide in beside them. */
-    padding: 1.1rem 0.75rem 1.1rem 0.4rem;
+    /* Top/left padding match the collapsed rail's exactly so the first icon doesn't shift
+       position at all when the drawer opens -- only the labels fade/slide in beside it. */
+    padding: 0.85rem 0.75rem 1.1rem 0.4rem;
     z-index: 50;
     box-shadow: var(--shadow-hover);
   }
