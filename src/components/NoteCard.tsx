@@ -241,7 +241,7 @@ export function NoteCard({
           </div>
         )}
 
-        <div className="note-footer">
+        <div className="note-footer" onClick={openEditor}>
           {view.kind === 'trash' ? (
             <>
               <button type="button" className="text-action" onClick={() => leaveThen(() => onRestore(note.id))}>
