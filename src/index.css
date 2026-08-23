@@ -830,10 +830,11 @@ body {
 /* Notes grid */
 .notes-grid {
   display: grid;
+  /* No max-width -- the grid fills whatever width .main actually has, so a 4K/ultrawide screen
+     gets as many 230px+ columns as fit instead of being capped at 5 (1400px / ~247px per column)
+     regardless of how much wider the window actually is. */
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 1.1rem;
-  max-width: 1400px;
-  margin: 0 auto;
 }
 
 .note-card {
