@@ -5,7 +5,7 @@ import { useLabels } from './hooks/useLabels';
 import { useToast } from './hooks/useToast';
 import { useTheme } from './hooks/useTheme';
 import { api } from './api/client';
-import { withViewTransition, withGridViewTransition } from './lib/viewTransition';
+import { withGridViewTransition } from './lib/viewTransition';
 import { LoginPage } from './components/LoginPage';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
@@ -185,7 +185,7 @@ export default function App() {
         search={search}
         onSearchChange={setSearch}
         onLogout={logout}
-        onToggleSidebar={() => withViewTransition(() => setSidebarOpen((v) => !v))}
+        onToggleSidebar={() => setSidebarOpen((v) => !v)}
         onOpenSettings={() => setSettingsOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}

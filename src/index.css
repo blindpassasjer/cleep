@@ -513,19 +513,13 @@ body {
   overflow: hidden;
 }
 
-/* View Transitions (sidebar collapse/expand, notes grid switching between views) -- ignored
-   entirely by browsers that don't support the API, which just fall back to the instant swap they
-   always did. Named groups only for .sidebar/.notes-grid (see their rules) so the transition stays
-   scoped to those two regions; the whole-page "root" group is switched off below so an unrelated
-   re-render happening at the same time can't cause a full-page flash. */
+/* View Transitions (notes grid switching between views) -- ignored entirely by browsers that
+   don't support the API, which just fall back to the instant swap they always did. The grid is
+   named dynamically in JS only while a transition is running (see withGridViewTransition), and
+   the whole-page "root" group is switched off so an unrelated re-render happening at the same
+   time can't cause a full-page flash. The sidebar deliberately doesn't use this -- see .sidebar. */
 ::view-transition-group(root) {
   animation: none;
-}
-
-::view-transition-old(sidebar),
-::view-transition-new(sidebar) {
-  animation-duration: 0.22s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 ::view-transition-old(notes-grid),
@@ -542,7 +536,6 @@ body {
   padding: 0.85rem 0.5rem;
   background: var(--bg);
   gap: 0.1rem;
-  view-transition-name: sidebar;
 }
 
 .sidebar button {
@@ -2008,7 +2001,10 @@ h3.md-heading {
     left: 0;
     width: 84px;
     padding: 0.85rem 0.4rem;
-    transition: width 0.2s ease;
+    /* A plain, direction-agnostic transition -- collapsing and expanding play the exact same
+       animation in reverse, unlike the View Transitions API's image-scale interpolation (used for
+       the notes grid instead), which visibly reads differently shrinking vs. growing. */
+    transition: width 0.2s ease, padding 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
     z-index: 40;
   }
