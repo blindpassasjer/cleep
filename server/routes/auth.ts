@@ -15,6 +15,11 @@ import { toPublicUser } from '../lib/user.js';
 
 const BCRYPT_ROUNDS = 12;
 
+const UNIQUE_VIOLATION = '23505';
+function isUniqueViolation(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && 'code' in err && (err as { code?: string }).code === UNIQUE_VIOLATION;
+}
+
 export const authRouter = Router();
 
 authRouter.post('/login', async (req, res) => {
@@ -78,6 +83,45 @@ authRouter.get('/me', async (req, res) => {
     res.json({ user: row ? toPublicUser(row) : null });
   } catch (err) {
     console.error('Me lookup failed:', err);
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
+});
+
+authRouter.patch('/me', requireAuth, async (req, res) => {
+  try {
+    const { email, username } = (req.body ?? {}) as Record<string, unknown>;
+    const updates: Partial<typeof users.$inferInsert> = {};
+
+    if (email !== undefined) {
+      if (typeof email !== 'string' || !email.includes('@')) {
+        res.json({ user: null, error: 'A valid email is required.' });
+        return;
+      }
+      updates.email = email.trim();
+      updates.emailLower = email.trim().toLowerCase();
+    }
+
+    if (username !== undefined) {
+      if (typeof username !== 'string' || username.trim().length < 2) {
+        res.json({ user: null, error: 'Username must be at least 2 characters.' });
+        return;
+      }
+      updates.username = username.trim();
+    }
+
+    if (Object.keys(updates).length === 0) {
+      res.json({ user: null, error: 'No changes provided.' });
+      return;
+    }
+
+    const [row] = await db.update(users).set(updates).where(eq(users.id, req.userId!)).returning();
+    res.json({ user: row ? toPublicUser(row) : null, error: null });
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      res.json({ user: null, error: 'An account with this email or username already exists.' });
+      return;
+    }
+    console.error('Profile update failed:', err);
     res.status(500).json({ error: 'Something went wrong. Please try again.' });
   }
 });

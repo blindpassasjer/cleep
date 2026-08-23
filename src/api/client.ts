@@ -32,6 +32,8 @@ export const api = {
   me: () => request<{ user: PublicUser | null }>('/auth/me'),
   changePassword: (currentPassword: string, newPassword: string) =>
     request<{ error: string | null }>('/auth/password', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) }),
+  updateProfile: (patch: Partial<Pick<PublicUser, 'email' | 'username'>>) =>
+    request<{ user: PublicUser | null; error: string | null }>('/auth/me', { method: 'PATCH', body: JSON.stringify(patch) }),
 
   listNotes: (view: View) => {
     const qs = view.kind === 'archive' ? '?view=archive' : view.kind === 'trash' ? '?view=trash' : view.kind === 'label' ? `?label=${encodeURIComponent(view.id)}` : '';

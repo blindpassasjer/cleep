@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { ColorPicker } from './ColorPicker';
 import { NoteModal } from './NoteModal';
 import { MarkdownText } from './MarkdownText';
+import { MiniWaveform } from './MiniWaveform';
 import { api } from '../api/client';
 import { IconArchive, IconDragHandle, IconMic, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash, IconVideo } from './Icons';
 import type { Attachment, ChecklistItem, Label, Note, NoteColor, View } from '../types';
@@ -130,6 +131,7 @@ export function NoteCard({
   const hiddenItemCount = note.items.length - previewItems.length;
   const coverImage = note.attachments.find((a) => a.kind === 'image');
   const videoCount = note.attachments.filter((a) => a.kind === 'video').length;
+  const firstAudio = note.attachments.find((a) => a.kind === 'audio');
   const audioCount = note.attachments.filter((a) => a.kind === 'audio').length;
 
   return (
@@ -165,18 +167,18 @@ export function NoteCard({
               <img src={coverImage.url} alt="" />
             </div>
           )}
-          {(videoCount > 0 || audioCount > 0) && (
+          {videoCount > 0 && (
             <div className="note-media-badges">
-              {videoCount > 0 && (
-                <span className="note-media-badge">
-                  <IconVideo width={14} height={14} /> {videoCount}
-                </span>
-              )}
-              {audioCount > 0 && (
-                <span className="note-media-badge">
-                  <IconMic width={14} height={14} /> {audioCount}
-                </span>
-              )}
+              <span className="note-media-badge">
+                <IconVideo width={14} height={14} /> {videoCount}
+              </span>
+            </div>
+          )}
+          {firstAudio && (
+            <div className="note-audio-preview">
+              <IconMic width={14} height={14} />
+              <MiniWaveform peaks={firstAudio.waveformPeaks} />
+              {audioCount > 1 && <span className="note-audio-count">+{audioCount - 1}</span>}
             </div>
           )}
           {note.title && <div className="note-title">{note.title}</div>}
@@ -315,6 +317,7 @@ export function NoteCard({
           content={content}
           isChecklist={note.isChecklist}
           items={items}
+          updatedAt={note.updatedAt}
           color={note.color as NoteColor}
           pinned={note.pinned}
           labels={labels}

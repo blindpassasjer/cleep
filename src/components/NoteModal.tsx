@@ -5,6 +5,8 @@ import { ChecklistEditor } from './ChecklistEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
 import { IconArchive, IconClose, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
+import { useDateFormat } from '../hooks/useDateFormat';
+import { formatNoteDate } from '../lib/formatDate';
 import type { Attachment, ChecklistItem, Label, NoteColor } from '../types';
 
 interface Props {
@@ -15,6 +17,7 @@ interface Props {
   items: ChecklistItem[];
   color: NoteColor;
   pinned: boolean;
+  updatedAt: string;
   labels: Label[];
   labelIds: string[];
   attachments: Attachment[];
@@ -40,6 +43,7 @@ export function NoteModal({
   items,
   color,
   pinned,
+  updatedAt,
   labels,
   labelIds,
   attachments,
@@ -58,6 +62,7 @@ export function NoteModal({
 }: Props) {
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const [showLabels, setShowLabels] = useState(false);
+  const { mode: dateMode } = useDateFormat();
 
   return (
     <FlipModal originRect={originRect} panelClassName={`color-${color}`} onClose={onClose} onCloseStart={onCloseStart}>
@@ -103,6 +108,7 @@ export function NoteModal({
               ))}
             </div>
           )}
+          <div className="note-modal-timestamp">Edited {formatNoteDate(updatedAt, dateMode)}</div>
           <div className="note-modal-footer">
             <ColorPicker value={color} onChange={onColorChange} />
             <button type="button" title="Collections" onClick={() => setShowLabels((v) => !v)}>

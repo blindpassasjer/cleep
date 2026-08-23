@@ -1,27 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { IconPause, IconPlay } from './Icons';
-import { computeWaveformPeaksFromBlob } from '../lib/waveform';
+import { computeWaveformPeaksFromBlob, downsampleBars } from '../lib/waveform';
 
 interface Props {
   src: string;
   waveformPeaks: number[] | null;
   ariaLabel?: string;
-}
-
-function downsampleBars(bars: number[], targetCount: number): number[] {
-  if (bars.length === 0) return new Array(targetCount).fill(0.06);
-  if (bars.length === targetCount) return bars;
-  const result: number[] = [];
-  for (let i = 0; i < targetCount; i++) {
-    const start = Math.floor((i / targetCount) * bars.length);
-    const end = Math.max(start + 1, Math.floor(((i + 1) / targetCount) * bars.length));
-    let max = 0;
-    for (let j = start; j < end && j < bars.length; j++) {
-      if (bars[j] > max) max = bars[j];
-    }
-    result.push(max);
-  }
-  return result;
 }
 
 export function WaveformPlayer({ src, waveformPeaks, ariaLabel }: Props) {

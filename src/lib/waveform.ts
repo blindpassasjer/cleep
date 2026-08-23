@@ -25,6 +25,23 @@ export function computeWaveformPeaks(channelData: Float32Array, samples: number 
   return rawPeaks.map((p) => Math.max(0.04, Math.pow(p / overallMax, 1.8)));
 }
 
+/** Reduces (or, rarely, pads) a peaks array to exactly `targetCount` bars, preserving spikes. */
+export function downsampleBars(bars: number[], targetCount: number): number[] {
+  if (bars.length === 0) return new Array(targetCount).fill(0.06);
+  if (bars.length === targetCount) return bars;
+  const result: number[] = [];
+  for (let i = 0; i < targetCount; i++) {
+    const start = Math.floor((i / targetCount) * bars.length);
+    const end = Math.max(start + 1, Math.floor(((i + 1) / targetCount) * bars.length));
+    let max = 0;
+    for (let j = start; j < end && j < bars.length; j++) {
+      if (bars[j] > max) max = bars[j];
+    }
+    result.push(max);
+  }
+  return result;
+}
+
 export async function computeWaveformPeaksFromBlob(blob: Blob): Promise<number[]> {
   const arrayBuffer = await blob.arrayBuffer();
   const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;

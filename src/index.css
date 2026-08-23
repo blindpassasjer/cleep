@@ -342,6 +342,35 @@ body {
   font-size: 0.85rem;
 }
 
+.settings-toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.settings-toggle {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.settings-toggle:hover {
+  background: var(--bg);
+}
+
+.settings-toggle.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #1d1d1f;
+  font-weight: 600;
+}
+
 .settings-submit {
   margin-top: 0.25rem;
   padding: 0.6rem;
@@ -967,6 +996,12 @@ body {
   font-size: 0.95rem;
 }
 
+.note-modal-timestamp {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+
 .note-modal-footer {
   display: flex;
   align-items: center;
@@ -1401,6 +1436,36 @@ body {
   background: var(--surface);
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
+}
+
+.note-audio-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+
+.note-audio-count {
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.mini-waveform {
+  flex: 1;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 1.5px;
+  min-width: 0;
+}
+
+.mini-waveform-bar {
+  flex: 1;
+  min-width: 1.5px;
+  min-height: 12%;
+  border-radius: 999px;
+  background: var(--border);
 }
 
 /* Attachments panel (inside the note modal) */
