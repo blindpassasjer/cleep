@@ -103,11 +103,8 @@ export default function App() {
     trashNote,
     restoreNote,
     deleteNote,
-  } = useNotes(
-    view,
-    show,
-  );
-  const { labels, createLabel, deleteLabel } = useLabels();
+  } = useNotes(view, show, !!user);
+  const { labels, createLabel, deleteLabel } = useLabels(!!user);
 
   useEffect(() => {
     setSelectedIds(new Set());

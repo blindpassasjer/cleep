@@ -4,8 +4,10 @@ import { ColorPicker } from './ColorPicker';
 import { ChecklistEditor } from './ChecklistEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
+import { RichTextEditor } from './RichTextEditor';
 import { api } from '../api/client';
-import { insertMarkdownImage } from '../lib/insertMarkdownImage';
+import { insertEditorImage } from '../lib/insertEditorImage';
+import { isRichContentEmpty } from '../lib/isRichContentEmpty';
 import { IconChecklist, IconImage, IconMic, IconPlus } from './Icons';
 import type { Attachment, ChecklistItem, Note, NoteColor } from '../types';
 
@@ -30,7 +32,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
 ) {
   const collapsedRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
-  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
   const [isChecklist, setIsChecklist] = useState(false);
@@ -100,7 +102,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   // open with the error and the user's text/attachments intact instead of losing them.
   async function attemptClose(close: CloseFn) {
     const cleanedItems = items.filter((item) => item.text.trim().length > 0);
-    const isEmpty = isChecklist ? cleanedItems.length === 0 && !title.trim() : !title.trim() && !content.trim();
+    const isEmpty = isChecklist ? cleanedItems.length === 0 && !title.trim() : !title.trim() && isRichContentEmpty(content);
 
     if (draftNoteId) {
       // The note already exists on the server (an attachment forced it into being) -- finalize it
@@ -178,12 +180,12 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
           {isChecklist ? (
             <ChecklistEditor items={items} onChange={setItems} autoFocusLast />
           ) : (
-            <textarea
+            <RichTextEditor
               ref={contentRef}
               className="note-content note-modal-content"
               placeholder="Take a note…"
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={setContent}
               autoFocus={startWith === null}
             />
           )}
@@ -193,9 +195,9 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
             onDelete={deleteAttachment}
             autoOpenFilePicker={startWith === 'image'}
             autoStartRecording={startWith === 'audio'}
-            onInsertImage={isChecklist ? undefined : (a) => insertMarkdownImage(contentRef.current, content, setContent, a)}
+            onInsertImage={isChecklist ? undefined : (a) => insertEditorImage(contentRef.current, a, setContent)}
           >
-            {!isChecklist && <TextFormatToolbar textareaRef={contentRef} value={content} onChange={setContent} />}
+            {!isChecklist && <TextFormatToolbar editorRef={contentRef} onChange={setContent} />}
           </AttachmentsPanel>
           {error && <div className="composer-error">{error}</div>}
           <div className="note-modal-footer">

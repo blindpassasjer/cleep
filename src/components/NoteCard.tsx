@@ -1,9 +1,9 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ColorPicker } from './ColorPicker';
 import { NoteModal } from './NoteModal';
-import { MarkdownText } from './MarkdownText';
 import { MiniWaveform } from './MiniWaveform';
 import { api } from '../api/client';
+import { sanitizeHtml } from '../lib/sanitizeHtml';
 import { IconArchive, IconDragHandle, IconMic, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash, IconVideo } from './Icons';
 import type { Attachment, ChecklistItem, Label, Note, NoteColor, View } from '../types';
 
@@ -135,6 +135,7 @@ export function NoteCard({
   const videoCount = note.attachments.filter((a) => a.kind === 'video').length;
   const firstAudio = note.attachments.find((a) => a.kind === 'audio');
   const audioCount = note.attachments.filter((a) => a.kind === 'audio').length;
+  const sanitizedContent = useMemo(() => sanitizeHtml(note.content), [note.content]);
 
   // The fade at the bottom of .note-body should only show up when content is actually clipped by
   // its max-height -- otherwise a normal, short note would have its last couple of lines needlessly
@@ -210,11 +211,7 @@ export function NoteCard({
                 {hiddenItemCount > 0 && <div className="checklist-more">+{hiddenItemCount} more</div>}
               </div>
             ) : (
-              note.content && (
-                <div className="note-content">
-                  <MarkdownText text={note.content} />
-                </div>
-              )
+              note.content && <div className="note-content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
             )}
             {labelIds.length > 0 && (
               <div className="note-labels">

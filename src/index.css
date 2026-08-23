@@ -920,16 +920,21 @@ body {
 }
 
 .note-content {
-  white-space: pre-wrap;
   word-break: break-word;
   color: var(--fg);
   font-size: 0.92rem;
 }
 
+.note-content[contenteditable]:empty:before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  pointer-events: none;
+}
+
 .note-card input.note-title,
-.note-card textarea.note-content,
+.note-card .note-content[contenteditable],
 .note-modal input.note-title,
-.note-modal textarea.note-content {
+.note-modal .note-content[contenteditable] {
   width: 100%;
   border: none;
   outline: none;
@@ -1249,41 +1254,45 @@ body {
   transform: scale(0.95);
 }
 
-/* Markdown-lite rendering */
-.md-bullets,
-.md-ordered {
+/* Rich text rendering -- .note-content is shared by the contentEditable editor (NoteComposer/
+   NoteModal) and the read-only display (NoteCard), so these style the browser's own tags directly
+   rather than classes we'd have to apply ourselves. */
+.note-content ul,
+.note-content ol {
   margin: 0.15rem 0;
   padding-left: 1.2rem;
 }
 
-.md-bullets li,
-.md-ordered li {
+.note-content li {
   font-size: 0.92rem;
 }
 
-.md-line {
+.note-content div,
+.note-content p {
   min-height: 1.1em;
 }
 
-.md-heading {
+.note-content h1,
+.note-content h2,
+.note-content h3 {
   margin: 0.3rem 0 0.15rem;
   line-height: 1.25;
   font-weight: 700;
 }
 
-h1.md-heading {
+.note-content h1 {
   font-size: 1.25rem;
 }
 
-h2.md-heading {
+.note-content h2 {
   font-size: 1.1rem;
 }
 
-h3.md-heading {
+.note-content h3 {
   font-size: 1rem;
 }
 
-.md-image {
+.note-content img {
   display: block;
   max-width: 100%;
   border-radius: 8px;
@@ -1822,9 +1831,9 @@ h3.md-heading {
   cursor: pointer;
   border-radius: 8px;
   padding: 0.3rem 0.4rem;
-  /* Tinted with the note's own color instead of a flat neutral, so the track reads as part of the
-     note rather than a generic gray box dropped on top of it. */
-  background: color-mix(in srgb, var(--note-tint, var(--surface)) 55%, var(--surface));
+  /* Matches the note's own background exactly, so the track reads as part of the note itself
+     rather than a box sitting on top of it. */
+  background: var(--note-tint, var(--surface));
   border: 1px solid color-mix(in srgb, var(--note-tint, var(--border)) 35%, var(--border));
 }
 

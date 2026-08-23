@@ -4,10 +4,11 @@ import { ColorPicker } from './ColorPicker';
 import { ChecklistEditor } from './ChecklistEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
+import { RichTextEditor } from './RichTextEditor';
 import { IconArchive, IconClose, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
 import { useDateFormat } from '../hooks/useDateFormat';
 import { formatNoteDate } from '../lib/formatDate';
-import { insertMarkdownImage } from '../lib/insertMarkdownImage';
+import { insertEditorImage } from '../lib/insertEditorImage';
 import type { Attachment, ChecklistItem, Label, NoteColor } from '../types';
 
 interface Props {
@@ -61,7 +62,7 @@ export function NoteModal({
   onClose,
   onCloseStart,
 }: Props) {
-  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [showLabels, setShowLabels] = useState(false);
   const { mode: dateMode } = useDateFormat();
 
@@ -87,21 +88,21 @@ export function NoteModal({
           {isChecklist ? (
             <ChecklistEditor items={items} onChange={onItemsChange} autoFocusLast />
           ) : (
-            <textarea
+            <RichTextEditor
               ref={contentRef}
               className="note-content note-modal-content"
               placeholder="Take a note…"
               value={content}
-              onChange={(e) => onContentChange(e.target.value)}
+              onChange={onContentChange}
             />
           )}
           <AttachmentsPanel
             attachments={attachments}
             onUpload={onUploadAttachment}
             onDelete={onDeleteAttachment}
-            onInsertImage={isChecklist ? undefined : (a) => insertMarkdownImage(contentRef.current, content, onContentChange, a)}
+            onInsertImage={isChecklist ? undefined : (a) => insertEditorImage(contentRef.current, a, onContentChange)}
           >
-            {!isChecklist && <TextFormatToolbar textareaRef={contentRef} value={content} onChange={onContentChange} />}
+            {!isChecklist && <TextFormatToolbar editorRef={contentRef} onChange={onContentChange} />}
           </AttachmentsPanel>
           {showLabels && (
             <div className="note-labels-editor">

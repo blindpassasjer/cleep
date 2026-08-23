@@ -10,14 +10,20 @@ function errorMessage(err: unknown): string {
 
 type NotifyFn = (message: string, options?: { onUndo?: () => void; onExpire?: () => void; duration?: number }) => void;
 
-export function useNotes(view: View, notify: NotifyFn) {
+export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [justCreatedId, setJustCreatedId] = useState<string | null>(null);
   const pendingDeletes = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
+  // `enabled` (whether a user is actually logged in yet) has to be a dependency here, not just
+  // `view` -- otherwise this hook's very first render (App mounts it unconditionally, before
+  // useAuth's initial /auth/me check has resolved) fires the effect below once against an
+  // unauthenticated session, and since `view` never changes across the login transition, nothing
+  // ever prompts a retry: notes silently never load until the user happens to change views.
   const reload = useCallback(async () => {
+    if (!enabled) return;
     setLoading(true);
     try {
       const { notes: rows } = await api.listNotes(view);
@@ -25,7 +31,7 @@ export function useNotes(view: View, notify: NotifyFn) {
     } finally {
       setLoading(false);
     }
-  }, [view]);
+  }, [view, enabled]);
 
   useEffect(() => {
     reload();
