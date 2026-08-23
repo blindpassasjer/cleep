@@ -414,7 +414,6 @@ body {
   display: flex;
   flex: 1;
   overflow: hidden;
-  position: relative;
 }
 
 .sidebar {
@@ -720,6 +719,11 @@ body {
   background: var(--bg);
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s ease, transform 0.15s ease, opacity 0.16s ease;
+  /* Grid items default to min-width: auto, which lets a card refuse to shrink below its content's
+     intrinsic width (e.g. the footer's row of icon buttons) instead of respecting the track width
+     the grid actually gave it -- letting that content spill past the card's own border as the
+     window narrows. */
+  min-width: 0;
 }
 
 /* Only applied to a note that was *just* created (see useNotes' justCreatedId) -- every other
@@ -842,6 +846,7 @@ body {
 .note-footer {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.15rem;
   margin-top: auto;
   padding-top: 0.3rem;
@@ -1781,18 +1786,16 @@ body {
   }
 
   .sidebar.open {
-    /* Positioned against .app-body (which itself starts right below the topbar), not the
-       viewport -- position: fixed with top: 0 would start the drawer above the topbar, well
-       above where the collapsed rail's icons actually sit, so every icon would jump downward
-       when the drawer opened. */
-    position: absolute;
+    /* The panel itself still reaches the very top of the screen, under the topbar, same as the
+       backdrop -- but its content is pushed down by the topbar's real measured height (see the
+       --topbar-height variable set in App.tsx) plus the collapsed rail's own top padding, so the
+       first icon lands at the exact same spot the collapsed rail's icon sits at. */
+    position: fixed;
     top: 0;
     bottom: 0;
     left: 0;
     width: min(88vw, 340px);
-    /* Top/left padding match the collapsed rail's exactly so the first icon doesn't shift
-       position at all when the drawer opens -- only the labels fade/slide in beside it. */
-    padding: 0.85rem 0.75rem 1.1rem 0.4rem;
+    padding: calc(var(--topbar-height, 0px) + 0.85rem) 0.75rem 1.1rem 0.4rem;
     z-index: 50;
     box-shadow: var(--shadow-hover);
   }

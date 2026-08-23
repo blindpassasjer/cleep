@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useNotes } from './hooks/useNotes';
 import { useLabels } from './hooks/useLabels';
@@ -22,8 +22,24 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const appRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
   const { toast, show, dismiss } = useToast();
+
+  // Exposes the topbar's real rendered height as a CSS variable so the mobile sidebar drawer --
+  // which needs to visually extend under the topbar while keeping its icons aligned with the
+  // collapsed rail's -- doesn't have to hardcode a guessed pixel value that'd drift out of sync.
+  useEffect(() => {
+    const topbar = appRef.current?.querySelector<HTMLElement>('.topbar');
+    if (!topbar) return;
+    const setHeight = () => {
+      appRef.current?.style.setProperty('--topbar-height', `${topbar.getBoundingClientRect().height}px`);
+    };
+    setHeight();
+    const observer = new ResizeObserver(setHeight);
+    observer.observe(topbar);
+    return () => observer.disconnect();
+  }, []);
   const {
     notes,
     error,
@@ -111,7 +127,7 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className="app" ref={appRef}>
       <TopBar
         user={user}
         search={search}
