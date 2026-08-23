@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { ColorPicker } from './ColorPicker';
 import { NoteModal } from './NoteModal';
 import { MarkdownText } from './MarkdownText';
@@ -49,6 +49,8 @@ export function NoteCard({
   onDrop,
 }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [bodyTruncated, setBodyTruncated] = useState(false);
   const [editing, setEditing] = useState(false);
   const [sourceHidden, setSourceHidden] = useState(false);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
@@ -134,6 +136,22 @@ export function NoteCard({
   const firstAudio = note.attachments.find((a) => a.kind === 'audio');
   const audioCount = note.attachments.filter((a) => a.kind === 'audio').length;
 
+  // The fade at the bottom of .note-body should only show up when content is actually clipped by
+  // its max-height -- otherwise a normal, short note would have its last couple of lines needlessly
+  // dimmed by a fixed-height gradient that assumes there's more below it. Re-measured whenever the
+  // note's own text/checklist/title changes, and on any inline image finishing a late load (those
+  // fire "load" on the <img> itself, which doesn't bubble, hence the capture-phase listener).
+  useLayoutEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    function measure() {
+      if (el) setBodyTruncated(el.scrollHeight - el.clientHeight > 1);
+    }
+    measure();
+    el.addEventListener('load', measure, true);
+    return () => el.removeEventListener('load', measure, true);
+  }, [note.title, note.content, note.items, note.isChecklist, note.attachments, labelIds]);
+
   return (
     <>
       <div
@@ -168,7 +186,7 @@ export function NoteCard({
               <img src={coverImage.url} alt="" />
             </div>
           )}
-          <div className="note-body">
+          <div className={`note-body ${bodyTruncated ? 'note-body-truncated' : ''}`} ref={bodyRef}>
             {videoCount > 0 && (
               <div className="note-media-badges">
                 <span className="note-media-badge">

@@ -874,10 +874,7 @@ body {
    with a fade -- without this, a long workout note full of inline GIFs could stretch its card far
    past its neighbors in the grid. The cap is sized to roughly 10 lines of note text: line-height
    is fixed here (rather than left to the browser default) so that's an actual, controllable
-   quantity -- 10 * 0.92rem (.note-content's font-size) * 1.35 (this line-height). The fade
-   end-color matches the card's own tint so it reads as "content trails off" rather than a hard,
-   visible cut -- and costs nothing when the content is actually short, since the gradient then
-   just sits over already-empty, same-colored space. */
+   quantity -- 10 * 0.92rem (.note-content's font-size) * 1.35 (this line-height). */
 .note-body {
   max-height: 12.42rem;
   line-height: 1.35;
@@ -885,13 +882,17 @@ body {
   position: relative;
 }
 
-.note-body::after {
+/* Only rendered once NoteCard has actually measured an overflow (see its useLayoutEffect) -- a
+   note shorter than the cap gets no fade at all, so normal, short notes read at full strength
+   instead of always having their last line or two needlessly dimmed. The end-color matches the
+   card's own tint so a truncated note reads as "content trails off" rather than a hard cut. */
+.note-body-truncated::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 3rem;
+  height: 2rem;
   background: linear-gradient(to bottom, transparent, var(--note-tint, var(--bg)));
   pointer-events: none;
 }
