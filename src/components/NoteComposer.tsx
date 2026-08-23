@@ -21,6 +21,7 @@ interface Props {
 
 export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props) {
   const collapsedRef = useRef<HTMLDivElement>(null);
+  const fabRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
@@ -35,8 +36,8 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  function open(startWithMode: 'image' | 'audio' | null = null) {
-    setOriginRect(collapsedRef.current?.getBoundingClientRect() ?? null);
+  function open(startWithMode: 'image' | 'audio' | null = null, originEl?: HTMLElement | null) {
+    setOriginRect((originEl ?? collapsedRef.current)?.getBoundingClientRect() ?? null);
     setStartWith(startWithMode);
     setExpanded(true);
   }
@@ -127,21 +128,28 @@ export function NoteComposer({ onCreate, onUpdateDraft, onDiscardDraft }: Props)
 
   if (!expanded) {
     return (
-      <div className="composer collapsed" ref={collapsedRef}>
-        <span onClick={() => open()}>Take a note…</span>
-        <div className="composer-collapsed-actions">
-          <button type="button" title="New list" onClick={startChecklist}>
-            <IconChecklist width={18} height={18} />
-          </button>
-          <button type="button" title="Add image" onClick={() => open('image')}>
-            <IconImage width={18} height={18} />
-          </button>
-          <button type="button" title="Record audio" onClick={() => open('audio')}>
-            <IconMic width={18} height={18} />
-          </button>
-          <IconPlus className="composer-plus" onClick={() => open()} />
+      <>
+        <div className="composer collapsed" ref={collapsedRef}>
+          <span onClick={() => open()}>Take a note…</span>
+          <div className="composer-collapsed-actions">
+            <button type="button" title="New list" onClick={startChecklist}>
+              <IconChecklist width={18} height={18} />
+            </button>
+            <button type="button" title="Add image" onClick={() => open('image')}>
+              <IconImage width={18} height={18} />
+            </button>
+            <button type="button" title="Record audio" onClick={() => open('audio')}>
+              <IconMic width={18} height={18} />
+            </button>
+            <IconPlus className="composer-plus" onClick={() => open()} />
+          </div>
         </div>
-      </div>
+        {/* Mobile only (see CSS): the compose bar scrolls away with the notes grid on phones, same
+            as Google Keep's mobile app, so a fixed FAB keeps "new note" reachable at all times. */}
+        <button type="button" className="composer-fab" title="New note" ref={fabRef} onClick={() => open(null, fabRef.current)}>
+          <IconPlus width={26} height={26} />
+        </button>
+      </>
     );
   }
 
