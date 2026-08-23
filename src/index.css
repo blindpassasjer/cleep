@@ -1785,7 +1785,9 @@ body {
     bottom: 0;
     left: 0;
     width: min(88vw, 340px);
-    padding: 1.1rem 0.75rem;
+    /* Left padding matches the collapsed rail's so icons don't shift horizontally when the drawer
+       opens -- only the labels fade/slide in beside them. */
+    padding: 1.1rem 0.75rem 1.1rem 0.4rem;
     z-index: 50;
     box-shadow: var(--shadow-hover);
   }
@@ -1847,9 +1849,9 @@ body {
   }
 
   .sidebar-add-label-btn {
-    min-height: 60px;
+    min-height: 52px;
     padding: 0.85rem 1.1rem;
-    font-size: 1.15rem;
+    font-size: 0.95rem;
   }
 
   .sidebar-backdrop {
