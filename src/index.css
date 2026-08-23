@@ -995,8 +995,10 @@ body {
 /* Multi-select */
 .note-select-toggle {
   position: absolute;
-  top: 0.55rem;
-  left: 0.55rem;
+  /* Negative offset so the badge sits astride the card's corner (mostly outside its padding box)
+     instead of on top of the title text, which starts at the card's own padding boundary. */
+  top: -0.4rem;
+  left: -0.4rem;
   z-index: 1;
   border: none;
   background: transparent;
@@ -1440,6 +1442,19 @@ body {
     max-width: none;
   }
 
+  /* Sized closer to Google Keep's mobile search bar — taller, fully pill-shaped, roomier icon. */
+  .search {
+    padding: 0.8rem 1rem 0.8rem 2.75rem;
+    border-radius: 999px;
+    font-size: 1rem;
+  }
+
+  .search-icon {
+    left: 0.9rem;
+    width: 20px;
+    height: 20px;
+  }
+
   .user-menu span {
     display: none;
   }
@@ -1453,7 +1468,8 @@ body {
     top: 0;
     bottom: 0;
     left: 0;
-    width: min(78vw, 280px);
+    width: min(85vw, 320px);
+    padding: 1rem 0.6rem;
     z-index: 50;
     transform: translateX(-100%);
     transition: transform 0.2s ease;
@@ -1462,6 +1478,48 @@ body {
 
   .sidebar.open {
     transform: translateX(0);
+  }
+
+  /* Bigger touch targets and text, matching Keep's mobile drawer proportions rather than the
+     denser desktop sizing. */
+  .sidebar button {
+    padding: 0.85rem 1rem;
+    font-size: 1.02rem;
+    gap: 0.9rem;
+    border-radius: 999px;
+  }
+
+  .sidebar button svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-section-label {
+    margin: 1.4rem 1rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .sidebar-label-name {
+    padding: 0.75rem 0.5rem 0.75rem 1rem;
+    font-size: 1rem;
+    gap: 0.9rem;
+  }
+
+  .sidebar-label-name svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-label-delete svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .sidebar-add-label-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
   }
 
   .sidebar-backdrop {
