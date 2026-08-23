@@ -51,8 +51,11 @@ notesRouter.get('/', async (req, res) => {
       filters.push(inArray(notes.id, noteIds), isNull(notes.trashedAt), eq(notes.archived, false));
     } else if (view === 'trash') {
       filters.push(isNotNull(notes.trashedAt));
+    } else if (view === 'recordings') {
+      filters.push(isNull(notes.trashedAt), eq(notes.isRecording, true));
     } else {
-      filters.push(isNull(notes.trashedAt));
+      // Recordings get their own dedicated view (see above) rather than mixing into Notes/Archive.
+      filters.push(isNull(notes.trashedAt), eq(notes.isRecording, false));
       if (view === 'archive') {
         filters.push(eq(notes.archived, true));
       } else {
@@ -104,7 +107,7 @@ notesRouter.get('/', async (req, res) => {
 
 notesRouter.post('/', async (req, res) => {
   try {
-    const { title, content, color, isChecklist, items } = (req.body ?? {}) as Record<string, unknown>;
+    const { title, content, color, isChecklist, items, isRecording } = (req.body ?? {}) as Record<string, unknown>;
     const id = crypto.randomUUID();
 
     const [row] = await db
@@ -117,6 +120,7 @@ notesRouter.post('/', async (req, res) => {
         color: typeof color === 'string' && VALID_COLORS.has(color) ? color : 'default',
         isChecklist: Boolean(isChecklist),
         items: parseChecklistItems(items) ?? [],
+        isRecording: Boolean(isRecording),
         position: Date.now(),
       })
       .returning();

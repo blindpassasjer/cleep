@@ -1611,6 +1611,49 @@ body {
   font-size: 0.9rem;
 }
 
+.trash-actions {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  padding: 0.7rem 1rem;
+  animation: composer-open 0.15s ease;
+}
+
+.trash-actions button {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  transition: background-color 0.12s ease, transform 0.1s ease;
+}
+
+.trash-actions button:hover {
+  background: var(--surface);
+}
+
+.trash-actions button:active {
+  transform: scale(0.96);
+}
+
+.trash-actions-danger {
+  color: #ff453a;
+  border-color: color-mix(in srgb, #ff453a 35%, var(--border));
+}
+
+.trash-actions-danger:hover {
+  background: color-mix(in srgb, #ff453a 12%, transparent);
+}
+
 .bulk-bar-actions {
   display: flex;
   align-items: center;
@@ -1960,6 +2003,115 @@ body {
 
 .waveform-progress__bar--hover {
   background: color-mix(in srgb, var(--fg) 55%, transparent);
+}
+
+/* Live recording (see useAudioRecorder/LiveWaveform) -- distinct from .waveform-progress above,
+   which plays back a finished recording's fixed peaks. */
+.attachment-live-recording {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, #ff453a 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, #ff453a 25%, var(--border));
+}
+
+.attachment-live-recording button {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+}
+
+.attachment-live-recording button:hover {
+  background: var(--bg);
+}
+
+.attachment-live-timer {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.live-waveform {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.live-waveform-bar {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 999px;
+  background: #ff453a;
+  transition: height 0.06s ease;
+}
+
+.live-waveform.paused .live-waveform-bar {
+  background: var(--muted);
+}
+
+/* Recordings view quick-capture bar (see QuickRecorder) -- reuses .composer/.composer.collapsed's
+   box for the "tap to record" idle state, since it's visually the same kind of element as the
+   notes composer's collapsed bar. */
+.quick-recorder-collapsed {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.quick-recorder-collapsed:hover {
+  color: var(--fg);
+}
+
+.quick-recorder-active {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 16px;
+  background: color-mix(in srgb, #ff453a 10%, var(--bg));
+  border: 1px solid color-mix(in srgb, #ff453a 25%, var(--border));
+  box-shadow: var(--shadow);
+}
+
+.quick-recorder-active button {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+}
+
+.quick-recorder-active button:hover {
+  background: var(--surface);
+}
+
+.quick-recorder-active .quick-recorder-save {
+  background: var(--accent);
+  color: #1d1d1f;
+}
+
+.quick-recorder-active .quick-recorder-save:hover {
+  background: var(--accent);
+  filter: brightness(1.05);
 }
 
 .attachment-remove {

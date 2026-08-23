@@ -62,7 +62,7 @@ export function NoteCard({
   const [showLabels, setShowLabels] = useState(false);
   const [showColors, setShowColors] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const editable = view.kind === 'notes' || view.kind === 'archive' || view.kind === 'label';
+  const editable = view.kind === 'notes' || view.kind === 'recordings' || view.kind === 'archive' || view.kind === 'label';
 
   function leaveThen(action: () => void) {
     setLeaving(true);

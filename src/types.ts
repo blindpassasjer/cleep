@@ -41,6 +41,7 @@ export interface Note {
   color: NoteColor;
   pinned: boolean;
   archived: boolean;
+  isRecording: boolean;
   trashedAt: string | null;
   position: number;
   createdAt: string;
@@ -62,4 +63,9 @@ export interface PublicUser {
   role: string;
 }
 
-export type View = { kind: 'notes' } | { kind: 'archive' } | { kind: 'trash' } | { kind: 'label'; id: string; name: string };
+export type View =
+  | { kind: 'notes' }
+  | { kind: 'recordings' }
+  | { kind: 'archive' }
+  | { kind: 'trash' }
+  | { kind: 'label'; id: string; name: string };

@@ -36,11 +36,24 @@ export const api = {
     request<{ user: PublicUser | null; error: string | null }>('/auth/me', { method: 'PATCH', body: JSON.stringify(patch) }),
 
   listNotes: (view: View) => {
-    const qs = view.kind === 'archive' ? '?view=archive' : view.kind === 'trash' ? '?view=trash' : view.kind === 'label' ? `?label=${encodeURIComponent(view.id)}` : '';
+    const qs =
+      view.kind === 'archive'
+        ? '?view=archive'
+        : view.kind === 'trash'
+          ? '?view=trash'
+          : view.kind === 'recordings'
+            ? '?view=recordings'
+            : view.kind === 'label'
+              ? `?label=${encodeURIComponent(view.id)}`
+              : '';
     return request<{ notes: Note[] }>(`/notes${qs}`);
   },
-  createNote: (title: string, content: string, color: string, extra?: { isChecklist?: boolean; items?: ChecklistItem[] }) =>
-    request<{ note: Note }>('/notes', { method: 'POST', body: JSON.stringify({ title, content, color, ...extra }) }),
+  createNote: (
+    title: string,
+    content: string,
+    color: string,
+    extra?: { isChecklist?: boolean; items?: ChecklistItem[]; isRecording?: boolean },
+  ) => request<{ note: Note }>('/notes', { method: 'POST', body: JSON.stringify({ title, content, color, ...extra }) }),
   updateNote: (
     id: string,
     patch: Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived' | 'isChecklist' | 'items' | 'position'>>,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconArchive, IconClose, IconNotes, IconPlus, IconTag, IconTrash } from './Icons';
+import { IconArchive, IconClose, IconMic, IconNotes, IconPlus, IconTag, IconTrash } from './Icons';
 import type { Label, View } from '../types';
 
 interface Props {
@@ -37,6 +37,9 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel, 
     <nav className={`sidebar ${open ? 'open' : ''}`}>
       <button className={view.kind === 'notes' ? 'active' : ''} onClick={() => onChange({ kind: 'notes' })}>
         <IconNotes /> <span className="sidebar-label-text">Notes</span>
+      </button>
+      <button className={view.kind === 'recordings' ? 'active' : ''} onClick={() => onChange({ kind: 'recordings' })}>
+        <IconMic /> <span className="sidebar-label-text">Recordings</span>
       </button>
       <button className={view.kind === 'archive' ? 'active' : ''} onClick={() => onChange({ kind: 'archive' })}>
         <IconArchive /> <span className="sidebar-label-text">Archive</span>

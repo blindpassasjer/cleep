@@ -58,7 +58,7 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
     title: string,
     content: string,
     color: NoteColor,
-    extra?: { isChecklist?: boolean; items?: ChecklistItem[] },
+    extra?: { isChecklist?: boolean; items?: ChecklistItem[]; isRecording?: boolean },
   ): Promise<Note> {
     setError(null);
     try {

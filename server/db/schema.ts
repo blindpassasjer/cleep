@@ -42,6 +42,7 @@ export const notes = pgTable('notes', {
   color: text('color').notNull().default('default'),
   pinned: boolean('pinned').notNull().default(false),
   archived: boolean('archived').notNull().default(false),
+  isRecording: boolean('is_recording').notNull().default(false),
   trashedAt: timestamp('trashed_at', { withTimezone: true }),
   position: bigint('position', { mode: 'number' }).notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

@@ -10,6 +10,7 @@ import { LoginPage } from './components/LoginPage';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { NoteComposer, type NoteComposerHandle } from './components/NoteComposer';
+import { QuickRecorder } from './components/QuickRecorder';
 import { NotesGrid } from './components/NotesGrid';
 import { BulkActionsBar } from './components/BulkActionsBar';
 import { Toast } from './components/Toast';
@@ -168,6 +169,22 @@ export default function App() {
     await reload();
   }
 
+  async function restoreAllTrash() {
+    const ids = notes.map((n) => n.id);
+    if (ids.length === 0) return;
+    await Promise.all(ids.map((id) => api.restoreNote(id)));
+    await reload();
+    show(`${ids.length} note${ids.length === 1 ? '' : 's'} restored`);
+  }
+
+  async function emptyTrash() {
+    const ids = notes.map((n) => n.id);
+    if (ids.length === 0) return;
+    if (!window.confirm(`Permanently delete ${ids.length} note${ids.length === 1 ? '' : 's'}? This can't be undone.`)) return;
+    await Promise.all(ids.map((id) => api.deleteNote(id)));
+    await reload();
+  }
+
   if (loading) {
     return <div className="loading-screen">Loading…</div>;
   }
@@ -225,9 +242,21 @@ export default function App() {
                   onColor={bulkColor}
                   onLabel={bulkLabel}
                 />
+              ) : view.kind === 'notes' ? (
+                <NoteComposer ref={composerRef} onCreate={createNote} onUpdateDraft={updateNote} onDiscardDraft={discardDraftNote} />
+              ) : view.kind === 'recordings' ? (
+                <QuickRecorder onCreate={createNote} onReload={reload} />
               ) : (
-                view.kind === 'notes' && (
-                  <NoteComposer ref={composerRef} onCreate={createNote} onUpdateDraft={updateNote} onDiscardDraft={discardDraftNote} />
+                view.kind === 'trash' &&
+                notes.length > 0 && (
+                  <div className="trash-actions">
+                    <button type="button" onClick={restoreAllTrash}>
+                      Restore all
+                    </button>
+                    <button type="button" className="trash-actions-danger" onClick={emptyTrash}>
+                      Empty trash
+                    </button>
+                  </div>
                 )
               )}
               <NotesGrid

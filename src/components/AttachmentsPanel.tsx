@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { IconClose, IconImage, IconMic, IconPlus, IconStop } from './Icons';
+import { IconClose, IconImage, IconMic, IconPause, IconPlay, IconPlus, IconStop } from './Icons';
 import { ImageLightbox } from './ImageLightbox';
 import { WaveformPlayer } from './WaveformPlayer';
-import { computeWaveformPeaksFromBlob } from '../lib/waveform';
+import { LiveWaveform } from './LiveWaveform';
+import { useAudioRecorder } from '../hooks/useAudioRecorder';
+import { formatElapsed } from '../lib/formatElapsed';
 import type { Attachment } from '../types';
 
 interface Props {
@@ -29,16 +31,14 @@ export function AttachmentsPanel({
   onInsertImage,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const [recording, setRecording] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viewingImage, setViewingImage] = useState<Attachment | null>(null);
+  const recorder = useAudioRecorder();
 
   useEffect(() => {
     if (autoOpenFilePicker) fileInputRef.current?.click();
-    if (autoStartRecording) startRecording();
+    if (autoStartRecording) recorder.start();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once on mount only, not on every prop change
   }, []);
 
@@ -58,53 +58,18 @@ export function AttachmentsPanel({
     }
   }
 
-  async function startRecording() {
+  async function stopAndUpload() {
+    const result = await recorder.stop();
+    if (!result) return;
+    setUploading(true);
     setError(null);
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setError(
-        window.isSecureContext
-          ? 'Audio recording is not supported in this browser.'
-          : 'Audio recording requires HTTPS (the browser blocks microphone access on a plain http:// connection, except at localhost). Set up a reverse proxy with TLS in front of Cleep to enable it.',
-      );
-      return;
-    }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      chunksRef.current = [];
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-      recorder.onstop = async () => {
-        stream.getTracks().forEach((t) => t.stop());
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
-        setUploading(true);
-        try {
-          const peaks = await computeWaveformPeaksFromBlob(blob).catch(() => undefined);
-          await onUpload(blob, `recording-${Date.now()}.webm`, peaks);
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'Upload failed.');
-        } finally {
-          setUploading(false);
-        }
-      };
-      mediaRecorderRef.current = recorder;
-      recorder.start();
-      setRecording(true);
+      await onUpload(result.blob, `recording-${Date.now()}.webm`, result.peaks);
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'NotAllowedError') {
-        setError("Microphone access was denied. Check this site's microphone permission in your browser settings.");
-      } else if (err instanceof DOMException && err.name === 'NotFoundError') {
-        setError('No microphone was found on this device.');
-      } else {
-        setError('Could not access the microphone.');
-      }
+      setError(err instanceof Error ? err.message : 'Upload failed.');
+    } finally {
+      setUploading(false);
     }
-  }
-
-  function stopRecording() {
-    mediaRecorderRef.current?.stop();
-    setRecording(false);
   }
 
   const images = attachments.filter((a) => a.kind === 'image');
@@ -151,6 +116,20 @@ export function AttachmentsPanel({
         </div>
       ))}
 
+      {recorder.recording && (
+        <div className="attachment-live-recording">
+          <LiveWaveform levels={recorder.levels} paused={recorder.paused} />
+          <span className="attachment-live-timer">{formatElapsed(recorder.elapsedMs)}</span>
+          <button
+            type="button"
+            title={recorder.paused ? 'Resume' : 'Pause'}
+            onClick={() => (recorder.paused ? recorder.resume() : recorder.pause())}
+          >
+            {recorder.paused ? <IconPlay width={16} height={16} /> : <IconPause width={16} height={16} />}
+          </button>
+        </div>
+      )}
+
       <div className="attachments-toolbar">
         {children}
         <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => handleFiles(e.target.files)} />
@@ -158,22 +137,22 @@ export function AttachmentsPanel({
           type="button"
           title="Add photo or video"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading || recording}
+          disabled={uploading || recorder.recording}
         >
           <IconImage />
         </button>
-        {recording ? (
-          <button type="button" title="Stop recording" className="recording" onClick={stopRecording}>
+        {recorder.recording ? (
+          <button type="button" title="Stop recording" className="recording" onClick={stopAndUpload}>
             <IconStop />
           </button>
         ) : (
-          <button type="button" title="Record audio" onClick={startRecording} disabled={uploading}>
+          <button type="button" title="Record audio" onClick={() => recorder.start()} disabled={uploading}>
             <IconMic />
           </button>
         )}
         {uploading && <span className="attachments-uploading">Uploading…</span>}
       </div>
-      {error && <div className="composer-error">{error}</div>}
+      {(error || recorder.error) && <div className="composer-error">{error || recorder.error}</div>}
     </div>
   );
 }
