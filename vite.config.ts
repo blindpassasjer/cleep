@@ -7,6 +7,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registered manually in src/main.tsx (via virtual:pwa-register) so we can force a reload
+      // when an update is ready, instead of relying on the plugin's default auto-injected script.
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Cleep',
