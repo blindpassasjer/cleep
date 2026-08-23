@@ -37,10 +37,24 @@ export function NotesGrid({
   const dragId = useRef<string | null>(null);
   const { containerRef, setCardRef } = useMasonryLayout(notes);
 
+  // The server always sorts pinned notes before unpinned ones regardless of `position` (see
+  // notes.ts's orderBy), so a drop that crosses the pin boundary would look like it worked but
+  // silently snap back on the next fetch -- reject it (and show a "no drop" cursor while dragging
+  // over it) instead of letting the UI promise an order change that doesn't actually stick.
+  // Matches Keep's own pinned/"Others" as separate, independently-reorderable sections.
+  function sameGroup(targetId: string): boolean {
+    const draggedId = dragId.current;
+    if (!draggedId || draggedId === targetId) return false;
+    const dragged = notes.find((n) => n.id === draggedId);
+    const target = notes.find((n) => n.id === targetId);
+    return !!dragged && !!target && dragged.pinned === target.pinned;
+  }
+
   function handleDrop(targetId: string) {
     const draggedId = dragId.current;
+    const canDrop = sameGroup(targetId);
     dragId.current = null;
-    if (!draggedId || draggedId === targetId) return;
+    if (!draggedId || !canDrop) return;
     const ids = notes.map((n) => n.id);
     const from = ids.indexOf(draggedId);
     const to = ids.indexOf(targetId);
@@ -69,7 +83,10 @@ export function NotesGrid({
             onDragStart={() => {
               dragId.current = note.id;
             }}
-            onDragOver={(e) => e.preventDefault()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = sameGroup(note.id) ? 'move' : 'none';
+            }}
             onDrop={() => handleDrop(note.id)}
           />
         </div>
