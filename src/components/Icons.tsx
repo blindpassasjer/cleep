@@ -277,6 +277,14 @@ export function IconArrowUpRight(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function IconArrowLeft(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M19 12H5M11 6l-6 6 6 6" />
+    </Icon>
+  );
+}
+
 export function IconCoffee(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

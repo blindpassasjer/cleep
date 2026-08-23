@@ -399,24 +399,92 @@ body {
   background: var(--accent);
 }
 
-/* Settings modal */
-.settings-modal {
-  width: min(420px, 92vw);
-  max-height: min(80vh, 560px);
-  overflow-y: auto;
-  border-radius: 20px;
+/* Username / account popover (nests Sign out under the username instead of it sitting in the
+   topbar as its own permanent button) */
+.user-account-menu {
+  position: relative;
+}
+
+.user-account-trigger.active {
+  background: var(--surface);
+}
+
+.user-account-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  width: max-content;
+  min-width: 160px;
   background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   box-shadow: var(--shadow-hover);
-  padding: 1.1rem 1.4rem 1.25rem;
+  padding: 0.4rem;
+  z-index: 60;
+  animation: composer-open 0.14s cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+
+.user-account-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.55rem 0.7rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #ff453a;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.user-account-logout:hover {
+  background: color-mix(in srgb, #ff453a 12%, transparent);
+}
+
+/* Settings page -- a view within .main (like Notes/Archive/Trash), not a modal overlay, so it uses
+   the page's own natural scroll instead of being boxed into a fixed max-height/overflow-y card.
+   Capped at a comfortable reading width and centered, rather than stretching full-bleed edge to
+   edge on a wide screen. */
+.settings-page {
+  max-width: 560px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   animation: composer-open 0.16s cubic-bezier(0.2, 0.8, 0.4, 1);
 }
 
+.settings-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.settings-back {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.4rem 0.1rem;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  transition: color 0.12s ease;
+}
+
+.settings-back:hover {
+  color: var(--fg);
+}
+
 .settings-title {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
 }
 
 /* Theme and Buy Me a Coffee move into Settings only on mobile, where they've been pulled out of
@@ -498,6 +566,17 @@ body {
   background: var(--accent);
   color: #1d1d1f;
   font-weight: 600;
+}
+
+.settings-logout {
+  justify-content: center;
+  color: #ff453a;
+  border-color: color-mix(in srgb, #ff453a 35%, var(--border));
+  font-weight: 600;
+}
+
+.settings-logout:hover {
+  background: color-mix(in srgb, #ff453a 12%, transparent);
 }
 
 .settings-submit {
@@ -2038,14 +2117,12 @@ body {
     height: 22px;
   }
 
-  .user-menu span {
-    display: none;
-  }
-
-  /* Buy Me a Coffee and the theme toggle move into Settings on mobile instead (see
-     .settings-section-mobile-only) -- with the coffee popover, hamburger, brand, search, and the
-     remaining topbar buttons all fighting for a ~360px-wide bar, these two were the lowest-
-     frequency actions and the easiest to make one tap deeper without losing reach to them. */
+  /* The username/Sign out menu, Buy Me a Coffee, and the theme toggle all move into Settings on
+     mobile instead (see .settings-section-mobile-only) -- with the coffee popover, hamburger,
+     brand, search, and the remaining topbar buttons all fighting for a ~360px-wide bar, these were
+     the lowest-frequency actions and the easiest to make one tap deeper without losing reach to
+     them. */
+  .user-account-menu,
   .coffee-menu,
   .theme-toggle {
     display: none;

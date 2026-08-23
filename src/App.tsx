@@ -13,7 +13,7 @@ import { NoteComposer, type NoteComposerHandle } from './components/NoteComposer
 import { NotesGrid } from './components/NotesGrid';
 import { BulkActionsBar } from './components/BulkActionsBar';
 import { Toast } from './components/Toast';
-import { SettingsModal } from './components/SettingsModal';
+import { SettingsPage } from './components/SettingsPage';
 import type { NoteColor, View } from './types';
 
 export default function App() {
@@ -55,8 +55,10 @@ export default function App() {
         if (composerRef.current) {
           composerRef.current.open();
         } else {
-          // Composer isn't mounted (e.g. we're viewing a label/archive/trash, or bulk-select is
-          // active) -- switch to the notes view and clear selection, then open it once it mounts.
+          // Composer isn't mounted (e.g. we're viewing Settings, a label/archive/trash, or
+          // bulk-select is active) -- leave Settings if that's why, switch to the notes view and
+          // clear selection, then open it once it mounts.
+          setSettingsOpen(false);
           setView({ kind: 'notes' });
           setSelectedIds(new Set());
           setPendingComposerOpen(true);
@@ -183,6 +185,7 @@ export default function App() {
         onSearchChange={setSearch}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onLogout={logout}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
@@ -191,58 +194,62 @@ export default function App() {
         {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
         <Sidebar
           view={view}
-          onChange={(v) =>
-            withGridViewTransition(appRef.current?.querySelector('.notes-grid') ?? null, () => setView(v))
-          }
+          onChange={(v) => {
+            setSettingsOpen(false);
+            withGridViewTransition(appRef.current?.querySelector('.notes-grid') ?? null, () => setView(v));
+          }}
           labels={labels}
           onCreateLabel={createLabel}
           onDeleteLabel={deleteLabel}
           open={sidebarOpen}
         />
         <main className="main">
-          {selectedIds.size > 0 ? (
-            <BulkActionsBar
-              count={selectedIds.size}
-              labels={labels}
-              onClear={() => setSelectedIds(new Set())}
-              onArchive={bulkArchive}
-              onTrash={bulkTrash}
-              onColor={bulkColor}
-              onLabel={bulkLabel}
+          {settingsOpen ? (
+            <SettingsPage
+              user={user}
+              onUserUpdate={setUser}
+              onClose={() => setSettingsOpen(false)}
+              onLogout={logout}
+              theme={theme}
+              onToggleTheme={toggleTheme}
             />
           ) : (
-            view.kind === 'notes' && (
-              <NoteComposer ref={composerRef} onCreate={createNote} onUpdateDraft={updateNote} onDiscardDraft={discardDraftNote} />
-            )
+            <>
+              {selectedIds.size > 0 ? (
+                <BulkActionsBar
+                  count={selectedIds.size}
+                  labels={labels}
+                  onClear={() => setSelectedIds(new Set())}
+                  onArchive={bulkArchive}
+                  onTrash={bulkTrash}
+                  onColor={bulkColor}
+                  onLabel={bulkLabel}
+                />
+              ) : (
+                view.kind === 'notes' && (
+                  <NoteComposer ref={composerRef} onCreate={createNote} onUpdateDraft={updateNote} onDiscardDraft={discardDraftNote} />
+                )
+              )}
+              <NotesGrid
+                notes={filtered}
+                view={view}
+                labels={labels}
+                justCreatedId={justCreatedId}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
+                onUpdate={updateNote}
+                onTrash={trashNote}
+                onRestore={restoreNote}
+                onDelete={deleteNote}
+                reorderable={view.kind === 'notes' && search.trim() === ''}
+                onReorder={reorderNotes}
+              />
+              {filtered.length === 0 && <div className="empty-state">Nothing here yet.</div>}
+            </>
           )}
-          <NotesGrid
-            notes={filtered}
-            view={view}
-            labels={labels}
-            justCreatedId={justCreatedId}
-            selectedIds={selectedIds}
-            onToggleSelect={toggleSelect}
-            onUpdate={updateNote}
-            onTrash={trashNote}
-            onRestore={restoreNote}
-            onDelete={deleteNote}
-            reorderable={view.kind === 'notes' && search.trim() === ''}
-            onReorder={reorderNotes}
-          />
-          {filtered.length === 0 && <div className="empty-state">Nothing here yet.</div>}
         </main>
       </div>
       <Toast toast={toast} onDismiss={dismiss} />
-      {settingsOpen && (
-        <SettingsModal
-          user={user}
-          onUserUpdate={setUser}
-          onClose={() => setSettingsOpen(false)}
-          onLogout={logout}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-        />
-      )}
     </div>
   );
 }

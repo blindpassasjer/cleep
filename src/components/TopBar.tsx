@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import { CoffeeMenu } from './CoffeeMenu';
+import { UserMenu } from './UserMenu';
 import { IconMenu, IconMoon, IconSearch, IconSettings, IconSun } from './Icons';
 import type { PublicUser } from '../types';
 
@@ -9,12 +10,13 @@ interface Props {
   onSearchChange: (value: string) => void;
   onToggleSidebar: () => void;
   onOpenSettings: () => void;
+  onLogout: () => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
 }
 
 export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
-  { user, search, onSearchChange, onToggleSidebar, onOpenSettings, theme, onToggleTheme },
+  { user, search, onSearchChange, onToggleSidebar, onOpenSettings, onLogout, theme, onToggleTheme },
   searchRef,
 ) {
   return (
@@ -46,7 +48,7 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
         />
       </div>
       <div className="user-menu">
-        <span>{user.username}</span>
+        <UserMenu username={user.username} onLogout={onLogout} />
         <CoffeeMenu />
         <button
           type="button"
