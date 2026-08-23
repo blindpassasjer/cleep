@@ -36,20 +36,20 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel, 
   return (
     <nav className={`sidebar ${open ? 'open' : ''}`}>
       <button className={view.kind === 'notes' ? 'active' : ''} onClick={() => onChange({ kind: 'notes' })}>
-        <IconNotes /> Notes
+        <IconNotes /> <span className="sidebar-label-text">Notes</span>
       </button>
       <button className={view.kind === 'archive' ? 'active' : ''} onClick={() => onChange({ kind: 'archive' })}>
-        <IconArchive /> Archive
+        <IconArchive /> <span className="sidebar-label-text">Archive</span>
       </button>
       <button className={view.kind === 'trash' ? 'active' : ''} onClick={() => onChange({ kind: 'trash' })}>
-        <IconTrash /> Trash
+        <IconTrash /> <span className="sidebar-label-text">Trash</span>
       </button>
 
       <div className="sidebar-section-label">Collections</div>
       {labels.map((label) => (
         <div key={label.id} className={`sidebar-label-row ${view.kind === 'label' && view.id === label.id ? 'active' : ''}`}>
           <button className="sidebar-label-name" onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}>
-            <IconTag /> {label.name}
+            <IconTag /> <span className="sidebar-label-text">{label.name}</span>
           </button>
           <button
             className="sidebar-label-delete"
@@ -78,7 +78,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel, 
         </form>
       ) : (
         <button className="sidebar-add-label-btn" onClick={() => setAdding(true)}>
-          <IconPlus width={14} height={14} /> New collection
+          <IconPlus width={14} height={14} /> <span className="sidebar-label-text">New collection</span>
         </button>
       )}
       {error && <div className="sidebar-label-error">{error}</div>}

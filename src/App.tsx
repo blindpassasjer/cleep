@@ -11,6 +11,7 @@ import { NoteComposer } from './components/NoteComposer';
 import { NotesGrid } from './components/NotesGrid';
 import { BulkActionsBar } from './components/BulkActionsBar';
 import { Toast } from './components/Toast';
+import { SettingsModal } from './components/SettingsModal';
 import type { NoteColor, View } from './types';
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { toast, show, dismiss } = useToast();
   const { notes, error, reload, createNote, discardDraftNote, updateNote, reorderNotes, trashNote, restoreNote, deleteNote } = useNotes(
     view,
@@ -102,6 +104,7 @@ export default function App() {
         onSearchChange={setSearch}
         onLogout={logout}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
       {error && <div className="error-banner">{error}</div>}
       <div className="app-body">
@@ -147,6 +150,7 @@ export default function App() {
         </main>
       </div>
       <Toast toast={toast} onDismiss={dismiss} />
+      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }

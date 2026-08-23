@@ -30,6 +30,8 @@ export const api = {
     }),
   logout: () => request<Record<string, never>>('/auth/logout', { method: 'POST' }),
   me: () => request<{ user: PublicUser | null }>('/auth/me'),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<{ error: string | null }>('/auth/password', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) }),
 
   listNotes: (view: View) => {
     const qs = view.kind === 'archive' ? '?view=archive' : view.kind === 'trash' ? '?view=trash' : view.kind === 'label' ? `?label=${encodeURIComponent(view.id)}` : '';
