@@ -143,9 +143,10 @@ export function NoteCard({
         onDragStart={onDragStart}
         onDragOver={onDragOver}
         onDrop={onDrop}
+        onClick={openEditor}
       >
         {draggable && (
-          <div className="note-drag-handle" title="Drag to reorder">
+          <div className="note-drag-handle" title="Drag to reorder" onClick={(e) => e.stopPropagation()}>
             <IconDragHandle width={14} height={14} />
           </div>
         )}
@@ -161,7 +162,7 @@ export function NoteCard({
           <span className={`select-checkbox ${selected ? 'checked' : ''}`} />
         </button>
 
-        <div onClick={openEditor}>
+        <div>
           {coverImage && (
             <div className="note-cover">
               <img src={coverImage.url} alt="" />
@@ -241,7 +242,7 @@ export function NoteCard({
           </div>
         )}
 
-        <div className="note-footer" onClick={openEditor}>
+        <div className="note-footer">
           {view.kind === 'trash' ? (
             <>
               <button type="button" className="text-action" onClick={() => leaveThen(() => onRestore(note.id))}>
