@@ -439,8 +439,16 @@ body {
   color: var(--fg);
   cursor: pointer;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   transition: background-color 0.12s ease, transform 0.1s ease;
+}
+
+/* Same icon/text size on desktop and mobile -- only touch-target padding differs (see the mobile
+   media query below). */
+.sidebar button svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .sidebar button:active {
@@ -495,8 +503,14 @@ body {
   background: transparent;
   color: var(--fg);
   cursor: pointer;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   border-radius: 8px;
+}
+
+.sidebar-label-name svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .sidebar-label-delete {
@@ -1745,7 +1759,7 @@ body {
      labels (below), the same drawer behavior as before. */
   .sidebar {
     position: static;
-    width: 104px;
+    width: 84px;
     flex-shrink: 0;
     padding: 0.85rem 0.4rem;
     transition: width 0.2s ease;
@@ -1798,42 +1812,28 @@ body {
     display: block;
   }
 
-  /* Bigger touch targets and text, matching Keep's mobile drawer proportions rather than the
-     denser desktop sizing. */
+  /* Bigger touch targets on mobile, matching Keep's mobile drawer proportions -- but icon and text
+     size stay the same as desktop (see the base .sidebar button / .sidebar-label-name rules). */
   .sidebar button {
-    min-height: 60px;
-    padding: 1rem 1.1rem;
-    font-size: 1.25rem;
-    gap: 1rem;
+    min-height: 52px;
+    padding: 0.85rem 1.1rem;
+    gap: 0.85rem;
     border-radius: 999px;
-  }
-
-  .sidebar button svg {
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
   }
 
   .sidebar-section-label {
     margin: 1.6rem 1.1rem 0.6rem;
-    font-size: 1rem;
+    font-size: 0.85rem;
   }
 
   .sidebar-label-row {
-    min-height: 60px;
+    min-height: 52px;
   }
 
   .sidebar-label-name {
-    min-height: 60px;
-    padding: 0.85rem 0.5rem 0.85rem 1.1rem;
-    font-size: 1.2rem;
-    gap: 1rem;
-  }
-
-  .sidebar-label-name svg {
-    width: 30px;
-    height: 30px;
-    flex-shrink: 0;
+    min-height: 52px;
+    padding: 0.75rem 0.5rem 0.75rem 1.1rem;
+    gap: 0.85rem;
   }
 
   .sidebar-label-delete {
