@@ -12,7 +12,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --bg: #232326;
     --fg: #f5f5f7;
     --muted: #98989d;
@@ -23,6 +23,19 @@
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 12px rgba(0, 0, 0, 0.35);
     --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.35), 0 10px 24px rgba(0, 0, 0, 0.4);
   }
+}
+
+/* Explicit override (manual toggle) wins in both directions regardless of system preference. */
+:root[data-theme='dark'] {
+  --bg: #232326;
+  --fg: #f5f5f7;
+  --muted: #98989d;
+  --border: rgba(255, 255, 255, 0.09);
+  --surface: #2c2c2e;
+  --sidebar-bg: rgba(30, 30, 32, 0.75);
+  --topbar-bg: rgba(28, 28, 30, 0.72);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 12px rgba(0, 0, 0, 0.35);
+  --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.35), 0 10px 24px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -55,9 +68,13 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .login-page {
+  :root:not([data-theme='light']) .login-page {
     background: linear-gradient(160deg, #1c1c1e, #2c2c2e 60%, #232326);
   }
+}
+
+:root[data-theme='dark'] .login-page {
+  background: linear-gradient(160deg, #1c1c1e, #2c2c2e 60%, #232326);
 }
 
 .login-card {
@@ -515,10 +532,15 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .error-banner {
+  :root:not([data-theme='light']) .error-banner {
     background: #442726;
     color: #f28b82;
   }
+}
+
+:root[data-theme='dark'] .error-banner {
+  background: #442726;
+  color: #f28b82;
 }
 
 .empty-state {
@@ -803,18 +825,30 @@ body {
 .color-gray { background: #e7e7ea; }
 
 @media (prefers-color-scheme: dark) {
-  .color-default { background: var(--bg); }
-  .color-red { background: #4a2f34; }
-  .color-orange { background: #4e3a24; }
-  .color-yellow { background: #4c452a; }
-  .color-green { background: #2f4436; }
-  .color-teal { background: #234b46; }
-  .color-blue { background: #253d4d; }
-  .color-purple { background: #392f4c; }
-  .color-pink { background: #472f42; }
-  .color-brown { background: #423323; }
-  .color-gray { background: #3a3a3d; }
+  :root:not([data-theme='light']) .color-default { background: var(--bg); }
+  :root:not([data-theme='light']) .color-red { background: #4a2f34; }
+  :root:not([data-theme='light']) .color-orange { background: #4e3a24; }
+  :root:not([data-theme='light']) .color-yellow { background: #4c452a; }
+  :root:not([data-theme='light']) .color-green { background: #2f4436; }
+  :root:not([data-theme='light']) .color-teal { background: #234b46; }
+  :root:not([data-theme='light']) .color-blue { background: #253d4d; }
+  :root:not([data-theme='light']) .color-purple { background: #392f4c; }
+  :root:not([data-theme='light']) .color-pink { background: #472f42; }
+  :root:not([data-theme='light']) .color-brown { background: #423323; }
+  :root:not([data-theme='light']) .color-gray { background: #3a3a3d; }
 }
+
+:root[data-theme='dark'] .color-default { background: var(--bg); }
+:root[data-theme='dark'] .color-red { background: #4a2f34; }
+:root[data-theme='dark'] .color-orange { background: #4e3a24; }
+:root[data-theme='dark'] .color-yellow { background: #4c452a; }
+:root[data-theme='dark'] .color-green { background: #2f4436; }
+:root[data-theme='dark'] .color-teal { background: #234b46; }
+:root[data-theme='dark'] .color-blue { background: #253d4d; }
+:root[data-theme='dark'] .color-purple { background: #392f4c; }
+:root[data-theme='dark'] .color-pink { background: #472f42; }
+:root[data-theme='dark'] .color-brown { background: #423323; }
+:root[data-theme='dark'] .color-gray { background: #3a3a3d; }
 
 /* Color picker swatches */
 .color-picker {
@@ -1278,10 +1312,15 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .toast {
+  :root:not([data-theme='light']) .toast {
     background: #f5f5f7;
     color: #1d1d1f;
   }
+}
+
+:root[data-theme='dark'] .toast {
+  background: #f5f5f7;
+  color: #1d1d1f;
 }
 
 @keyframes toast-in {
@@ -1311,9 +1350,13 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .toast button:hover {
+  :root:not([data-theme='light']) .toast button:hover {
     background: rgba(0, 0, 0, 0.1);
   }
+}
+
+:root[data-theme='dark'] .toast button:hover {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .toast-close {

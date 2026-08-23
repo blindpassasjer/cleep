@@ -12,6 +12,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Cleep" />
     <title>Cleep</title>
+    <script>
+      // Runs before first paint so a stored theme choice applies immediately, instead of
+      // flashing the system-default theme and then swapping once React mounts and useTheme runs.
+      (function () {
+        try {
+          var stored = localStorage.getItem('cleep-theme');
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.setAttribute('data-theme', stored);
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

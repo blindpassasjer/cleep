@@ -3,6 +3,7 @@ import { useAuth } from './hooks/useAuth';
 import { useNotes } from './hooks/useNotes';
 import { useLabels } from './hooks/useLabels';
 import { useToast } from './hooks/useToast';
+import { useTheme } from './hooks/useTheme';
 import { api } from './api/client';
 import { LoginPage } from './components/LoginPage';
 import { Sidebar } from './components/Sidebar';
@@ -21,6 +22,7 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const { toast, show, dismiss } = useToast();
   const { notes, error, reload, createNote, discardDraftNote, updateNote, reorderNotes, trashNote, restoreNote, deleteNote } = useNotes(
     view,
@@ -105,6 +107,8 @@ export default function App() {
         onLogout={logout}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         onOpenSettings={() => setSettingsOpen(true)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
       {error && <div className="error-banner">{error}</div>}
       <div className="app-body">

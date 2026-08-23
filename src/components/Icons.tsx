@@ -224,3 +224,20 @@ export function IconSettings(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function IconSun(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="4.5" />
+      <path d="M12 2.5v2M12 19.5v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2.5 12h2M19.5 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+    </Icon>
+  );
+}
+
+export function IconMoon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon fill="currentColor" stroke="none" {...props}>
+      <path d="M20.5 14.8A8.5 8.5 0 0 1 9.2 3.5a.6.6 0 0 0-.75-.78A9.7 9.7 0 1 0 21.3 15.5a.6.6 0 0 0-.8-.7Z" />
+    </Icon>
+  );
+}

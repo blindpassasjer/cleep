@@ -1,4 +1,4 @@
-import { IconMenu, IconSearch, IconSettings } from './Icons';
+import { IconMenu, IconMoon, IconSearch, IconSettings, IconSun } from './Icons';
 import type { PublicUser } from '../types';
 
 interface Props {
@@ -8,9 +8,11 @@ interface Props {
   onLogout: () => void;
   onToggleSidebar: () => void;
   onOpenSettings: () => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
-export function TopBar({ user, search, onSearchChange, onLogout, onToggleSidebar, onOpenSettings }: Props) {
+export function TopBar({ user, search, onSearchChange, onLogout, onToggleSidebar, onOpenSettings, theme, onToggleTheme }: Props) {
   return (
     <header className="topbar">
       <div className="topbar-left">
@@ -33,6 +35,14 @@ export function TopBar({ user, search, onSearchChange, onLogout, onToggleSidebar
       </div>
       <div className="user-menu">
         <span>{user.username}</span>
+        <button
+          type="button"
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="icon-only"
+          onClick={onToggleTheme}
+        >
+          {theme === 'dark' ? <IconMoon width={18} height={18} /> : <IconSun width={18} height={18} />}
+        </button>
         <button type="button" title="Settings" className="icon-only" onClick={onOpenSettings}>
           <IconSettings width={18} height={18} />
         </button>
