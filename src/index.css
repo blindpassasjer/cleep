@@ -420,6 +420,27 @@ body {
   overflow: hidden;
 }
 
+/* View Transitions (sidebar collapse/expand, notes grid switching between views) -- ignored
+   entirely by browsers that don't support the API, which just fall back to the instant swap they
+   always did. Named groups only for .sidebar/.notes-grid (see their rules) so the transition stays
+   scoped to those two regions; the whole-page "root" group is switched off below so an unrelated
+   re-render happening at the same time can't cause a full-page flash. */
+::view-transition-group(root) {
+  animation: none;
+}
+
+::view-transition-old(sidebar),
+::view-transition-new(sidebar) {
+  animation-duration: 0.22s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(notes-grid),
+::view-transition-new(notes-grid) {
+  animation-duration: 0.18s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .sidebar {
   width: 220px;
   border-right: 1px solid var(--border);
@@ -428,6 +449,7 @@ body {
   padding: 0.85rem 0.5rem;
   background: var(--bg);
   gap: 0.1rem;
+  view-transition-name: sidebar;
 }
 
 .sidebar button {
@@ -708,6 +730,7 @@ body {
   gap: 1.1rem;
   max-width: 1400px;
   margin: 0 auto;
+  view-transition-name: notes-grid;
 }
 
 .note-card {
@@ -760,6 +783,28 @@ body {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+/* Caps how tall a note's body (title/checklist/text/inline images) can grow before it's clipped
+   with a fade -- without this, a long workout note full of inline GIFs could stretch its card
+   far past its neighbors in the grid. The fade end-color matches the card's own tint so it reads
+   as "content trails off" rather than a hard, visible cut -- and costs nothing when the content is
+   actually short, since the gradient then just sits over already-empty, same-colored space. */
+.note-body {
+  max-height: 320px;
+  overflow: hidden;
+  position: relative;
+}
+
+.note-body::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3rem;
+  background: linear-gradient(to bottom, transparent, var(--note-tint, var(--bg)));
+  pointer-events: none;
 }
 
 .note-title {
@@ -1097,17 +1142,44 @@ body {
 }
 
 /* Markdown-lite rendering */
-.md-bullets {
+.md-bullets,
+.md-ordered {
   margin: 0.15rem 0;
   padding-left: 1.2rem;
 }
 
-.md-bullets li {
+.md-bullets li,
+.md-ordered li {
   font-size: 0.92rem;
 }
 
 .md-line {
   min-height: 1.1em;
+}
+
+.md-heading {
+  margin: 0.3rem 0 0.15rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+h1.md-heading {
+  font-size: 1.25rem;
+}
+
+h2.md-heading {
+  font-size: 1.1rem;
+}
+
+h3.md-heading {
+  font-size: 1rem;
+}
+
+.md-image {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 0.35rem 0;
 }
 
 /* Checklists */
@@ -1680,6 +1752,27 @@ body {
   padding: 0;
 }
 
+.attachment-insert {
+  position: absolute;
+  bottom: 0.3rem;
+  left: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+}
+
+.attachment-insert:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+
 .attachment-media-row .attachment-remove {
   position: static;
   background: transparent;
@@ -1696,6 +1789,7 @@ body {
 .attachments-toolbar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.2rem;
 }
 
@@ -2110,5 +2204,9 @@ body {
 @media (max-width: 420px) {
   .note-cover {
     height: 160px;
+  }
+
+  .note-body {
+    max-height: 260px;
   }
 }

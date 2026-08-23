@@ -7,6 +7,7 @@ import { AttachmentsPanel } from './AttachmentsPanel';
 import { IconArchive, IconClose, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
 import { useDateFormat } from '../hooks/useDateFormat';
 import { formatNoteDate } from '../lib/formatDate';
+import { insertMarkdownImage } from '../lib/insertMarkdownImage';
 import type { Attachment, ChecklistItem, Label, NoteColor } from '../types';
 
 interface Props {
@@ -94,7 +95,12 @@ export function NoteModal({
               onChange={(e) => onContentChange(e.target.value)}
             />
           )}
-          <AttachmentsPanel attachments={attachments} onUpload={onUploadAttachment} onDelete={onDeleteAttachment}>
+          <AttachmentsPanel
+            attachments={attachments}
+            onUpload={onUploadAttachment}
+            onDelete={onDeleteAttachment}
+            onInsertImage={isChecklist ? undefined : (a) => insertMarkdownImage(contentRef.current, content, onContentChange, a)}
+          >
             {!isChecklist && <TextFormatToolbar textareaRef={contentRef} value={content} onChange={onContentChange} />}
           </AttachmentsPanel>
           {showLabels && (

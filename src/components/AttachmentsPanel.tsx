@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { IconClose, IconImage, IconMic, IconStop } from './Icons';
+import { IconClose, IconImage, IconMic, IconPlus, IconStop } from './Icons';
 import { ImageLightbox } from './ImageLightbox';
 import { WaveformPlayer } from './WaveformPlayer';
 import { computeWaveformPeaksFromBlob } from '../lib/waveform';
@@ -15,9 +15,19 @@ interface Props {
   autoStartRecording?: boolean;
   /** Rendered inline in the same toolbar row as the image/mic buttons (the text formatting toolbar). */
   children?: React.ReactNode;
+  /** Drops a ![alt](url) reference for this image into the note text -- lets an already-uploaded photo/GIF be placed inline instead of only living in the gallery below. */
+  onInsertImage?: (attachment: Attachment) => void;
 }
 
-export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFilePicker, autoStartRecording, children }: Props) {
+export function AttachmentsPanel({
+  attachments,
+  onUpload,
+  onDelete,
+  autoOpenFilePicker,
+  autoStartRecording,
+  children,
+  onInsertImage,
+}: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -108,6 +118,11 @@ export function AttachmentsPanel({ attachments, onUpload, onDelete, autoOpenFile
           {images.map((a) => (
             <div key={a.id} className="attachment-thumb">
               <img src={a.url} alt={a.name} onClick={() => setViewingImage(a)} />
+              {onInsertImage && (
+                <button type="button" className="attachment-insert" title="Insert into note text" onClick={() => onInsertImage(a)}>
+                  <IconPlus width={14} height={14} />
+                </button>
+              )}
               <button type="button" className="attachment-remove" title="Remove" onClick={() => onDelete(a.id)}>
                 <IconClose width={14} height={14} />
               </button>

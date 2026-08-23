@@ -5,6 +5,7 @@ import { ChecklistEditor } from './ChecklistEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
 import { api } from '../api/client';
+import { insertMarkdownImage } from '../lib/insertMarkdownImage';
 import { IconChecklist, IconImage, IconMic, IconPlus } from './Icons';
 import type { Attachment, ChecklistItem, Note, NoteColor } from '../types';
 
@@ -192,6 +193,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
             onDelete={deleteAttachment}
             autoOpenFilePicker={startWith === 'image'}
             autoStartRecording={startWith === 'audio'}
+            onInsertImage={isChecklist ? undefined : (a) => insertMarkdownImage(contentRef.current, content, setContent, a)}
           >
             {!isChecklist && <TextFormatToolbar textareaRef={contentRef} value={content} onChange={setContent} />}
           </AttachmentsPanel>

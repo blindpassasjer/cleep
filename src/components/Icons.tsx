@@ -141,6 +141,33 @@ export function IconBulletList(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function IconHeading(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M5 5v14M13 5v14M5 12h8M17 8v10M15.5 8.5c.5-.4 1.2-.7 1.9-.7 1.2 0 2 .7 2 1.8 0 1.6-3.9 2.7-3.9 6.4h4" />
+    </Icon>
+  );
+}
+
+export function IconNumberedList(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M9.5 6.5h10M9.5 12h10M9.5 17.5h10" />
+      <path d="M4 5.5h1v3M4 8.5h2" />
+      <path d="M4 13.2c0-.6.5-1.1 1.1-1.1s1.1.5 1.1 1.1c0 .5-.4.8-.8 1.1L4 15.8h2.2" />
+    </Icon>
+  );
+}
+
+export function IconGif(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <path d="M8 9.2v5.6M13 14.8V9.2h2.8M13 12.2h2.2M19 9.2c-.5-.35-1.1-.55-1.75-.55-1.35 0-2.45 1.15-2.45 3.35s1.1 3.35 2.45 3.35c.65 0 1.2-.15 1.75-.45v-2.2h-1.6" />
+    </Icon>
+  );
+}
+
 export function IconDragHandle(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

@@ -168,54 +168,56 @@ export function NoteCard({
               <img src={coverImage.url} alt="" />
             </div>
           )}
-          {videoCount > 0 && (
-            <div className="note-media-badges">
-              <span className="note-media-badge">
-                <IconVideo width={14} height={14} /> {videoCount}
-              </span>
-            </div>
-          )}
-          {firstAudio && (
-            <div className="note-audio-preview">
-              <IconMic width={14} height={14} />
-              <MiniWaveform peaks={firstAudio.waveformPeaks} />
-              {audioCount > 1 && <span className="note-audio-count">+{audioCount - 1}</span>}
-            </div>
-          )}
-          {note.title && <div className="note-title">{note.title}</div>}
-          {note.isChecklist ? (
-            <div className="note-checklist-preview">
-              {previewItems.map((item) => (
-                <label
-                  key={item.id}
-                  className={`checklist-row preview ${item.checked ? 'checked' : ''}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <input type="checkbox" checked={item.checked} onChange={() => toggleChecklistItem(item.id)} />
-                  <span>{item.text}</span>
-                </label>
-              ))}
-              {hiddenItemCount > 0 && <div className="checklist-more">+{hiddenItemCount} more</div>}
-            </div>
-          ) : (
-            note.content && (
-              <div className="note-content">
-                <MarkdownText text={note.content} />
+          <div className="note-body">
+            {videoCount > 0 && (
+              <div className="note-media-badges">
+                <span className="note-media-badge">
+                  <IconVideo width={14} height={14} /> {videoCount}
+                </span>
               </div>
-            )
-          )}
-          {labelIds.length > 0 && (
-            <div className="note-labels">
-              {labelIds.map((id) => {
-                const label = labels.find((l) => l.id === id);
-                return label ? (
-                  <span key={id} className="note-label-chip">
-                    {label.name}
-                  </span>
-                ) : null;
-              })}
-            </div>
-          )}
+            )}
+            {firstAudio && (
+              <div className="note-audio-preview">
+                <IconMic width={14} height={14} />
+                <MiniWaveform peaks={firstAudio.waveformPeaks} />
+                {audioCount > 1 && <span className="note-audio-count">+{audioCount - 1}</span>}
+              </div>
+            )}
+            {note.title && <div className="note-title">{note.title}</div>}
+            {note.isChecklist ? (
+              <div className="note-checklist-preview">
+                {previewItems.map((item) => (
+                  <label
+                    key={item.id}
+                    className={`checklist-row preview ${item.checked ? 'checked' : ''}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input type="checkbox" checked={item.checked} onChange={() => toggleChecklistItem(item.id)} />
+                    <span>{item.text}</span>
+                  </label>
+                ))}
+                {hiddenItemCount > 0 && <div className="checklist-more">+{hiddenItemCount} more</div>}
+              </div>
+            ) : (
+              note.content && (
+                <div className="note-content">
+                  <MarkdownText text={note.content} />
+                </div>
+              )
+            )}
+            {labelIds.length > 0 && (
+              <div className="note-labels">
+                {labelIds.map((id) => {
+                  const label = labels.find((l) => l.id === id);
+                  return label ? (
+                    <span key={id} className="note-label-chip">
+                      {label.name}
+                    </span>
+                  ) : null;
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         {showColors && editable && (
