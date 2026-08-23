@@ -23,7 +23,14 @@ export function sessionExpiry(): Date {
   return new Date(Date.now() + SESSION_TTL_MS);
 }
 
-export function setSessionCookie(res: Response, token: string, expires: Date): void {
+/**
+ * `persistent` controls "keep me logged in": when true the cookie carries an `expires` date and
+ * survives browser restarts (up to the session's server-side TTL); when false it's a classic
+ * session cookie with no `expires` at all, so the browser drops it as soon as it's closed — the
+ * server-side session row still exists with its normal TTL as an upper bound, but the cookie
+ * itself is what actually determines "stay logged in after closing the browser" here.
+ */
+export function setSessionCookie(res: Response, token: string, expires: Date, persistent: boolean): void {
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'strict',
@@ -33,7 +40,7 @@ export function setSessionCookie(res: Response, token: string, expires: Date): v
     secure: process.env.COOKIE_SECURE === 'true',
     signed: true,
     path: '/',
-    expires,
+    ...(persistent ? { expires } : {}),
   });
 }
 

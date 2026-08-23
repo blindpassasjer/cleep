@@ -5,6 +5,7 @@ import type { PublicUser } from '../types';
 export function LoginPage({ onLogin }: { onLogin: (user: PublicUser) => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -13,7 +14,7 @@ export function LoginPage({ onLogin }: { onLogin: (user: PublicUser) => void }) 
     setBusy(true);
     setError(null);
     try {
-      const { user, error: err } = await api.login(email, password);
+      const { user, error: err } = await api.login(email, password, rememberMe);
       if (user) {
         onLogin(user);
       } else {
@@ -38,6 +39,10 @@ export function LoginPage({ onLogin }: { onLogin: (user: PublicUser) => void }) 
         <label>
           Password
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        </label>
+        <label className="login-remember">
+          <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+          Keep me logged in
         </label>
         {error && <div className="login-error">{error}</div>}
         <button type="submit" disabled={busy}>

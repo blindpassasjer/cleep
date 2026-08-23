@@ -108,6 +108,20 @@ body {
   color: var(--muted);
 }
 
+.login-card label.login-remember {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.login-remember input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
 .login-card input {
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);

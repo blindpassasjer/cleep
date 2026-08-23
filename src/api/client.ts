@@ -23,10 +23,10 @@ async function upload<T>(path: string, formData: FormData): Promise<T> {
 }
 
 export const api = {
-  login: (email: string, password: string) =>
+  login: (email: string, password: string, rememberMe: boolean) =>
     request<{ user: PublicUser | null; error: string | null }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, rememberMe }),
     }),
   logout: () => request<Record<string, never>>('/auth/logout', { method: 'POST' }),
   me: () => request<{ user: PublicUser | null }>('/auth/me'),

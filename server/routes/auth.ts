@@ -24,7 +24,7 @@ export const authRouter = Router();
 
 authRouter.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body ?? {};
+    const { email, password, rememberMe } = req.body ?? {};
 
     if (typeof email !== 'string' || typeof password !== 'string') {
       res.json({ user: null, error: 'Email and password are required.' });
@@ -49,7 +49,7 @@ authRouter.post('/login', async (req, res) => {
     const token = generateSessionToken();
     const expiresAt = sessionExpiry();
     await db.insert(sessions).values({ token, userId: row.id, expiresAt });
-    setSessionCookie(res, token, expiresAt);
+    setSessionCookie(res, token, expiresAt, rememberMe !== false);
 
     res.json({ user: toPublicUser(row), error: null });
   } catch (err) {
