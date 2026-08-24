@@ -41,10 +41,17 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [color, setColor] = useState<NoteColor>('default');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [draftNoteId, setDraftNoteId] = useState<string | null>(null);
   const [startWith, setStartWith] = useState<'image' | 'audio' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // draftNoteId/attachments only need to exist as refs, not state -- nothing renders off them
+  // directly (the note gets its title/content/attachments back via re-fetch once saved). Keeping
+  // them as refs means attemptClose can read the *current* value synchronously right after awaiting
+  // any in-flight upload, where a closure over React state would still see the pre-await snapshot.
+  const draftNoteIdRef = useRef<string | null>(null);
+  const attachmentsRef = useRef<Attachment[]>([]);
+  const pendingUploadsRef = useRef<Set<Promise<void>>>(new Set());
 
   function open(startWithMode: 'image' | 'audio' | null = null, originEl?: HTMLElement | null) {
     setOriginRect((originEl ?? collapsedRef.current)?.getBoundingClientRect() ?? null);
@@ -69,7 +76,8 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
     setColor('default');
     setIsChecklist(false);
     setAttachments([]);
-    setDraftNoteId(null);
+    draftNoteIdRef.current = null;
+    attachmentsRef.current = [];
     setStartWith(null);
     setExpanded(false);
     setOriginRect(null);
@@ -79,39 +87,58 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   // existence early (with whatever title/content/checklist state exists at that moment) — the rest
   // of the composer keeps editing that same note instead of building up a separate draft.
   async function ensureDraftNote(): Promise<string> {
-    if (draftNoteId) return draftNoteId;
+    if (draftNoteIdRef.current) return draftNoteIdRef.current;
     const cleanedItems = items.filter((item) => item.text.trim().length > 0);
     const note = await onCreate(title.trim(), content.trim(), color, isChecklist ? { isChecklist: true, items: cleanedItems } : undefined);
-    setDraftNoteId(note.id);
+    draftNoteIdRef.current = note.id;
     return note.id;
   }
 
+  // Tracked as a pending promise so attemptClose (Close button, Escape, and backdrop-click all
+  // share it) can wait for any recording/upload still in flight before deciding the note is empty
+  // and discarding it -- otherwise closing right after "stop recording" could delete the draft note
+  // out from under an upload that hadn't finished yet, silently losing the recording.
   async function uploadAttachment(file: File | Blob, filename?: string, waveformPeaks?: number[]) {
-    const noteId = await ensureDraftNote();
-    const { attachment } = await api.uploadAttachment(noteId, file, filename, waveformPeaks);
-    setAttachments((prev) => [...prev, attachment]);
+    const task = (async () => {
+      const noteId = await ensureDraftNote();
+      const { attachment } = await api.uploadAttachment(noteId, file, filename, waveformPeaks);
+      attachmentsRef.current = [...attachmentsRef.current, attachment];
+      setAttachments(attachmentsRef.current);
+    })();
+    pendingUploadsRef.current.add(task);
+    try {
+      await task;
+    } finally {
+      pendingUploadsRef.current.delete(task);
+    }
   }
 
   async function deleteAttachment(attachmentId: string) {
-    setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
-    if (draftNoteId) await api.deleteAttachment(draftNoteId, attachmentId);
+    attachmentsRef.current = attachmentsRef.current.filter((a) => a.id !== attachmentId);
+    setAttachments(attachmentsRef.current);
+    if (draftNoteIdRef.current) await api.deleteAttachment(draftNoteIdRef.current, attachmentId);
   }
 
   // Shared by the Close button, Escape, and backdrop-click: try to save (when there's anything to
   // save) and only actually animate the modal away on success, so a failed create leaves the modal
   // open with the error and the user's text/attachments intact instead of losing them.
   async function attemptClose(close: CloseFn) {
+    if (pendingUploadsRef.current.size > 0) {
+      await Promise.all(pendingUploadsRef.current);
+    }
+
     const cleanedItems = items.filter((item) => item.text.trim().length > 0);
     const isEmpty = isChecklist ? cleanedItems.length === 0 && !title.trim() : !title.trim() && isRichContentEmpty(content);
+    const draftId = draftNoteIdRef.current;
 
-    if (draftNoteId) {
+    if (draftId) {
       // The note already exists on the server (an attachment forced it into being) -- finalize it
       // rather than creating a second note. This mutation is fire-and-forget, same as editing an
       // existing note elsewhere in the app, so it's safe to close immediately.
-      if (isEmpty && attachments.length === 0) {
-        onDiscardDraft(draftNoteId);
+      if (isEmpty && attachmentsRef.current.length === 0) {
+        onDiscardDraft(draftId);
       } else {
-        onUpdateDraft(draftNoteId, {
+        onUpdateDraft(draftId, {
           title: title.trim(),
           content: content.trim(),
           ...(isChecklist ? { isChecklist: true, items: cleanedItems } : {}),

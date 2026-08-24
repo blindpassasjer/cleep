@@ -2423,9 +2423,12 @@ button.user-account-link {
     display: block;
   }
 
+  /* Desktop gates these on :hover, which touch has no equivalent for -- without this they'd stay
+     visibility: hidden forever on mobile, making rename/delete unreachable by tap. */
   .sidebar.open .sidebar-label-edit,
   .sidebar.open .sidebar-label-delete {
     display: flex;
+    visibility: visible;
   }
 
   .sidebar.open .sidebar-add-label {
@@ -2514,8 +2517,11 @@ button.user-account-link {
     height: 20px;
   }
 
+  /* Desktop only reveals this on :hover -- touch has no hover, so without this the very first tap
+     needed to enter selection mode would have nothing visible to tap. */
   .note-select-toggle {
     padding: 0.3rem;
+    opacity: 1;
   }
 
   .select-checkbox {
@@ -2545,9 +2551,11 @@ button.user-account-link {
     flex-shrink: 0;
   }
 
+  /* Same :hover-gating problem as .note-select-toggle above -- unreachable by touch otherwise. */
   .checklist-remove {
     min-width: 36px;
     min-height: 36px;
+    visibility: visible;
   }
 
   .waveform-play-btn {

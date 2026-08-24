@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import fixWebmDuration from 'fix-webm-duration';
 import { computeWaveformPeaksFromBlob } from '../lib/waveform';
 
 const LEVEL_HISTORY = 100;
@@ -148,11 +149,19 @@ export function useAudioRecorder() {
         cleanup();
         setRecording(false);
         setPaused(false);
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
-        if (blob.size === 0) {
+        const rawBlob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+        if (rawBlob.size === 0) {
           resolve(null);
           return;
         }
+        // MediaRecorder writes webm with an unknown/zero duration in its header (it's built for
+        // streaming, not seekable playback), which is why <audio>.duration comes back Infinity/NaN
+        // and clicking the waveform to seek either does nothing or snaps back to 0. Patch the
+        // container's duration field in after the fact so playback and seeking behave normally.
+        const durationMs = Date.now() - startedAtRef.current - pausedMsRef.current;
+        const blob = rawBlob.type.includes('webm')
+          ? await fixWebmDuration(rawBlob, durationMs, { logger: false }).catch(() => rawBlob)
+          : rawBlob;
         const peaks = await computeWaveformPeaksFromBlob(blob).catch(() => []);
         resolve({ blob, peaks });
       };
