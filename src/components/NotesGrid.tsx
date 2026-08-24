@@ -35,13 +35,27 @@ export function NotesGrid({
   onReorder,
 }: Props) {
   const dragId = useRef<string | null>(null);
-  const { containerRef, setCardRef } = useMasonryLayout(notes);
+
+  // The server always sorts pinned notes before unpinned ones (see notes.ts's orderBy), but a
+  // single continuous masonry pack doesn't respect that visually -- it fills whichever column is
+  // currently shortest, so a pinned note can end up sharing a row with unpinned ones instead of
+  // reading as a clearly separate leading block. Splitting into two independently-packed grids
+  // (like Keep's own "Pinned"/"Others" sections) is what actually makes pinned notes look pinned.
+  const pinnedNotes = notes.filter((n) => n.pinned);
+  const otherNotes = notes.filter((n) => !n.pinned);
+  const showSections = pinnedNotes.length > 0 && otherNotes.length > 0;
+
+  // Hooks can't be called conditionally, so both grids are always laid out -- an empty list just
+  // means its container ends up 0px tall, which costs nothing.
+  const pinnedGrid = useMasonryLayout(pinnedNotes);
+  const otherGrid = useMasonryLayout(otherNotes);
 
   // The server always sorts pinned notes before unpinned ones regardless of `position` (see
   // notes.ts's orderBy), so a drop that crosses the pin boundary would look like it worked but
   // silently snap back on the next fetch -- reject it (and show a "no drop" cursor while dragging
   // over it) instead of letting the UI promise an order change that doesn't actually stick.
-  // Matches Keep's own pinned/"Others" as separate, independently-reorderable sections.
+  // Matters even with the two grids visually separated below, since they're still sibling
+  // containers in the same document -- nothing stops a drag physically crossing between them.
   function sameGroup(targetId: string): boolean {
     const draggedId = dragId.current;
     if (!draggedId || draggedId === targetId) return false;
@@ -63,34 +77,53 @@ export function NotesGrid({
     onReorder(ids);
   }
 
+  function renderSection(sectionNotes: Note[], containerRef: React.RefObject<HTMLDivElement>, setCardRef: (id: string, el: HTMLDivElement | null) => void) {
+    return (
+      <div className="notes-grid" ref={containerRef}>
+        {sectionNotes.map((note) => (
+          <div key={note.id} className="notes-grid-item" ref={(el) => setCardRef(note.id, el)}>
+            <NoteCard
+              note={note}
+              view={view}
+              labels={labels}
+              animateIn={note.id === justCreatedId}
+              selected={selectedIds.has(note.id)}
+              selectionActive={selectedIds.size > 0}
+              onToggleSelect={onToggleSelect}
+              onUpdate={onUpdate}
+              onTrash={onTrash}
+              onRestore={onRestore}
+              onDelete={onDelete}
+              draggable={reorderable}
+              onDragStart={() => {
+                dragId.current = note.id;
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = sameGroup(note.id) ? 'move' : 'none';
+              }}
+              onDrop={() => handleDrop(note.id)}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (!showSections) {
+    // Exactly one of these is empty (or both are, e.g. an empty view) -- whichever grid was laid
+    // out against the non-empty list is the one to render `notes` through, since that list and
+    // `notes` are then the same notes in the same order (the other filter contributed nothing).
+    const grid = otherNotes.length === 0 ? pinnedGrid : otherGrid;
+    return renderSection(notes, grid.containerRef, grid.setCardRef);
+  }
+
   return (
-    <div className="notes-grid" ref={containerRef}>
-      {notes.map((note) => (
-        <div key={note.id} className="notes-grid-item" ref={(el) => setCardRef(note.id, el)}>
-          <NoteCard
-            note={note}
-            view={view}
-            labels={labels}
-            animateIn={note.id === justCreatedId}
-            selected={selectedIds.has(note.id)}
-            selectionActive={selectedIds.size > 0}
-            onToggleSelect={onToggleSelect}
-            onUpdate={onUpdate}
-            onTrash={onTrash}
-            onRestore={onRestore}
-            onDelete={onDelete}
-            draggable={reorderable}
-            onDragStart={() => {
-              dragId.current = note.id;
-            }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.dataTransfer.dropEffect = sameGroup(note.id) ? 'move' : 'none';
-            }}
-            onDrop={() => handleDrop(note.id)}
-          />
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="notes-section-label">Pinned</div>
+      {renderSection(pinnedNotes, pinnedGrid.containerRef, pinnedGrid.setCardRef)}
+      <div className="notes-section-label">Others</div>
+      {renderSection(otherNotes, otherGrid.containerRef, otherGrid.setCardRef)}
+    </>
   );
 }

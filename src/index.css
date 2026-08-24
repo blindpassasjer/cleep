@@ -931,6 +931,21 @@ body {
   transition: transform 0.2s ease;
 }
 
+/* Only rendered when there's a mix of pinned and unpinned notes (see NotesGrid) -- each heading
+   sits above its own independently-packed masonry grid. */
+.notes-section-label {
+  margin: 0 0 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.notes-section-label:not(:first-child) {
+  margin-top: 1.75rem;
+}
+
 .note-card {
   position: relative;
   border: 1px solid var(--border);
