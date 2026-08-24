@@ -2518,15 +2518,24 @@ button.user-account-link {
   }
 
   /* Desktop only reveals this on :hover -- touch has no hover, so without this the very first tap
-     needed to enter selection mode would have nothing visible to tap. */
+     needed to enter selection mode would have nothing visible to tap. Sits inside the card's corner
+     (rather than desktop's negative offset poking past the edge) since it's permanently on-screen
+     here, with .note-body's padding-left below giving the title/content room to clear it -- matches
+     how Google Keep's mobile app reserves a checkbox gutter instead of overlapping the text. */
   .note-select-toggle {
-    padding: 0.3rem;
+    top: 0.6rem;
+    left: 0.6rem;
+    padding: 0;
     opacity: 1;
   }
 
   .select-checkbox {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .note-body {
+    padding-left: 1.5rem;
   }
 
   .note-drag-handle {
