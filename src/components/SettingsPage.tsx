@@ -208,10 +208,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         </button>
       </form>
 
-      {/* Only shown on mobile -- on wider screens Sign out lives under the username in the topbar
-          instead, so repeating it here would just be clutter (see .settings-section-mobile-only
-          and UserMenu). */}
-      <div className="settings-form settings-section-mobile-only">
+      <div className="settings-form">
         <h3 className="settings-section-title">Account</h3>
         <button type="button" className="settings-toggle settings-logout" onClick={onLogout}>
           Sign out

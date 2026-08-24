@@ -202,7 +202,6 @@ export default function App() {
         onSearchChange={setSearch}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         onOpenSettings={() => setSettingsOpen(true)}
-        onLogout={logout}
         theme={theme}
         onToggleTheme={toggleTheme}
       />

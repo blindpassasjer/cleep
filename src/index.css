@@ -405,48 +405,22 @@ body {
   background: var(--accent);
 }
 
-/* Username / account popover (nests Sign out under the username instead of it sitting in the
-   topbar as its own permanent button) */
-.user-account-menu {
-  position: relative;
-}
-
-.user-account-trigger.active {
-  background: var(--surface);
-}
-
-.user-account-popover {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 0.5rem);
-  width: max-content;
-  min-width: 160px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-hover);
-  padding: 0.4rem;
-  z-index: 60;
-  animation: composer-open 0.14s cubic-bezier(0.2, 0.8, 0.4, 1);
-}
-
-.user-account-logout {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  padding: 0.55rem 0.7rem;
+/* Username, in the topbar -- just another way into Settings (like the gear icon), not a menu of
+   its own, so Sign out doesn't need its own dropdown/popover any more. */
+.user-account-link {
   border: none;
-  border-radius: 8px;
   background: transparent;
-  color: #ff453a;
-  font-size: 0.88rem;
-  font-weight: 600;
+  color: var(--muted);
   cursor: pointer;
-  transition: background-color 0.12s ease;
+  font: inherit;
+  padding: 0.4rem 0.6rem;
+  border-radius: 999px;
+  transition: background-color 0.12s ease, color 0.12s ease;
 }
 
-.user-account-logout:hover {
-  background: color-mix(in srgb, #ff453a 12%, transparent);
+.user-account-link:hover {
+  background: var(--surface);
+  color: var(--fg);
 }
 
 /* Settings page -- a view within .main (like Notes/Archive/Trash), not a modal overlay, so it uses
@@ -2290,12 +2264,13 @@ body {
     height: 22px;
   }
 
-  /* The username/Sign out menu, Buy Me a Coffee, and the theme toggle all move into Settings on
-     mobile instead (see .settings-section-mobile-only) -- with the coffee popover, hamburger,
-     brand, search, and the remaining topbar buttons all fighting for a ~360px-wide bar, these were
-     the lowest-frequency actions and the easiest to make one tap deeper without losing reach to
-     them. */
-  .user-account-menu,
+  /* The username link, Buy Me a Coffee, and the theme toggle all move into Settings on mobile
+     instead (see .settings-section-mobile-only, and Sign out's unconditional Account section) --
+     with the coffee popover, hamburger, brand, search, and the remaining topbar buttons all
+     fighting for a ~360px-wide bar, these were the lowest-frequency actions and the easiest to
+     make one tap deeper without losing reach to them. The gear icon stays as the one way into
+     Settings on mobile. */
+  .user-account-link,
   .coffee-menu,
   .theme-toggle {
     display: none;
