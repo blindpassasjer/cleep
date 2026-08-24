@@ -303,3 +303,14 @@ export function IconEdit(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function IconUsers(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3.5 19.5a5.5 5.5 0 0 1 11 0" />
+      <path d="M16 4.8a3 3 0 0 1 0 6" />
+      <path d="M15 13.3a5.5 5.5 0 0 1 5.5 6.2" />
+    </Icon>
+  );
+}

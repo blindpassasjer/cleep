@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { attachSession } from './middleware/session.js';
 import { authRateLimit } from './middleware/rateLimit.js';
 import { authRouter } from './routes/auth.js';
+import { adminRouter } from './routes/admin.js';
 import { notesRouter } from './routes/notes.js';
 import { labelsRouter } from './routes/labels.js';
 import { noteAttachmentsRouter } from './routes/noteAttachments.js';
@@ -35,6 +36,7 @@ app.use(cookieParser(process.env.SESSION_SECRET));
 app.use(attachSession);
 
 app.use('/api/auth', authRateLimit, authRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api/notes/:noteId/attachments', noteAttachmentsRouter);
 app.use('/api/notes', notesRouter);
 app.use('/api/labels', labelsRouter);

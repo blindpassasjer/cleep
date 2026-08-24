@@ -1,4 +1,4 @@
-import type { Attachment, ChecklistItem, Note, Label, PublicUser, View } from '../types';
+import type { AdminUser, Attachment, ChecklistItem, Note, Label, PublicUser, View } from '../types';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
@@ -34,19 +34,37 @@ export const api = {
     request<{ error: string | null }>('/auth/password', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) }),
   updateProfile: (patch: Partial<Pick<PublicUser, 'email' | 'username'>>) =>
     request<{ user: PublicUser | null; error: string | null }>('/auth/me', { method: 'PATCH', body: JSON.stringify(patch) }),
+  registrationStatus: () => request<{ open: boolean }>('/auth/registration-status'),
+  register: (email: string, username: string, password: string) =>
+    request<{ user: PublicUser | null; error: string | null }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, username, password }),
+    }),
 
-  listNotes: (view: View) => {
-    const qs =
-      view.kind === 'archive'
-        ? '?view=archive'
-        : view.kind === 'trash'
-          ? '?view=trash'
-          : view.kind === 'recordings'
-            ? '?view=recordings'
-            : view.kind === 'label'
-              ? `?label=${encodeURIComponent(view.id)}`
-              : '';
-    return request<{ notes: Note[] }>(`/notes${qs}`);
+  adminListUsers: () => request<{ users: AdminUser[] }>('/admin/users'),
+  adminCreateUser: (email: string, username: string, password: string, role: 'user' | 'admin') =>
+    request<{ user: AdminUser | null; error: string | null }>('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify({ email, username, password, role }),
+    }),
+  adminDeleteUser: (id: string) => request<{ ok: true }>(`/admin/users/${id}`, { method: 'DELETE' }),
+  adminGetSettings: () => request<{ registrationOpen: boolean }>('/admin/settings'),
+  adminSetRegistrationOpen: (registrationOpen: boolean) =>
+    request<{ registrationOpen: boolean; error: string | null }>('/admin/settings', {
+      method: 'PATCH',
+      body: JSON.stringify({ registrationOpen }),
+    }),
+
+  listNotes: (view: View, page?: { limit?: number; offset?: number }) => {
+    const params = new URLSearchParams();
+    if (view.kind === 'archive') params.set('view', 'archive');
+    else if (view.kind === 'trash') params.set('view', 'trash');
+    else if (view.kind === 'recordings') params.set('view', 'recordings');
+    else if (view.kind === 'label') params.set('label', view.id);
+    if (page?.limit !== undefined) params.set('limit', String(page.limit));
+    if (page?.offset !== undefined) params.set('offset', String(page.offset));
+    const qs = params.toString();
+    return request<{ notes: Note[] }>(`/notes${qs ? `?${qs}` : ''}`);
   },
   createNote: (
     title: string,

@@ -137,7 +137,7 @@ body {
   animation: composer-open 0.2s cubic-bezier(0.2, 0.8, 0.4, 1);
 }
 
-.login-card button {
+.login-card button:not(.login-mode-switch) {
   margin-top: 0.5rem;
   padding: 0.65rem;
   border: none;
@@ -160,6 +160,15 @@ body {
 .login-error {
   color: #ff453a;
   font-size: 0.85rem;
+}
+
+.login-mode-switch {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /* App shell */
@@ -522,6 +531,7 @@ button.user-account-link {
 .settings-toggle-group {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.4rem;
 }
 
@@ -552,7 +562,10 @@ button.user-account-link {
 }
 
 .settings-logout {
+  align-self: flex-start;
   justify-content: center;
+  padding-left: 1.2rem;
+  padding-right: 1.2rem;
   color: #ff453a;
   border-color: color-mix(in srgb, #ff453a 35%, var(--border));
   font-weight: 600;
@@ -563,8 +576,9 @@ button.user-account-link {
 }
 
 .settings-submit {
+  align-self: flex-start;
   margin-top: 0.25rem;
-  padding: 0.6rem;
+  padding: 0.6rem 1.4rem;
   border: none;
   border-radius: 10px;
   background: var(--accent);
@@ -585,6 +599,65 @@ button.user-account-link {
 .settings-submit:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.admin-users-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.admin-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-user-row:last-child {
+  border-bottom: none;
+}
+
+.admin-user-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.admin-user-badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1d1d1f;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.admin-user-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 0.15rem;
+}
+
+.admin-user-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.admin-user-delete:hover {
+  background: color-mix(in srgb, #ff453a 12%, transparent);
+  color: #ff453a;
 }
 
 .app-body {

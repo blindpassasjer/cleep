@@ -15,6 +15,7 @@ import { NotesGrid } from './components/NotesGrid';
 import { BulkActionsBar } from './components/BulkActionsBar';
 import { Toast } from './components/Toast';
 import { SettingsPage } from './components/SettingsPage';
+import { AdminPage } from './components/AdminPage';
 import type { NoteColor, View } from './types';
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
   const appRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<NoteComposerHandle>(null);
@@ -102,6 +104,7 @@ export default function App() {
     createNote,
     discardDraftNote,
     updateNote,
+    setNoteAttachments,
     reorderNotes,
     trashNote,
     restoreNote,
@@ -194,7 +197,10 @@ export default function App() {
         search={search}
         onSearchChange={setSearch}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
-        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSettings={() => {
+          setAdminOpen(false);
+          setSettingsOpen(true);
+        }}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
@@ -205,7 +211,8 @@ export default function App() {
           view={view}
           onChange={(v) => {
             setSettingsOpen(false);
-            withGridViewTransition(appRef.current?.querySelector('.notes-grid') ?? null, () => setView(v));
+            setAdminOpen(false);
+            withGridViewTransition(appRef.current?.querySelector('.notes-grid-root') ?? null, () => setView(v));
           }}
           labels={labels}
           onCreateLabel={createLabel}
@@ -215,7 +222,9 @@ export default function App() {
           open={sidebarOpen}
         />
         <main className="main">
-          {settingsOpen ? (
+          {adminOpen ? (
+            <AdminPage currentUser={user} onClose={() => setAdminOpen(false)} />
+          ) : settingsOpen ? (
             <SettingsPage
               user={user}
               onUserUpdate={setUser}
@@ -223,6 +232,14 @@ export default function App() {
               onLogout={logout}
               theme={theme}
               onToggleTheme={toggleTheme}
+              onOpenAdmin={
+                user.role === 'admin'
+                  ? () => {
+                      setSettingsOpen(false);
+                      setAdminOpen(true);
+                    }
+                  : undefined
+              }
             />
           ) : (
             <>
@@ -261,6 +278,7 @@ export default function App() {
                 selectedIds={selectedIds}
                 onToggleSelect={toggleSelect}
                 onUpdate={updateNote}
+                onAttachmentsChange={setNoteAttachments}
                 onTrash={trashNote}
                 onRestore={restoreNote}
                 onDelete={deleteNote}

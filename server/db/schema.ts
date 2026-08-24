@@ -22,6 +22,12 @@ export const users = pgTable(
   }),
 );
 
+// Single-row table (id is always 'singleton') for instance-wide admin settings.
+export const appSettings = pgTable('app_settings', {
+  id: text('id').primaryKey(),
+  registrationOpen: boolean('registration_open').notNull().default(false),
+});
+
 export const sessions = pgTable('sessions', {
   token: text('token').primaryKey(),
   userId: text('user_id')

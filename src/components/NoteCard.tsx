@@ -19,6 +19,7 @@ interface Props {
     id: string,
     patch: Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived' | 'isChecklist' | 'items'>>,
   ) => void;
+  onAttachmentsChange: (id: string, attachments: Attachment[]) => void;
   onTrash: (id: string) => void;
   onRestore: (id: string) => void;
   onDelete: (id: string) => void;
@@ -40,6 +41,7 @@ export function NoteCard({
   selectionActive,
   onToggleSelect,
   onUpdate,
+  onAttachmentsChange,
   onTrash,
   onRestore,
   onDelete,
@@ -58,6 +60,9 @@ export function NoteCard({
   const [content, setContent] = useState(note.content);
   const [items, setItems] = useState<ChecklistItem[]>(note.items);
   const [attachments, setAttachments] = useState<Attachment[]>(note.attachments);
+  // Mirrors `attachments` synchronously so uploadAttachment/deleteAttachment can read the latest
+  // value without a stale closure over React state (matches the same pattern in NoteComposer).
+  const attachmentsRef = useRef<Attachment[]>(note.attachments);
   const [labelIds, setLabelIds] = useState(note.labelIds);
   const [showLabels, setShowLabels] = useState(false);
   const [showColors, setShowColors] = useState(false);
@@ -79,6 +84,7 @@ export function NoteCard({
     setContent(note.content);
     setItems(note.items);
     setAttachments(note.attachments);
+    attachmentsRef.current = note.attachments;
     setOriginRect(cardRef.current?.getBoundingClientRect() ?? null);
     setSourceHidden(true);
     setEditing(true);
@@ -112,14 +118,21 @@ export function NoteCard({
 
   async function uploadAttachment(file: File | Blob, filename?: string, waveformPeaks?: number[]) {
     const { attachment } = await api.uploadAttachment(note.id, file, filename, waveformPeaks);
-    setAttachments((prev) => [...prev, attachment]);
+    const next = [...attachmentsRef.current, attachment];
+    attachmentsRef.current = next;
+    setAttachments(next);
+    onAttachmentsChange(note.id, next);
   }
 
   async function deleteAttachment(attachmentId: string) {
-    setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
+    const next = attachmentsRef.current.filter((a) => a.id !== attachmentId);
+    attachmentsRef.current = next;
+    setAttachments(next);
     try {
       await api.deleteAttachment(note.id, attachmentId);
+      onAttachmentsChange(note.id, next);
     } catch {
+      attachmentsRef.current = note.attachments;
       setAttachments(note.attachments);
     }
   }

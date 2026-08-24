@@ -63,6 +63,11 @@ export interface PublicUser {
   role: string;
 }
 
+export interface AdminUser extends PublicUser {
+  createdAt: string;
+  noteCount: number;
+}
+
 export type View =
   | { kind: 'notes' }
   | { kind: 'recordings' }

@@ -43,6 +43,13 @@
       "when": 1787517351287,
       "tag": "0005_deep_warbound",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787601234621,
+      "tag": "0006_early_molecule_man",
+      "breakpoints": true
     }
   ]
 }

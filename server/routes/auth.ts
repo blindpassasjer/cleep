@@ -12,6 +12,7 @@ import {
   requireAuth,
 } from '../middleware/session.js';
 import { toPublicUser } from '../lib/user.js';
+import { getRegistrationOpen } from '../lib/settings.js';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -21,6 +22,67 @@ function isUniqueViolation(err: unknown): boolean {
 }
 
 export const authRouter = Router();
+
+authRouter.get('/registration-status', async (_req, res) => {
+  try {
+    res.json({ open: await getRegistrationOpen() });
+  } catch (err) {
+    console.error('Registration status lookup failed:', err);
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
+});
+
+authRouter.post('/register', async (req, res) => {
+  try {
+    if (!(await getRegistrationOpen())) {
+      res.status(403).json({ user: null, error: 'Registration is currently closed.' });
+      return;
+    }
+
+    const { email, username, password } = req.body ?? {};
+
+    if (typeof email !== 'string' || !email.includes('@')) {
+      res.json({ user: null, error: 'A valid email is required.' });
+      return;
+    }
+    if (typeof username !== 'string' || username.trim().length < 2) {
+      res.json({ user: null, error: 'Username must be at least 2 characters.' });
+      return;
+    }
+    if (typeof password !== 'string' || password.length < 8) {
+      res.json({ user: null, error: 'Password must be at least 8 characters.' });
+      return;
+    }
+
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    const emailLower = email.trim().toLowerCase();
+    const [row] = await db
+      .insert(users)
+      .values({
+        id: crypto.randomUUID(),
+        email: email.trim(),
+        emailLower,
+        username: username.trim(),
+        passwordHash,
+        role: 'user',
+      })
+      .returning();
+
+    const token = generateSessionToken();
+    const expiresAt = sessionExpiry();
+    await db.insert(sessions).values({ token, userId: row.id, expiresAt });
+    setSessionCookie(res, token, expiresAt, true);
+
+    res.status(201).json({ user: toPublicUser(row), error: null });
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      res.json({ user: null, error: 'An account with this email already exists.' });
+      return;
+    }
+    console.error('Registration failed:', err);
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
+});
 
 authRouter.post('/login', async (req, res) => {
   try {

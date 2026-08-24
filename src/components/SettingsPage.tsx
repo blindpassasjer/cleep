@@ -11,9 +11,10 @@ interface Props {
   onLogout: () => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onToggleTheme }: Props) {
+export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onToggleTheme, onOpenAdmin }: Props) {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -157,6 +158,11 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
 
       <div className="settings-form">
         <h3 className="settings-section-title">Account</h3>
+        {onOpenAdmin && (
+          <button type="button" className="settings-toggle" onClick={onOpenAdmin}>
+            Manage users
+          </button>
+        )}
         <button type="button" className="settings-toggle settings-logout" onClick={onLogout}>
           Sign out
         </button>

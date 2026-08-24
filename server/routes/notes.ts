@@ -36,10 +36,17 @@ const VALID_COLORS = new Set([
   'gray',
 ]);
 
+const MAX_PAGE_SIZE = 200;
+
 notesRouter.get('/', async (req, res) => {
   try {
     const { view, label } = req.query;
     const filters = [eq(notes.userId, req.userId!)];
+
+    const rawLimit = Number(req.query.limit);
+    const limit = Number.isInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, MAX_PAGE_SIZE) : undefined;
+    const rawOffset = Number(req.query.offset);
+    const offset = Number.isInteger(rawOffset) && rawOffset > 0 ? rawOffset : 0;
 
     if (typeof label === 'string' && label) {
       const labeledRows = await db.select({ noteId: noteLabels.noteId }).from(noteLabels).where(eq(noteLabels.labelId, label));
@@ -63,11 +70,17 @@ notesRouter.get('/', async (req, res) => {
       }
     }
 
-    const rows = await db
+    const baseQuery = db
       .select()
       .from(notes)
       .where(and(...filters))
       .orderBy(desc(notes.pinned), desc(notes.position), desc(notes.updatedAt));
+    const rows =
+      limit !== undefined
+        ? await baseQuery.limit(limit).offset(offset)
+        : offset > 0
+          ? await baseQuery.offset(offset)
+          : await baseQuery;
 
     const noteIds = rows.map((r) => r.id);
     const labelRows = noteIds.length

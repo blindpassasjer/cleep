@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
-import { sessions } from '../db/schema.js';
+import { sessions, users } from '../db/schema.js';
 
 const SESSION_COOKIE = 'session';
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -77,4 +77,19 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     return;
   }
   next();
+}
+
+/** Must run after requireAuth. Only queried on admin-gated routes, not on every request. */
+export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const rows = await db.select().from(users).where(eq(users.id, req.userId!)).limit(1);
+    if (rows[0]?.role !== 'admin') {
+      res.status(403).json({ error: 'Admin access required.' });
+      return;
+    }
+    next();
+  } catch (err) {
+    console.error('Admin check failed:', err);
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
 }

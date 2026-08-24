@@ -13,6 +13,7 @@ interface Props {
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onUpdate: (id: string, patch: NoteUpdatePatch) => void;
+  onAttachmentsChange: (id: string, attachments: Note['attachments']) => void;
   onTrash: (id: string) => void;
   onRestore: (id: string) => void;
   onDelete: (id: string) => void;
@@ -28,6 +29,7 @@ export function NotesGrid({
   selectedIds,
   onToggleSelect,
   onUpdate,
+  onAttachmentsChange,
   onTrash,
   onRestore,
   onDelete,
@@ -77,9 +79,14 @@ export function NotesGrid({
     onReorder(ids);
   }
 
-  function renderSection(sectionNotes: Note[], containerRef: React.RefObject<HTMLDivElement>, setCardRef: (id: string, el: HTMLDivElement | null) => void) {
+  function renderSection(
+    sectionNotes: Note[],
+    containerRef: React.RefObject<HTMLDivElement>,
+    setCardRef: (id: string, el: HTMLDivElement | null) => void,
+    key: string,
+  ) {
     return (
-      <div className="notes-grid" ref={containerRef}>
+      <div className="notes-grid" ref={containerRef} key={key}>
         {sectionNotes.map((note) => (
           <div key={note.id} className="notes-grid-item" ref={(el) => setCardRef(note.id, el)}>
             <NoteCard
@@ -91,6 +98,7 @@ export function NotesGrid({
               selectionActive={selectedIds.size > 0}
               onToggleSelect={onToggleSelect}
               onUpdate={onUpdate}
+              onAttachmentsChange={onAttachmentsChange}
               onTrash={onTrash}
               onRestore={onRestore}
               onDelete={onDelete}
@@ -110,20 +118,21 @@ export function NotesGrid({
     );
   }
 
-  if (!showSections) {
-    // Exactly one of these is empty (or both are, e.g. an empty view) -- whichever grid was laid
-    // out against the non-empty list is the one to render `notes` through, since that list and
-    // `notes` are then the same notes in the same order (the other filter contributed nothing).
-    const grid = otherNotes.length === 0 ? pinnedGrid : otherGrid;
-    return renderSection(notes, grid.containerRef, grid.setCardRef);
-  }
-
+  // Always mount both grids (an empty one just costs a 0px-tall container) and key every child
+  // explicitly, instead of switching the returned root between "one div" and "a 4-child fragment"
+  // depending on showSections. That structural type change used to tear down and rebuild the
+  // whole subtree on every transition across the pin boundary (e.g. switching views), which raced
+  // with the view-transition-name App.tsx tags a `.notes-grid` with -- by the time the browser
+  // captured the "new" snapshot, the DOM had already been torn down and rebuilt again, corrupting
+  // the transition's layout math and leaving a stale offset that only a hard refresh cleared. A
+  // single stable wrapper also gives App.tsx's querySelector('.notes-grid-root') exactly one
+  // unambiguous, always-present target instead of picking arbitrarily between two `.notes-grid`s.
   return (
-    <>
-      <div className="notes-section-label">Pinned</div>
-      {renderSection(pinnedNotes, pinnedGrid.containerRef, pinnedGrid.setCardRef)}
-      <div className="notes-section-label">Others</div>
-      {renderSection(otherNotes, otherGrid.containerRef, otherGrid.setCardRef)}
-    </>
+    <div className="notes-grid-root">
+      {showSections && <div className="notes-section-label" key="pinned-label">Pinned</div>}
+      {renderSection(pinnedNotes, pinnedGrid.containerRef, pinnedGrid.setCardRef, 'pinned-grid')}
+      {showSections && <div className="notes-section-label" key="other-label">Others</div>}
+      {renderSection(otherNotes, otherGrid.containerRef, otherGrid.setCardRef, 'other-grid')}
+    </div>
   );
 }

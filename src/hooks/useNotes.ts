@@ -4,6 +4,7 @@ import type { ChecklistItem, Note, NoteColor, View } from '../types';
 import type { NotifyFn } from './useToast';
 
 const DELETE_UNDO_MS = 5000;
+const FIRST_PAGE_SIZE = 30;
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : 'Something went wrong. Please try again.';
@@ -15,20 +16,39 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
   const [error, setError] = useState<string | null>(null);
   const [justCreatedId, setJustCreatedId] = useState<string | null>(null);
   const pendingDeletes = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  // Bumped on every reload() call so a background page-2 fetch that resolves after a newer
+  // reload() has already started (view switched, search cleared, etc.) knows to discard itself
+  // instead of merging stale notes into the current view.
+  const requestIdRef = useRef(0);
 
   // `enabled` (whether a user is actually logged in yet) has to be a dependency here, not just
   // `view` -- otherwise this hook's very first render (App mounts it unconditionally, before
   // useAuth's initial /auth/me check has resolved) fires the effect below once against an
   // unauthenticated session, and since `view` never changes across the login transition, nothing
   // ever prompts a retry: notes silently never load until the user happens to change views.
+  //
+  // Loads in two phases: a small first page so the grid paints quickly, then the rest of the
+  // notes in the background, merged in once they arrive. Search and drag-reorder both operate on
+  // whatever's in `notes` regardless of how many pages have landed, so this only affects how fast
+  // the first paint shows up -- not correctness.
   const reload = useCallback(async () => {
     if (!enabled) return;
+    const requestId = ++requestIdRef.current;
     setLoading(true);
+    let firstPage: Note[];
     try {
-      const { notes: rows } = await api.listNotes(view);
-      setNotes(rows);
+      ({ notes: firstPage } = await api.listNotes(view, { limit: FIRST_PAGE_SIZE }));
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
+    }
+    if (requestId !== requestIdRef.current) return;
+    setNotes(firstPage);
+
+    if (firstPage.length === FIRST_PAGE_SIZE) {
+      const { notes: rest } = await api.listNotes(view, { offset: FIRST_PAGE_SIZE });
+      if (requestId === requestIdRef.current && rest.length > 0) {
+        setNotes((prev) => [...prev, ...rest]);
+      }
     }
   }, [view, enabled]);
 
@@ -67,7 +87,15 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
       // replay the pop-in for the whole grid. Cleared once the grid's had a chance to notice.
       setJustCreatedId(note.id);
       setTimeout(() => setJustCreatedId((current) => (current === note.id ? null : current)), 1000);
-      await reload();
+      // Splice the new note straight into local state instead of refetching the whole list --
+      // the composer/recorder only mount for the view the note is created into (see App.tsx), so
+      // it always belongs here. New notes are never pinned, so it slots in right after the
+      // pinned block, ahead of the rest (it has the highest `position` of any unpinned note).
+      setNotes((prev) => {
+        const insertAt = prev.findIndex((n) => !n.pinned);
+        const idx = insertAt === -1 ? prev.length : insertAt;
+        return [...prev.slice(0, idx), note, ...prev.slice(idx)];
+      });
       return note;
     } catch (err) {
       setError(errorMessage(err));
@@ -92,7 +120,10 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
     try {
       await api.updateNote(id, patch);
       if (patch.archived !== undefined) {
-        await reload();
+        // Archiving/unarchiving always moves the note out of whatever view it's currently shown
+        // in (the notes list is already scoped server-side to one view), so drop it locally
+        // instead of refetching the full list to find out it's gone.
+        setNotes((prev) => prev.filter((n) => n.id !== id));
         notify(patch.archived ? 'Note archived' : 'Note unarchived', {
           onUndo: async () => {
             await api.updateNote(id, { archived: !patch.archived });
@@ -104,6 +135,14 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
       setError(errorMessage(err));
       await reload();
     }
+  }
+
+  // Attachment uploads/deletes hit the server directly from NoteCard (not through updateNote), so
+  // nothing else keeps this hook's `notes` array in sync with them. Without this, the in-memory
+  // note a reopened NoteCard resets its local attachment state from is stale, making a
+  // just-uploaded image (already saved server-side) look like it never saved until the next reload().
+  function setNoteAttachments(id: string, attachments: Note['attachments']) {
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, attachments } : n)));
   }
 
   async function reorderNotes(orderedIds: string[]) {
@@ -227,6 +266,7 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
     createNote,
     discardDraftNote,
     updateNote,
+    setNoteAttachments,
     reorderNotes,
     trashNote,
     restoreNote,
