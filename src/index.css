@@ -203,7 +203,13 @@ body {
   align-items: center;
   gap: 0.75rem;
   flex: 1 1 0;
-  min-width: 0;
+  /* No min-width: 0 here (unlike .search-wrap, which wants to shrink) -- this defaults to
+     min-width: auto, so the browser won't shrink it past the brand icon/text's own intrinsic
+     width. Without that floor, as the window narrows the search bar's flex-basis (560px) claims
+     space ahead of this side's, squeezing it thinner than "Cleep" + the icon actually need and
+     letting that content overflow rightward, underneath the search bar, instead of just stopping
+     the shrink there. .user-menu (the mirroring flex sibling on the other side) already behaves
+     this way since it never had the override. */
 }
 
 .brand {
