@@ -21,7 +21,7 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
     <header className="topbar">
       <div className="topbar-left">
         <button type="button" className="sidebar-toggle" title="Menu" onClick={onToggleSidebar}>
-          <IconMenu />
+          <IconMenu width={22} height={22} />
         </button>
         <div className="brand">
           <img src="/favicon.svg" alt="" className="brand-icon" />
@@ -29,7 +29,7 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
         </div>
       </div>
       <div className="search-wrap">
-        <IconSearch className="search-icon" />
+        <IconSearch className="search-icon" width={20} height={20} />
         <input
           ref={searchRef}
           className="search"
@@ -56,10 +56,10 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
           className="icon-only theme-toggle"
           onClick={onToggleTheme}
         >
-          {theme === 'dark' ? <IconMoon width={18} height={18} /> : <IconSun width={18} height={18} />}
+          {theme === 'dark' ? <IconMoon width={20} height={20} /> : <IconSun width={20} height={20} />}
         </button>
         <button type="button" title="Settings" className="icon-only" onClick={onOpenSettings}>
-          <IconSettings width={18} height={18} />
+          <IconSettings width={20} height={20} />
         </button>
       </div>
     </header>

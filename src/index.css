@@ -173,7 +173,7 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.65rem 1.25rem;
+  padding: 0.85rem 1.5rem;
   border-bottom: 1px solid var(--border);
   background: var(--topbar-bg);
   backdrop-filter: blur(20px);
@@ -189,7 +189,7 @@ body {
   background: transparent;
   color: var(--fg);
   cursor: pointer;
-  padding: 0.4rem;
+  padding: 0.55rem;
   border-radius: 8px;
   flex-shrink: 0;
 }
@@ -216,15 +216,15 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .brand-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   flex-shrink: 0;
 }
 
@@ -239,7 +239,7 @@ body {
 
 .search-icon {
   position: absolute;
-  left: 0.65rem;
+  left: 0.85rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--muted);
@@ -248,12 +248,12 @@ body {
 
 .search {
   width: 100%;
-  padding: 0.5rem 0.75rem 0.5rem 2.1rem;
-  border-radius: 10px;
+  padding: 0.7rem 0.9rem 0.7rem 2.5rem;
+  border-radius: 12px;
   border: 1px solid transparent;
   background: var(--surface);
   color: var(--fg);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .search:focus {
@@ -273,13 +273,13 @@ body {
 }
 
 .user-menu button {
-  padding: 0.4rem 0.85rem;
+  padding: 0.5rem 0.95rem;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: transparent;
   color: var(--fg);
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   transition: background-color 0.12s ease, transform 0.1s ease;
 }
 
@@ -298,7 +298,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.4rem;
+  padding: 0.55rem;
   border: none;
   color: var(--fg);
   border-radius: 999px;
@@ -621,9 +621,9 @@ button.user-account-link {
 .sidebar button {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.7rem;
   text-align: left;
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.75rem;
   border: none;
   background: transparent;
   color: var(--fg);
@@ -636,8 +636,8 @@ button.user-account-link {
 /* Same icon/text size on desktop and mobile -- only touch-target padding differs (see the mobile
    media query below). */
 .sidebar button svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
 }
 
@@ -2303,7 +2303,7 @@ button.user-account-link {
 
   .topbar {
     gap: 0.6rem;
-    padding: 0.75rem 0.85rem;
+    padding: 0.85rem 0.85rem;
   }
 
   .topbar-left {
@@ -2315,8 +2315,19 @@ button.user-account-link {
   }
 
   .brand-icon {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .user-menu button.icon-only,
+  .user-menu a.icon-only {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .sidebar-toggle {
+    min-width: 44px;
+    min-height: 44px;
   }
 
   /* On mobile, let the search bar claim the space instead of splitting it evenly with the (now
@@ -2349,30 +2360,24 @@ button.user-account-link {
     display: none;
   }
 
-  /* No persistent icon rail on mobile any more -- the sidebar is always sized like the full
-     drawer (matching .sidebar.open below) and simply slid off-screen with a transform when closed,
-     rather than shrunk down to an 84px strip of icons. That rail was permanently eating width from
-     an already-narrow viewport for three icons that are one hamburger-tap away regardless; going
-     fully off-canvas gives the notes grid the full width instead. Sliding via transform (rather
-     than animating width, as before) is also what keeps .main's reserved space unconditional -- see
-     .main below -- since the sidebar's layout box is the same size whether it's on- or off-screen. */
+  /* The rail sits fixed at all times (both collapsed and open) rather than only going fixed on
+     open -- otherwise toggling it removed/restored its 84px from the flex layout each time, which
+     made .main (and so the whole notes grid) resize and reflow along with it. Reserving that same
+     84px unconditionally on .main below means opening the drawer only ever changes width *on top
+     of* the grid, as a true overlay, and the grid underneath never has to react to it. */
   .sidebar {
     position: fixed;
     top: var(--topbar-height, 0px);
     bottom: 0;
     left: 0;
-    width: min(88vw, 340px);
-    padding: 0.85rem 0.75rem 1.1rem 0.4rem;
+    width: 84px;
+    padding: 0.85rem 0.4rem;
     /* A plain, direction-agnostic transition -- collapsing and expanding play the exact same
        animation in reverse, unlike the View Transitions API's image-scale interpolation (used for
        the notes grid instead), which visibly reads differently shrinking vs. growing. */
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: width 0.2s ease, padding 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
     z-index: 40;
-  }
-
-  .sidebar:not(.open) {
-    transform: translateX(-100%);
   }
 
   .sidebar button,
@@ -2448,10 +2453,10 @@ button.user-account-link {
   }
 
   .main {
-    /* No margin reservation needed any more -- the sidebar has no persistent on-screen footprint
-       on mobile now (it's fully off-canvas until opened, see .sidebar), so the grid gets the full
-       width. It still never reflows when the drawer opens, since the sidebar stays out-of-flow
-       (position: fixed) throughout and only slides on top of the grid via transform. */
+    /* Reserves the rail's 84px unconditionally (the sidebar is fixed/out-of-flow at all times on
+       mobile now -- see .sidebar) so this never has to change, and the grid inside never reflows,
+       whether the sidebar is showing its collapsed rail or its opened drawer. */
+    margin-left: 84px;
     padding: 1rem 0.85rem;
   }
 
