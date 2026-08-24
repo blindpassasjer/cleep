@@ -4,13 +4,17 @@ export interface ToastState {
   id: number;
   message: string;
   onUndo?: () => void;
+  actionLabel?: string;
 }
 
 interface ShowOptions {
   onUndo?: () => void;
   onExpire?: () => void;
   duration?: number;
+  actionLabel?: string;
 }
+
+export type NotifyFn = (message: string, options?: ShowOptions) => void;
 
 const DEFAULT_DURATION = 5000;
 
@@ -22,7 +26,7 @@ export function useToast() {
   const show = useCallback((message: string, options: ShowOptions = {}) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     const id = ++idRef.current;
-    setToast({ id, message, onUndo: options.onUndo });
+    setToast({ id, message, onUndo: options.onUndo, actionLabel: options.actionLabel });
     timeoutRef.current = setTimeout(() => {
       setToast((current) => {
         if (current?.id !== id) return current;

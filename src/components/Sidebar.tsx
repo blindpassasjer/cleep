@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTag, IconTrash } from './Icons';
 import type { Label, View } from '../types';
+import type { NotifyFn } from '../hooks/useToast';
 
 interface Props {
   view: View;
@@ -9,10 +10,11 @@ interface Props {
   onCreateLabel: (name: string) => Promise<string | null>;
   onRenameLabel: (id: string, name: string) => Promise<string | null>;
   onDeleteLabel: (id: string) => void;
+  notify: NotifyFn;
   open: boolean;
 }
 
-export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, onDeleteLabel, open }: Props) {
+export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, onDeleteLabel, notify, open }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -44,8 +46,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
     setEditError(null);
   }
 
-  async function submitEdit(e: React.FormEvent, label: Label) {
-    e.preventDefault();
+  async function commitEdit(label: Label) {
     const trimmed = editName.trim();
     if (!trimmed || trimmed === label.name) {
       setEditingId(null);
@@ -58,6 +59,11 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
     }
     setEditingId(null);
     setEditError(null);
+  }
+
+  async function submitEdit(e: React.FormEvent, label: Label) {
+    e.preventDefault();
+    await commitEdit(label);
   }
 
   return (
@@ -84,9 +90,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
               onKeyDown={(e) => {
                 if (e.key === 'Escape') setEditingId(null);
               }}
-              onBlur={() => {
-                if (!editName.trim()) setEditingId(null);
-              }}
+              onBlur={() => commitEdit(label)}
             />
           </form>
         ) : (
@@ -101,8 +105,13 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
               className="sidebar-label-delete"
               title="Delete collection"
               onClick={() => {
-                if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
-                onDeleteLabel(label.id);
+                notify(`Delete "${label.name}"?`, {
+                  actionLabel: 'Delete',
+                  onUndo: () => {
+                    if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
+                    onDeleteLabel(label.id);
+                  },
+                });
               }}
             >
               <IconClose width={14} height={14} />

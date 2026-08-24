@@ -211,6 +211,7 @@ export default function App() {
           onCreateLabel={createLabel}
           onRenameLabel={renameLabel}
           onDeleteLabel={deleteLabel}
+          notify={show}
           open={sidebarOpen}
         />
         <main className="main">

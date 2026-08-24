@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
 import type { ChecklistItem, Note, NoteColor, View } from '../types';
+import type { NotifyFn } from './useToast';
 
 const DELETE_UNDO_MS = 5000;
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : 'Something went wrong. Please try again.';
 }
-
-type NotifyFn = (message: string, options?: { onUndo?: () => void; onExpire?: () => void; duration?: number }) => void;
 
 export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
   const [notes, setNotes] = useState<Note[]>([]);

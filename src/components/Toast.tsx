@@ -8,7 +8,7 @@ export function Toast({ toast, onDismiss }: { toast: ToastState | null; onDismis
       <span>{toast.message}</span>
       {toast.onUndo && (
         <button type="button" onClick={() => onDismiss(true)}>
-          Undo
+          {toast.actionLabel ?? 'Undo'}
         </button>
       )}
       <button type="button" className="toast-close" title="Dismiss" onClick={() => onDismiss(false)}>
