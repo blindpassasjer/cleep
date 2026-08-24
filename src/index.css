@@ -405,9 +405,12 @@ body {
   background: var(--accent);
 }
 
-/* Username, in the topbar -- just another way into Settings (like the gear icon), not a menu of
-   its own, so Sign out doesn't need its own dropdown/popover any more. */
-.user-account-link {
+/* Username, in the topbar -- reads as a name label with a subtle hover affordance, not another
+   button, even though it's clickable (opens Settings, same as the gear icon). The type selector on
+   ".user-menu button" outweighs a bare class, so its 1px border would otherwise win out over the
+   "border: none" below despite this rule coming later -- button.user-account-link matches that
+   specificity to actually override it. */
+button.user-account-link {
   border: none;
   background: transparent;
   color: var(--muted);
@@ -700,6 +703,7 @@ body {
   flex-shrink: 0;
 }
 
+.sidebar-label-edit,
 .sidebar-label-delete {
   display: flex;
   align-items: center;
@@ -708,12 +712,43 @@ body {
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  padding: 0.3rem 0.6rem 0.3rem 0;
+  padding: 0.3rem;
   visibility: hidden;
 }
 
+.sidebar-label-delete {
+  padding-right: 0.6rem;
+}
+
+.sidebar-label-row:hover .sidebar-label-edit,
 .sidebar-label-row:hover .sidebar-label-delete {
   visibility: visible;
+}
+
+.sidebar-label-edit:hover,
+.sidebar-label-delete:hover {
+  color: var(--fg);
+}
+
+/* Inline rename form -- same row height/padding as .sidebar-label-name so swapping into and out
+   of edit mode doesn't shift anything above/below it. */
+.sidebar-edit-label {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--muted);
+}
+
+.sidebar-edit-label input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.95rem;
 }
 
 .sidebar-add-label-btn {
@@ -1505,6 +1540,57 @@ body {
 .format-toolbar button:hover {
   background: var(--surface);
   color: var(--fg);
+}
+
+/* Insert GIF/image URL popover -- replaces a pair of window.prompt() calls with an inline form so
+   it doesn't block the page with a native dialog. */
+.format-toolbar-image {
+  position: relative;
+  display: flex;
+}
+
+.format-image-popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  width: max(220px, 16rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-hover);
+  padding: 0.6rem;
+  z-index: 60;
+  animation: composer-open 0.14s cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+
+.format-image-popover input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 0.85rem;
+}
+
+.format-image-popover-submit {
+  align-self: flex-end;
+  padding: 0.35rem 0.9rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1d1d1f;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.format-image-popover-submit:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 /* Multi-select */
@@ -2317,6 +2403,7 @@ body {
 
   .sidebar-label-text,
   .sidebar-section-label,
+  .sidebar-label-edit,
   .sidebar-label-delete,
   .sidebar-add-label {
     display: none;
@@ -2356,6 +2443,7 @@ body {
     display: block;
   }
 
+  .sidebar.open .sidebar-label-edit,
   .sidebar.open .sidebar-label-delete {
     display: flex;
   }
@@ -2388,11 +2476,13 @@ body {
     gap: 0.85rem;
   }
 
+  .sidebar-label-edit,
   .sidebar-label-delete {
     min-width: 44px;
     min-height: 44px;
   }
 
+  .sidebar-label-edit svg,
   .sidebar-label-delete svg {
     width: 20px;
     height: 20px;

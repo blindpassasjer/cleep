@@ -294,3 +294,12 @@ export function IconCoffee(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function IconEdit(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z" />
+      <path d="M14 5.5 18.5 10" />
+    </Icon>
+  );
+}

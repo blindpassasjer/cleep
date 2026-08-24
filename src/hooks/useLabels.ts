@@ -25,10 +25,17 @@ export function useLabels(enabled: boolean) {
     return null;
   }
 
+  async function renameLabel(id: string, name: string): Promise<string | null> {
+    const { label, error } = await api.renameLabel(id, name);
+    if (error) return error;
+    if (label) setLabels((prev) => prev.map((l) => (l.id === id ? label : l)).sort((a, b) => a.name.localeCompare(b.name)));
+    return null;
+  }
+
   async function deleteLabel(id: string) {
     setLabels((prev) => prev.filter((l) => l.id !== id));
     await api.deleteLabel(id);
   }
 
-  return { labels, createLabel, deleteLabel };
+  return { labels, createLabel, renameLabel, deleteLabel };
 }

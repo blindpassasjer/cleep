@@ -106,8 +106,9 @@ export default function App() {
     trashNote,
     restoreNote,
     deleteNote,
+    emptyTrash,
   } = useNotes(view, show, !!user);
-  const { labels, createLabel, deleteLabel } = useLabels(!!user);
+  const { labels, createLabel, renameLabel, deleteLabel } = useLabels(!!user);
 
   useEffect(() => {
     setSelectedIds(new Set());
@@ -177,14 +178,6 @@ export default function App() {
     show(`${ids.length} note${ids.length === 1 ? '' : 's'} restored`);
   }
 
-  async function emptyTrash() {
-    const ids = notes.map((n) => n.id);
-    if (ids.length === 0) return;
-    if (!window.confirm(`Permanently delete ${ids.length} note${ids.length === 1 ? '' : 's'}? This can't be undone.`)) return;
-    await Promise.all(ids.map((id) => api.deleteNote(id)));
-    await reload();
-  }
-
   if (loading) {
     return <div className="loading-screen">Loading…</div>;
   }
@@ -216,6 +209,7 @@ export default function App() {
           }}
           labels={labels}
           onCreateLabel={createLabel}
+          onRenameLabel={renameLabel}
           onDeleteLabel={deleteLabel}
           open={sidebarOpen}
         />

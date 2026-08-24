@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { IconBold, IconBulletList, IconGif, IconHeading, IconItalic, IconNumberedList } from './Icons';
 
 interface Props {
@@ -52,17 +52,12 @@ function cycleHeading() {
   document.execCommand('formatBlock', false, `<${next.toLowerCase()}>`);
 }
 
-// Inserts an <img> on its own line at the cursor -- used for pasting in an external GIF link
-// (Giphy/Tenor and the like) without needing to upload a file first.
-function insertImageUrl() {
-  const url = window.prompt('GIF or image URL (e.g. a Giphy or Tenor link)');
-  if (!url || !url.trim()) return;
-  const alt = window.prompt('Description (optional, for accessibility)') ?? '';
-  document.execCommand('insertHTML', false, `<img src="${escapeAttr(url.trim())}" alt="${escapeAttr(alt.trim())}">`);
-}
-
 export function TextFormatToolbar({ editorRef, onChange }: Props) {
   const [format, setFormat] = useState<FormatState>(NO_FORMAT);
+  const [showImageForm, setShowImageForm] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageAlt, setImageAlt] = useState('');
+  const imagePopoverRef = useRef<HTMLFormElement>(null);
 
   // Keeps the toolbar's pressed/active look in sync with wherever the caret actually is -- moving
   // it into bold text should light up the Bold button without any click, same as it disappears
@@ -78,15 +73,45 @@ export function TextFormatToolbar({ editorRef, onChange }: Props) {
     return () => document.removeEventListener('selectionchange', update);
   }, [editorRef]);
 
+  useEffect(() => {
+    if (!showImageForm) return;
+    function onPointerDown(e: MouseEvent) {
+      if (imagePopoverRef.current && !imagePopoverRef.current.contains(e.target as Node)) setShowImageForm(false);
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowImageForm(false);
+    }
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [showImageForm]);
+
   function run(fn: (el: HTMLDivElement) => void) {
     withEditor(editorRef, onChange, fn);
     const el = editorRef.current;
     if (el) setFormat(readFormatState(el));
   }
 
+  function submitImage(e: React.FormEvent) {
+    e.preventDefault();
+    const url = imageUrl.trim();
+    if (!url) return;
+    const alt = imageAlt.trim();
+    run(() => document.execCommand('insertHTML', false, `<img src="${escapeAttr(url)}" alt="${escapeAttr(alt)}">`));
+    setShowImageForm(false);
+    setImageUrl('');
+    setImageAlt('');
+  }
+
   // Clicking a toolbar button would normally blur the editor and collapse its selection before
   // the click handler runs -- preventing that default on mousedown keeps the selection intact so
-  // the subsequent execCommand call actually applies to what the user selected.
+  // the subsequent execCommand call actually applies to what the user selected. Needed here too,
+  // even though the click itself only opens a form -- it's what preserves the cursor position the
+  // image should land at once the form is actually submitted (typing into the form's own inputs
+  // necessarily steals focus from the editor in between).
   const preserveSelection = (e: React.MouseEvent) => e.preventDefault();
 
   return (
@@ -136,9 +161,31 @@ export function TextFormatToolbar({ editorRef, onChange }: Props) {
       >
         <IconNumberedList width={16} height={16} />
       </button>
-      <button type="button" title="Insert GIF/image URL" onMouseDown={preserveSelection} onClick={() => run(insertImageUrl)}>
-        <IconGif width={16} height={16} />
-      </button>
+      <div className="format-toolbar-image">
+        <button
+          type="button"
+          title="Insert GIF/image URL"
+          className={showImageForm ? 'active' : ''}
+          onMouseDown={preserveSelection}
+          onClick={() => setShowImageForm((v) => !v)}
+        >
+          <IconGif width={16} height={16} />
+        </button>
+        {showImageForm && (
+          <form className="format-image-popover" ref={imagePopoverRef} onSubmit={submitImage}>
+            <input
+              autoFocus
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="GIF or image URL"
+            />
+            <input value={imageAlt} onChange={(e) => setImageAlt(e.target.value)} placeholder="Description (optional)" />
+            <button type="submit" className="format-image-popover-submit" disabled={!imageUrl.trim()}>
+              Insert
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

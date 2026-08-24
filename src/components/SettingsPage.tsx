@@ -114,6 +114,54 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         </button>
       </form>
 
+      <form className="settings-form" onSubmit={submitPassword}>
+        <h3 className="settings-section-title">Change password</h3>
+        <label className="settings-field">
+          <span>Current password</span>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+        </label>
+        <label className="settings-field">
+          <span>New password</span>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
+        </label>
+        <label className="settings-field">
+          <span>Confirm new password</span>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
+        </label>
+        {error && <div className="composer-error">{error}</div>}
+        {success && <div className="settings-success">Password updated.</div>}
+        <button type="submit" className="settings-submit" disabled={saving}>
+          {saving ? 'Saving…' : 'Update password'}
+        </button>
+      </form>
+
+      <div className="settings-form">
+        <h3 className="settings-section-title">Account</h3>
+        <button type="button" className="settings-toggle settings-logout" onClick={onLogout}>
+          Sign out
+        </button>
+      </div>
+
       <div className="settings-form">
         <h3 className="settings-section-title">Date display</h3>
         <div className="settings-toggle-group">
@@ -165,54 +213,6 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
             <IconArrowUpRight width={15} height={15} />
           </a>
         </div>
-      </div>
-
-      <form className="settings-form" onSubmit={submitPassword}>
-        <h3 className="settings-section-title">Change password</h3>
-        <label className="settings-field">
-          <span>Current password</span>
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            autoComplete="current-password"
-            required
-          />
-        </label>
-        <label className="settings-field">
-          <span>New password</span>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            autoComplete="new-password"
-            minLength={8}
-            required
-          />
-        </label>
-        <label className="settings-field">
-          <span>Confirm new password</span>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            autoComplete="new-password"
-            minLength={8}
-            required
-          />
-        </label>
-        {error && <div className="composer-error">{error}</div>}
-        {success && <div className="settings-success">Password updated.</div>}
-        <button type="submit" className="settings-submit" disabled={saving}>
-          {saving ? 'Saving…' : 'Update password'}
-        </button>
-      </form>
-
-      <div className="settings-form">
-        <h3 className="settings-section-title">Account</h3>
-        <button type="button" className="settings-toggle settings-logout" onClick={onLogout}>
-          Sign out
-        </button>
       </div>
     </div>
   );

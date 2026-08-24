@@ -184,6 +184,41 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
     });
   }
 
+  // "Empty trash" -- same undo-delay pattern as deleteNote above (a shared timeout referenced by
+  // every id, rather than a blocking confirm dialog): notes disappear immediately, an undo toast
+  // stands in for the confirmation, and the permanent delete only actually happens once that
+  // window passes without being undone.
+  function emptyTrash() {
+    const ids = notes.map((n) => n.id);
+    if (ids.length === 0) return;
+    setError(null);
+    setNotes([]);
+    const timeoutId = setTimeout(async () => {
+      for (const id of ids) pendingDeletes.current.delete(id);
+      try {
+        await Promise.all(ids.map((id) => api.deleteNote(id)));
+      } catch (err) {
+        setError(errorMessage(err));
+        await reload();
+      }
+    }, DELETE_UNDO_MS);
+    for (const id of ids) pendingDeletes.current.set(id, timeoutId);
+
+    notify(`${ids.length} note${ids.length === 1 ? '' : 's'} permanently deleted`, {
+      duration: DELETE_UNDO_MS,
+      onUndo: () => {
+        let any = false;
+        for (const id of ids) {
+          if (pendingDeletes.current.delete(id)) any = true;
+        }
+        if (any) {
+          clearTimeout(timeoutId);
+          reload();
+        }
+      },
+    });
+  }
+
   return {
     notes,
     loading,
@@ -197,5 +232,6 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
     trashNote,
     restoreNote,
     deleteNote,
+    emptyTrash,
   };
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconArchive, IconClose, IconNotes, IconPlus, IconTag, IconTrash } from './Icons';
+import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTag, IconTrash } from './Icons';
 import type { Label, View } from '../types';
 
 interface Props {
@@ -7,14 +7,19 @@ interface Props {
   onChange: (view: View) => void;
   labels: Label[];
   onCreateLabel: (name: string) => Promise<string | null>;
+  onRenameLabel: (id: string, name: string) => Promise<string | null>;
   onDeleteLabel: (id: string) => void;
   open: boolean;
 }
 
-export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel, open }: Props) {
+export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, onDeleteLabel, open }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editError, setEditError] = useState<string | null>(null);
 
   async function submitLabel(e: React.FormEvent) {
     e.preventDefault();
@@ -33,6 +38,28 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel, 
     setError(null);
   }
 
+  function startEdit(label: Label) {
+    setEditingId(label.id);
+    setEditName(label.name);
+    setEditError(null);
+  }
+
+  async function submitEdit(e: React.FormEvent, label: Label) {
+    e.preventDefault();
+    const trimmed = editName.trim();
+    if (!trimmed || trimmed === label.name) {
+      setEditingId(null);
+      return;
+    }
+    const err = await onRenameLabel(label.id, trimmed);
+    if (err) {
+      setEditError(err);
+      return;
+    }
+    setEditingId(null);
+    setEditError(null);
+  }
+
   return (
     <nav className={`sidebar ${open ? 'open' : ''}`}>
       <button className={view.kind === 'notes' ? 'active' : ''} onClick={() => onChange({ kind: 'notes' })}>
@@ -46,23 +73,44 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onDeleteLabel, 
       </button>
 
       <div className="sidebar-section-label">Collections</div>
-      {labels.map((label) => (
-        <div key={label.id} className={`sidebar-label-row ${view.kind === 'label' && view.id === label.id ? 'active' : ''}`}>
-          <button className="sidebar-label-name" onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}>
-            <IconTag /> <span className="sidebar-label-text">{label.name}</span>
-          </button>
-          <button
-            className="sidebar-label-delete"
-            title="Delete collection"
-            onClick={() => {
-              if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
-              onDeleteLabel(label.id);
-            }}
-          >
-            <IconClose width={14} height={14} />
-          </button>
-        </div>
-      ))}
+      {labels.map((label) =>
+        editingId === label.id ? (
+          <form key={label.id} className="sidebar-edit-label" onSubmit={(e) => submitEdit(e, label)}>
+            <IconTag width={14} height={14} />
+            <input
+              autoFocus
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setEditingId(null);
+              }}
+              onBlur={() => {
+                if (!editName.trim()) setEditingId(null);
+              }}
+            />
+          </form>
+        ) : (
+          <div key={label.id} className={`sidebar-label-row ${view.kind === 'label' && view.id === label.id ? 'active' : ''}`}>
+            <button className="sidebar-label-name" onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}>
+              <IconTag /> <span className="sidebar-label-text">{label.name}</span>
+            </button>
+            <button className="sidebar-label-edit" title="Rename collection" onClick={() => startEdit(label)}>
+              <IconEdit width={14} height={14} />
+            </button>
+            <button
+              className="sidebar-label-delete"
+              title="Delete collection"
+              onClick={() => {
+                if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
+                onDeleteLabel(label.id);
+              }}
+            >
+              <IconClose width={14} height={14} />
+            </button>
+          </div>
+        ),
+      )}
+      {editError && <div className="sidebar-label-error">{editError}</div>}
 
       {adding ? (
         <form className="sidebar-add-label" onSubmit={submitLabel}>
