@@ -2361,17 +2361,17 @@ button.user-account-link {
   }
 
   /* The rail sits fixed at all times (both collapsed and open) rather than only going fixed on
-     open -- otherwise toggling it removed/restored its 84px from the flex layout each time, which
+     open -- otherwise toggling it removed/restored its 64px from the flex layout each time, which
      made .main (and so the whole notes grid) resize and reflow along with it. Reserving that same
-     84px unconditionally on .main below means opening the drawer only ever changes width *on top
+     64px unconditionally on .main below means opening the drawer only ever changes width *on top
      of* the grid, as a true overlay, and the grid underneath never has to react to it. */
   .sidebar {
     position: fixed;
     top: var(--topbar-height, 0px);
     bottom: 0;
     left: 0;
-    width: 84px;
-    padding: 0.85rem 0.4rem;
+    width: 64px;
+    padding: 0.85rem 0.2rem;
     /* A plain, direction-agnostic transition -- collapsing and expanding play the exact same
        animation in reverse, unlike the View Transitions API's image-scale interpolation (used for
        the notes grid instead), which visibly reads differently shrinking vs. growing. */
@@ -2384,6 +2384,15 @@ button.user-account-link {
   .sidebar-label-name,
   .sidebar-add-label-btn {
     justify-content: flex-start;
+  }
+
+  /* Collapsed rail is narrow and its labels are hidden entirely (see .sidebar-label-text below),
+     so left-aligning the icon (as the open drawer does, to line up with its now-visible text)
+     would just push it off-center in the slim column. Center it instead. */
+  .sidebar:not(.open) button {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .sidebar-label-text,
@@ -2453,10 +2462,10 @@ button.user-account-link {
   }
 
   .main {
-    /* Reserves the rail's 84px unconditionally (the sidebar is fixed/out-of-flow at all times on
+    /* Reserves the rail's 64px unconditionally (the sidebar is fixed/out-of-flow at all times on
        mobile now -- see .sidebar) so this never has to change, and the grid inside never reflows,
        whether the sidebar is showing its collapsed rail or its opened drawer. */
-    margin-left: 84px;
+    margin-left: 64px;
     padding: 1rem 0.85rem;
   }
 
