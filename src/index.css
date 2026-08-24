@@ -2337,19 +2337,6 @@ button.user-account-link {
     margin: 0;
   }
 
-  /* Sized closer to Google Keep's mobile search bar — taller, fully pill-shaped, roomier icon. */
-  .search {
-    padding: 1rem 1.1rem 1rem 3.1rem;
-    border-radius: 999px;
-    font-size: 1.05rem;
-  }
-
-  .search-icon {
-    left: 1.05rem;
-    width: 22px;
-    height: 22px;
-  }
-
   /* The username link, Buy Me a Coffee, and the theme toggle all move into Settings on mobile
      instead (see .settings-section-mobile-only, and Sign out's unconditional Account section) --
      with the coffee popover, hamburger, brand, search, and the remaining topbar buttons all
@@ -2360,13 +2347,6 @@ button.user-account-link {
   .coffee-menu,
   .theme-toggle {
     display: none;
-  }
-
-  .user-menu button {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 0.5rem 0.7rem;
-    font-size: 0.95rem;
   }
 
   /* No persistent icon rail on mobile any more -- the sidebar is always sized like the full
@@ -2452,48 +2432,6 @@ button.user-account-link {
     display: block;
   }
 
-  /* Bigger touch targets on mobile, matching Keep's mobile drawer proportions -- but icon and text
-     size stay the same as desktop (see the base .sidebar button / .sidebar-label-name rules). */
-  .sidebar button {
-    min-height: 52px;
-    padding: 0.85rem 1.1rem;
-    gap: 0.85rem;
-    border-radius: 999px;
-  }
-
-  .sidebar-section-label {
-    margin: 1.6rem 1.1rem 0.6rem;
-    font-size: 0.85rem;
-  }
-
-  .sidebar-label-row {
-    min-height: 52px;
-  }
-
-  .sidebar-label-name {
-    min-height: 52px;
-    padding: 0.75rem 0.5rem 0.75rem 1.1rem;
-    gap: 0.85rem;
-  }
-
-  .sidebar-label-edit,
-  .sidebar-label-delete {
-    min-width: 44px;
-    min-height: 44px;
-  }
-
-  .sidebar-label-edit svg,
-  .sidebar-label-delete svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .sidebar-add-label-btn {
-    min-height: 52px;
-    padding: 0.85rem 1.1rem;
-    font-size: 0.95rem;
-  }
-
   .sidebar-backdrop {
     display: block;
     position: fixed;
@@ -2571,55 +2509,9 @@ button.user-account-link {
     transform: scale(0.95);
   }
 
-  /* Touch targets: every icon-only button below shares the same cramped desktop sizing (padding
-     around an 18px icon, ~30px total) built for a mouse pointer. Bump them toward the ~40-44px
-     range that's actually comfortable to tap, and give checkboxes/color swatches more room too. */
-  .note-footer button,
-  .note-modal-header button,
-  .note-modal-footer > button:not(.text-action),
-  .attachments-toolbar button,
-  .bulk-bar-actions button,
-  .bulk-bar-close,
-  .composer-collapsed-actions button {
-    min-width: 40px;
-    min-height: 40px;
-    padding: 0.5rem;
-  }
-
-  .note-footer button svg,
-  .note-modal-header button svg,
-  .note-modal-footer > button:not(.text-action) svg,
-  .attachments-toolbar button svg,
-  .bulk-bar-actions button svg,
-  .composer-collapsed-actions button svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  /* Top bar's primary controls get the biggest targets on mobile -- these are the first things a
-     thumb reaches for on every screen. */
-  .sidebar-toggle,
-  .user-menu button.icon-only,
-  .user-menu a.icon-only {
-    min-width: 48px;
-    min-height: 48px;
-    padding: 0.6rem;
-  }
-
-  .sidebar-toggle svg,
-  .user-menu button.icon-only svg,
-  .user-menu a.icon-only svg {
-    width: 24px;
-    height: 24px;
-  }
-
   .composer-plus {
     width: 20px;
     height: 20px;
-  }
-
-  .note-footer {
-    gap: 0.3rem;
   }
 
   .note-select-toggle {
@@ -2656,20 +2548,6 @@ button.user-account-link {
   .checklist-remove {
     min-width: 36px;
     min-height: 36px;
-  }
-
-  .toast {
-    padding: 0.8rem 0.6rem 0.8rem 1.2rem;
-    gap: 0.5rem;
-  }
-
-  .toast button {
-    min-height: 40px;
-    padding: 0.4rem 0.8rem;
-  }
-
-  .toast-close {
-    min-width: 40px;
   }
 
   .waveform-play-btn {
