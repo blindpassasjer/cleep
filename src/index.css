@@ -768,8 +768,26 @@ body {
   color: var(--muted);
 }
 
+/* A shared grid across every row (see Sidebar.tsx) rather than each row sizing its own name column
+   independently -- grid's `auto` track sizing takes the widest item assigned to that column across
+   *all* rows in the grid, so the name column ends up exactly as wide as the single longest label
+   needs, and the rename/delete column lines up at that same x on every row. minmax(0, auto) still
+   lets it shrink (down to 0) when the sidebar itself doesn't have room, so .sidebar-label-text's
+   ellipsis below can still kick in for a name that's long even on its own. */
+.sidebar-labels-list {
+  display: grid;
+  grid-template-columns: minmax(0, auto) auto auto;
+}
+
+/* subgrid -- rather than each row defining its own 3-column grid -- makes this row's tracks the
+   *same* tracks as .sidebar-labels-list's, which is what actually makes the columns line up across
+   rows; a plain (non-subgrid) grid here would just re-run auto-sizing per row, same problem flex
+   had. Still its own box (not display: contents), so :hover/.active's full-row background below
+   keeps working. */
 .sidebar-label-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   align-items: center;
   border-radius: 8px;
 }
@@ -827,11 +845,10 @@ body {
 }
 
 .sidebar-label-name {
-  /* min-width: 0 overrides the flex-item default of min-width: auto, which otherwise refuses to
-     shrink this below the label text's full, unwrapped width -- on a narrow mobile drawer that
-     pushed the row (icon + full name + rename/delete buttons) wider than the sidebar itself. Lets
+  /* min-width: 0 overrides the grid-item default of min-width: auto, which otherwise refuses to
+     shrink this below the label text's full, unwrapped width -- same underlying issue flex items
+     have, and it'd fight the grid column's own minmax(0, auto) above the same way. Lets
      .sidebar-label-text's ellipsis below actually kick in instead. */
-  flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -874,13 +891,17 @@ body {
 }
 
 /* Inline rename form -- same row height/padding as .sidebar-label-name so swapping into and out
-   of edit mode doesn't shift anything above/below it. */
+   of edit mode doesn't shift anything above/below it. grid-column spans the full width of the
+   parent .sidebar-labels-list grid -- without it, this would only fill the (possibly narrow) first
+   "name" column like any other ungoverned child, instead of the whole sidebar width it needs while
+   editing. */
 .sidebar-edit-label {
   display: flex;
   align-items: center;
   gap: 0.65rem;
   padding: 0.5rem 0.75rem;
   color: var(--muted);
+  grid-column: 1 / -1;
 }
 
 .sidebar-edit-label input {
@@ -2661,7 +2682,6 @@ body {
     box-shadow: var(--shadow-hover);
   }
 
-  .sidebar.open .sidebar-label-row,
   .sidebar.open .sidebar-add-label-btn {
     display: flex;
   }
@@ -2670,16 +2690,6 @@ body {
   .sidebar.open .sidebar-label-name,
   .sidebar.open .sidebar-add-label-btn {
     justify-content: flex-start;
-  }
-
-  /* Desktop's flex: 1 (see .sidebar-label-name) is meant to stretch the clickable name to the far
-     edge where the hover-revealed rename/delete buttons sit -- but those are permanently visible
-     on mobile (no hover to gate them on), so that same flex: 1 left a wide, empty-looking gap
-     between a short name and the buttons on every single row, not just the one being hovered.
-     Shrink-to-content here instead, so the buttons sit right after the name like the rest of the
-     row's content, not pinned to the far right. */
-  .sidebar.open .sidebar-label-name {
-    flex: 0 1 auto;
   }
 
   .sidebar.open .sidebar-label-text {

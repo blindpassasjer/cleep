@@ -101,55 +101,60 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
       </button>
 
       <div className="sidebar-section-label">Collections</div>
-      {labels.map((label) =>
-        editingId === label.id ? (
-          <form key={label.id} className="sidebar-edit-label" onSubmit={(e) => submitEdit(e, label)}>
-            <IconTagFilled className={`label-icon label-icon-${label.color}`} aria-hidden="true" />
-            <input
-              autoFocus
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') setEditingId(null);
-              }}
-              onBlur={() => commitEdit(label)}
-            />
-          </form>
-        ) : (
-          <div key={label.id} className={`sidebar-label-row ${view.kind === 'label' && view.id === label.id ? 'active' : ''}`}>
-            <button
-              className="sidebar-label-name"
-              title={label.name}
-              onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}
-            >
+      {/* A shared grid, not each row sizing independently -- so the rename/delete column lines up
+          at the same x across every row (as wide as the single longest label name needs), rather
+          than each row's buttons trailing right after that row's own, differently-sized name. */}
+      <div className="sidebar-labels-list">
+        {labels.map((label) =>
+          editingId === label.id ? (
+            <form key={label.id} className="sidebar-edit-label" onSubmit={(e) => submitEdit(e, label)}>
               <IconTagFilled className={`label-icon label-icon-${label.color}`} aria-hidden="true" />
-              <span className="sidebar-label-text">{label.name}</span>
-            </button>
-            {showRowActions && (
-              <>
-                <button className="sidebar-label-edit" title="Rename collection" onClick={() => startEdit(label)}>
-                  <IconEdit width={14} height={14} />
-                </button>
-                <button
-                  className="sidebar-label-delete"
-                  title="Delete collection"
-                  onClick={() => {
-                    notify(`Delete "${label.name}"?`, {
-                      actionLabel: 'Delete',
-                      onUndo: () => {
-                        if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
-                        onDeleteLabel(label.id);
-                      },
-                    });
-                  }}
-                >
-                  <IconClose width={14} height={14} />
-                </button>
-              </>
-            )}
-          </div>
-        ),
-      )}
+              <input
+                autoFocus
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setEditingId(null);
+                }}
+                onBlur={() => commitEdit(label)}
+              />
+            </form>
+          ) : (
+            <div key={label.id} className={`sidebar-label-row ${view.kind === 'label' && view.id === label.id ? 'active' : ''}`}>
+              <button
+                className="sidebar-label-name"
+                title={label.name}
+                onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}
+              >
+                <IconTagFilled className={`label-icon label-icon-${label.color}`} aria-hidden="true" />
+                <span className="sidebar-label-text">{label.name}</span>
+              </button>
+              {showRowActions && (
+                <>
+                  <button className="sidebar-label-edit" title="Rename collection" onClick={() => startEdit(label)}>
+                    <IconEdit width={14} height={14} />
+                  </button>
+                  <button
+                    className="sidebar-label-delete"
+                    title="Delete collection"
+                    onClick={() => {
+                      notify(`Delete "${label.name}"?`, {
+                        actionLabel: 'Delete',
+                        onUndo: () => {
+                          if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
+                          onDeleteLabel(label.id);
+                        },
+                      });
+                    }}
+                  >
+                    <IconClose width={14} height={14} />
+                  </button>
+                </>
+              )}
+            </div>
+          ),
+        )}
+      </div>
       {editError && <div className="sidebar-label-error">{editError}</div>}
 
       {adding ? (
