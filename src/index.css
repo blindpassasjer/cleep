@@ -1550,13 +1550,6 @@ body {
   background: var(--surface);
 }
 
-.color-picker-toggle .color-swatch {
-  /* Swatches are normally interactive buttons (see .color-swatch:hover/:active) -- as the single
-     always-visible one representing the current color, it shouldn't visually react to hover/press
-     itself, that already happens on the wrapping .color-picker-toggle button. */
-  pointer-events: none;
-}
-
 .color-picker-popover {
   position: absolute;
   bottom: 100%;
