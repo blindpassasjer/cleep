@@ -34,7 +34,7 @@ export function buildDemoNotes(): Note[] {
   return [
     note({
       id: 'note-welcome',
-      title: 'Welcome to Cleep 👋',
+      title: 'Welcome to Cleep',
       content:
         'This is a live demo — everything you do here (create, edit, drag, archive, trash) runs entirely in your browser and is saved to this device only. Nothing is sent to a server. Refresh and it\'s still here; use "Reset demo data" in Settings to start over.',
       color: 'yellow',

@@ -14,6 +14,14 @@ anything.
 
 No subscriptions, no ads, no third party reading your notes — just your data, on your server.
 
+<p>
+  <img src="docs/screenshots/notes-grid-light.png" alt="Cleep notes grid, light mode" width="49%" />
+  <img src="docs/screenshots/notes-grid-dark.png" alt="Cleep notes grid, dark mode" width="49%" />
+</p>
+<p>
+  <img src="docs/screenshots/checklist-note.png" alt="Editing a checklist note" width="49%" />
+</p>
+
 ## Features
 
 - 📝 **Notes & checklists** — pin, color, archive, trash (with undo everywhere it matters)
