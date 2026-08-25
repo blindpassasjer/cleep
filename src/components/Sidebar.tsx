@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { COLORS } from './ColorPicker';
 import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTagFilled, IconTrash } from './Icons';
 import type { Label, NoteColor, View } from '../types';
@@ -27,6 +27,13 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editError, setEditError] = useState<string | null>(null);
+
+  // Rename/delete are only reachable with the drawer open (see the collapsed-rail CSS) -- if the
+  // drawer closes mid-rename, drop back to the plain row instead of leaving the rename form
+  // (unreachable to cancel or submit by tap) stranded in the collapsed rail.
+  useEffect(() => {
+    if (!open) setEditingId(null);
+  }, [open]);
 
   async function submitLabel(e: React.FormEvent) {
     e.preventDefault();

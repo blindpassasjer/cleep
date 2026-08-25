@@ -2509,10 +2509,6 @@ button.user-account-link {
     border-radius: 0;
   }
 
-  .sidebar:not(.open) .sidebar-label-name {
-    padding: 0.45rem 0;
-  }
-
   .sidebar.open {
     width: min(88vw, 340px);
     padding: 0.85rem 0.75rem 1.1rem 0.4rem;
@@ -2584,6 +2580,13 @@ button.user-account-link {
 
   .bulk-bar-actions {
     margin-left: 0;
+  }
+
+  /* Base .trash-actions right-aligns its buttons within a centered 600px-max box -- on screens
+     narrower than that, the box fills the available width, so flex-end leaves the buttons
+     stranded off to one side instead of centered. */
+  .trash-actions {
+    justify-content: center;
   }
 
   /* The note modal becomes a full-screen sheet rather than a centered card, matching how Keep's
