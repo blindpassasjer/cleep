@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { COLORS } from './ColorPicker';
 import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTagFilled, IconTrash } from './Icons';
 import type { Label, NoteColor, View } from '../types';
+import { useIsMobile } from '../hooks/useIsMobile';
 import type { NotifyFn } from '../hooks/useToast';
 
 // 'default' (no color) isn't in the rotation -- auto-assigning it would defeat the point of
@@ -27,13 +28,18 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editError, setEditError] = useState<string | null>(null);
+  const isMobile = useIsMobile();
+  // On mobile the collapsed rail must show only the tag icon -- rename/delete only become
+  // reachable once the drawer is open. Gated here in JS (not just CSS) so it can't accidentally
+  // render on the narrow rail regardless of stylesheet cascade/caching.
+  const showRowActions = !isMobile || open;
 
-  // Rename/delete are only reachable with the drawer open (see the collapsed-rail CSS) -- if the
+  // Rename/delete are only reachable with the drawer open (see showRowActions above) -- if the
   // drawer closes mid-rename, drop back to the plain row instead of leaving the rename form
   // (unreachable to cancel or submit by tap) stranded in the collapsed rail.
   useEffect(() => {
-    if (!open) setEditingId(null);
-  }, [open]);
+    if (!showRowActions) setEditingId(null);
+  }, [showRowActions]);
 
   async function submitLabel(e: React.FormEvent) {
     e.preventDefault();
@@ -115,24 +121,28 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
               <IconTagFilled className={`label-icon label-icon-${label.color}`} aria-hidden="true" />
               <span className="sidebar-label-text">{label.name}</span>
             </button>
-            <button className="sidebar-label-edit" title="Rename collection" onClick={() => startEdit(label)}>
-              <IconEdit width={14} height={14} />
-            </button>
-            <button
-              className="sidebar-label-delete"
-              title="Delete collection"
-              onClick={() => {
-                notify(`Delete "${label.name}"?`, {
-                  actionLabel: 'Delete',
-                  onUndo: () => {
-                    if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
-                    onDeleteLabel(label.id);
-                  },
-                });
-              }}
-            >
-              <IconClose width={14} height={14} />
-            </button>
+            {showRowActions && (
+              <>
+                <button className="sidebar-label-edit" title="Rename collection" onClick={() => startEdit(label)}>
+                  <IconEdit width={14} height={14} />
+                </button>
+                <button
+                  className="sidebar-label-delete"
+                  title="Delete collection"
+                  onClick={() => {
+                    notify(`Delete "${label.name}"?`, {
+                      actionLabel: 'Delete',
+                      onUndo: () => {
+                        if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
+                        onDeleteLabel(label.id);
+                      },
+                    });
+                  }}
+                >
+                  <IconClose width={14} height={14} />
+                </button>
+              </>
+            )}
           </div>
         ),
       )}
