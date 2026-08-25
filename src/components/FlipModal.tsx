@@ -3,6 +3,12 @@ import { createPortal } from 'react-dom';
 
 const FLIP_OPEN_MS = 220;
 const FLIP_CLOSE_MS = 180;
+// Window.innerHeight is the layout viewport, which (per the comment below) stays put when the
+// keyboard opens -- so a visualViewport significantly shorter than it is a reliable "keyboard is
+// currently covering part of the screen" signal, independent of the browser chrome/URL-bar changes
+// that shrink both by similar (much smaller) amounts. 120px comfortably clears those while still
+// catching every real keyboard, which eats a third of the screen or more.
+const KEYBOARD_THRESHOLD_PX = 120;
 
 export type CloseFn = (mode?: 'flip' | 'fade') => void;
 
@@ -58,6 +64,7 @@ export function FlipModal({ originRect, getOriginRect, panelClassName, onClose, 
     if (!vv || !el) return;
     function update() {
       el!.style.setProperty('--modal-vvh', `${vv!.height}px`);
+      el!.classList.toggle('keyboard-open', window.innerHeight - vv!.height > KEYBOARD_THRESHOLD_PX);
     }
     update();
     vv.addEventListener('resize', update);

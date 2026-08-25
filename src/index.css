@@ -2744,6 +2744,15 @@ button.user-account-link {
     border-radius: 0;
   }
 
+  /* With the keyboard up there's rarely room for both a comfortable typing area and the footer
+     (color/collections/archive/delete/done) -- drop the footer entirely rather than continuing to
+     squeeze it, and rely on the always-visible header's pin/close buttons in the meantime. Pin,
+     Close (which saves), and Escape/back-gesture all still work with the footer gone; the footer
+     itself reappears the instant .keyboard-open clears, e.g. tapping out of the text field. */
+  .note-modal.keyboard-open .note-modal-footer {
+    display: none;
+  }
+
   .composer-fab {
     display: flex;
     align-items: center;
