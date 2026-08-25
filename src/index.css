@@ -2716,7 +2716,13 @@ body {
   }
 
   .sidebar.open {
-    width: min(88vw, 340px);
+    /* max-content, not a fixed width -- the drawer should end right after its widest row (the
+       delete button, rightmost element in a label row), not always reach out to 340px/88vw
+       regardless of how short the label names are. min-width keeps it from looking cramped when
+       there's little/no content; max-width is still the old cap, for a genuinely long label name. */
+    width: max-content;
+    min-width: 200px;
+    max-width: min(88vw, 340px);
     padding: 0.85rem 0.75rem 1.1rem 0.4rem;
     z-index: 50;
     box-shadow: var(--shadow-hover);
