@@ -546,6 +546,12 @@ body {
   gap: 0.4rem;
 }
 
+/* Light/Dark are short, equal-weight choices (unlike the longer relative/absolute date labels
+   above) -- a row reads more like a single two-way switch, which is what this actually is. */
+.settings-toggle-group-row {
+  flex-direction: row;
+}
+
 .settings-toggle {
   display: flex;
   align-items: center;
@@ -565,11 +571,17 @@ body {
   background: var(--bg);
 }
 
-.settings-toggle.active {
+.settings-toggle.active,
+.settings-toggle-accent {
   border-color: var(--accent);
   background: var(--accent);
   color: #1d1d1f;
   font-weight: 600;
+}
+
+.settings-toggle-accent:hover {
+  filter: brightness(1.05);
+  background: var(--accent);
 }
 
 .settings-logout {
@@ -753,6 +765,14 @@ body {
   border-radius: 8px;
 }
 
+/* Truncates a long collection name instead of letting it force the row (and so the sidebar) wider
+   -- only takes effect once .sidebar-label-name above actually has room to shrink into. */
+.sidebar-label-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Tag icon tinted to a collection's auto-assigned color -- distinct from the pastel .color-*
    note backgrounds (those are near-invisible tints meant for a whole card, not legible at icon size). */
 .label-icon {
@@ -794,7 +814,12 @@ body {
 }
 
 .sidebar-label-name {
+  /* min-width: 0 overrides the flex-item default of min-width: auto, which otherwise refuses to
+     shrink this below the label text's full, unwrapped width -- on a narrow mobile drawer that
+     pushed the row (icon + full name + rename/delete buttons) wider than the sidebar itself. Lets
+     .sidebar-label-text's ellipsis below actually kick in instead. */
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 0.65rem;

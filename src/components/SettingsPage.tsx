@@ -174,17 +174,14 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         </div>
       )}
 
-      <div className="settings-form settings-card">
-        <h3 className="settings-section-title">Account</h3>
-        {onOpenAdmin && (
-          <button type="button" className="settings-toggle" onClick={onOpenAdmin}>
+      {onOpenAdmin && (
+        <div className="settings-form settings-card">
+          <h3 className="settings-section-title">Account</h3>
+          <button type="button" className="settings-toggle settings-toggle-accent" onClick={onOpenAdmin}>
             Manage users
           </button>
-        )}
-        <button type="button" className="settings-toggle settings-logout" onClick={onLogout}>
-          Sign out
-        </button>
-      </div>
+        </div>
+      )}
 
       <div className="settings-form settings-card">
         <h3 className="settings-section-title">Date display</h3>
@@ -210,7 +207,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
           topbar, so repeating them here would just be clutter. */}
       <div className="settings-form settings-card settings-section-mobile-only">
         <h3 className="settings-section-title">Appearance</h3>
-        <div className="settings-toggle-group">
+        <div className="settings-toggle-group settings-toggle-group-row">
           <button type="button" className={`settings-toggle ${theme === 'light' ? 'active' : ''}`} onClick={() => theme === 'dark' && onToggleTheme()}>
             <IconSun width={16} height={16} /> Light
           </button>
@@ -241,6 +238,14 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
             <IconArrowUpRight width={15} height={15} />
           </a>
         </div>
+      </div>
+
+      {/* Its own card at the very bottom, apart from everything else -- a session-ending action
+          shouldn't sit next to a navigation one (Manage users) where a mis-tap is easy. */}
+      <div className="settings-form settings-card">
+        <button type="button" className="settings-toggle settings-logout" onClick={onLogout}>
+          Sign out
+        </button>
       </div>
     </div>
   );
