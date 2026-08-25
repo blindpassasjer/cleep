@@ -775,14 +775,18 @@ body {
 }
 
 /* A shared grid across every row (see Sidebar.tsx) rather than each row sizing its own name column
-   independently -- grid's `auto` track sizing takes the widest item assigned to that column across
-   *all* rows in the grid, so the name column ends up exactly as wide as the single longest label
-   needs, and the rename/delete column lines up at that same x on every row. minmax(0, auto) still
-   lets it shrink (down to 0) when the sidebar itself doesn't have room, so .sidebar-label-text's
-   ellipsis below can still kick in for a name that's long even on its own. */
+   independently -- grid's `max-content` track sizing takes the widest item assigned to that column
+   across *all* rows in the grid, so the name column ends up exactly as wide as the single longest
+   label needs, and the rename/delete column lines up at that same x on every row. minmax(0,
+   max-content) still lets it shrink (down to 0) when the sidebar itself doesn't have room, so
+   .sidebar-label-text's ellipsis below can still kick in for a name that's long even on its own.
+   Deliberately max-content, not the bare `auto` keyword: when a grid has leftover width (e.g. a
+   short label name in a wide open drawer), `auto` tracks stretch to soak it up, which spread the
+   name/rename/delete columns apart with growing gaps between them instead of sitting flush after
+   the content. max-content is exempt from that stretch step. */
 .sidebar-labels-list {
   display: grid;
-  grid-template-columns: minmax(0, auto) auto auto;
+  grid-template-columns: minmax(0, max-content) max-content max-content;
 }
 
 /* subgrid -- rather than each row defining its own 3-column grid -- makes this row's tracks the
@@ -882,6 +886,12 @@ body {
   visibility: hidden;
 }
 
+.sidebar-label-edit {
+  /* Tighter on the right (toward delete) than the left (toward the name column) -- rename/delete
+     read as a paired action, so they should sit close to each other. */
+  padding-right: 0.05rem;
+}
+
 .sidebar-label-delete {
   /* Tighter on the left (toward rename) than the right (toward the row's edge) -- rename/delete
      read as a paired action, so they should sit close to each other, with the row's own edge
@@ -915,7 +925,13 @@ body {
 }
 
 .sidebar-edit-label input {
-  flex: 1;
+  /* A fixed width, not flex: 1 -- .sidebar sizes itself to width: max-content (see there, so long
+     label names aren't truncated), and a flex: 1 input has no bound of its own to size against, so
+     its full unconstrained intrinsic width fed straight into that max-content calculation and blew
+     the whole sidebar out sideways while renaming. max-width: 100% still lets it shrink to fit on
+     a narrow mobile drawer. */
+  width: 14rem;
+  max-width: 100%;
   min-width: 0;
   padding: 0.2rem 0.4rem;
   border: 1px solid var(--border);

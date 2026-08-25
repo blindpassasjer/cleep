@@ -19,9 +19,10 @@ interface Props {
   notify: NotifyFn;
   open: boolean;
   onExpand: () => void;
+  onCollapse: () => void;
 }
 
-export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, onDeleteLabel, notify, open, onExpand }: Props) {
+export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, onDeleteLabel, notify, open, onExpand, onCollapse }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -94,9 +95,13 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
       className={`sidebar ${open ? 'open' : ''}`}
       onClick={(e) => {
         // Only the bare nav background, not a bubbled click from one of its buttons/rows -- e.g.
-        // the empty space below the icon rail on mobile's collapsed state, which had no way to open
-        // the drawer short of hitting the topbar's hamburger.
-        if (e.target === e.currentTarget) onExpand();
+        // the empty space below the icon rail on mobile, which otherwise had no way to toggle the
+        // drawer short of hitting the topbar's hamburger. Mirrors that hamburger: collapsed ->
+        // expand, open -> collapse.
+        if (e.target === e.currentTarget) {
+          if (open) onCollapse();
+          else onExpand();
+        }
       }}
     >
       <button className={view.kind === 'notes' ? 'active' : ''} onClick={() => onChange({ kind: 'notes' })}>

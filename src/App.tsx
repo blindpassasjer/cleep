@@ -230,6 +230,7 @@ export default function App() {
           notify={show}
           open={sidebarOpen}
           onExpand={() => setSidebarOpen(true)}
+          onCollapse={() => setSidebarOpen(false)}
         />
         <main className="main">
           {adminOpen ? (
