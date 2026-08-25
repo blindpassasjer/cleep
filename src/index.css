@@ -2640,7 +2640,12 @@ body {
     top: var(--topbar-height, 0px);
     bottom: 0;
     left: 0;
+    /* Resets the desktop base rule's min-width: 220px (see .sidebar) and width: max-content --
+       left in place, the 220px floor won here over this 64px, since min-width always wins over a
+       smaller width. That silently blew the collapsed rail out to 220px+, overlapping the grid. */
     width: 64px;
+    min-width: 0;
+    max-width: none;
     padding: 0.85rem 0.2rem;
     /* A plain, direction-agnostic transition -- collapsing and expanding play the exact same
        animation in reverse, unlike the View Transitions API's image-scale interpolation (used for
