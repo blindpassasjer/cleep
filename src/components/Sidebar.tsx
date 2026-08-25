@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ColorPicker, COLORS } from './ColorPicker';
-import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTrash } from './Icons';
+import { COLORS } from './ColorPicker';
+import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTag, IconTrash } from './Icons';
 import type { Label, NoteColor, View } from '../types';
 import type { NotifyFn } from '../hooks/useToast';
 
@@ -14,22 +14,19 @@ interface Props {
   labels: Label[];
   onCreateLabel: (name: string, color?: NoteColor) => Promise<string | null>;
   onRenameLabel: (id: string, name: string) => Promise<string | null>;
-  onSetLabelColor: (id: string, color: NoteColor) => void;
   onDeleteLabel: (id: string) => void;
   notify: NotifyFn;
   open: boolean;
 }
 
-export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, onSetLabelColor, onDeleteLabel, notify, open }: Props) {
+export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, onDeleteLabel, notify, open }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
-  const [newColor, setNewColor] = useState<NoteColor>('default');
   const [error, setError] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editError, setEditError] = useState<string | null>(null);
-  const [colorPickerId, setColorPickerId] = useState<string | null>(null);
 
   async function submitLabel(e: React.FormEvent) {
     e.preventDefault();
@@ -38,13 +35,12 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
       setAdding(false);
       return;
     }
-    const err = await onCreateLabel(trimmed, newColor);
+    const err = await onCreateLabel(trimmed, AUTO_COLORS[labels.length % AUTO_COLORS.length]);
     if (err) {
       setError(err);
       return;
     }
     setName('');
-    setNewColor('default');
     setAdding(false);
     setError(null);
   }
@@ -91,7 +87,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
       {labels.map((label) =>
         editingId === label.id ? (
           <form key={label.id} className="sidebar-edit-label" onSubmit={(e) => submitEdit(e, label)}>
-            <span className={`label-dot label-dot-${label.color}`} aria-hidden="true" />
+            <IconTag className={`label-icon label-icon-${label.color}`} width={16} height={16} aria-hidden="true" />
             <input
               autoFocus
               value={editName}
@@ -109,15 +105,8 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
               title={label.name}
               onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}
             >
-              <span className={`label-dot label-dot-${label.color}`} aria-hidden="true" />
+              <IconTag className={`label-icon label-icon-${label.color}`} width={16} height={16} aria-hidden="true" />
               <span className="sidebar-label-text">{label.name}</span>
-            </button>
-            <button
-              className="sidebar-label-color"
-              title="Change color"
-              onClick={() => setColorPickerId((current) => (current === label.id ? null : label.id))}
-            >
-              <span className={`label-dot label-dot-${label.color}`} aria-hidden="true" />
             </button>
             <button className="sidebar-label-edit" title="Rename collection" onClick={() => startEdit(label)}>
               <IconEdit width={14} height={14} />
@@ -137,17 +126,6 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
             >
               <IconClose width={14} height={14} />
             </button>
-            {colorPickerId === label.id && (
-              <div className="sidebar-label-colorpicker">
-                <ColorPicker
-                  value={label.color}
-                  onChange={(color) => {
-                    onSetLabelColor(label.id, color);
-                    setColorPickerId(null);
-                  }}
-                />
-              </div>
-            )}
           </div>
         ),
       )}
@@ -162,16 +140,9 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
           }}
         >
           <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Collection name" />
-          <ColorPicker value={newColor} onChange={setNewColor} />
         </form>
       ) : (
-        <button
-          className="sidebar-add-label-btn"
-          onClick={() => {
-            setNewColor(AUTO_COLORS[labels.length % AUTO_COLORS.length]);
-            setAdding(true);
-          }}
-        >
+        <button className="sidebar-add-label-btn" onClick={() => setAdding(true)}>
           <IconPlus width={14} height={14} /> <span className="sidebar-label-text">New collection</span>
         </button>
       )}

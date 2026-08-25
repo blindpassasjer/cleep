@@ -86,8 +86,6 @@ export const api = {
     request<{ label: Label | null; error: string | null }>('/labels', { method: 'POST', body: JSON.stringify({ name, color }) }),
   renameLabel: (id: string, name: string) =>
     request<{ label: Label | null; error: string | null }>(`/labels/${id}`, { method: 'PATCH', body: JSON.stringify({ name }) }),
-  setLabelColor: (id: string, color: NoteColor) =>
-    request<{ label: Label | null; error: string | null }>(`/labels/${id}`, { method: 'PATCH', body: JSON.stringify({ color }) }),
   deleteLabel: (id: string) => request<{ ok: true }>(`/labels/${id}`, { method: 'DELETE' }),
   attachLabel: (noteId: string, labelId: string) => request<{ ok: true }>(`/notes/${noteId}/labels/${labelId}`, { method: 'PUT' }),
   detachLabel: (noteId: string, labelId: string) => request<{ ok: true }>(`/notes/${noteId}/labels/${labelId}`, { method: 'DELETE' }),

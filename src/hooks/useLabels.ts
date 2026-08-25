@@ -32,16 +32,10 @@ export function useLabels(enabled: boolean) {
     return null;
   }
 
-  async function setLabelColor(id: string, color: NoteColor) {
-    setLabels((prev) => prev.map((l) => (l.id === id ? { ...l, color } : l)));
-    const { error } = await api.setLabelColor(id, color);
-    if (error) await reload();
-  }
-
   async function deleteLabel(id: string) {
     setLabels((prev) => prev.filter((l) => l.id !== id));
     await api.deleteLabel(id);
   }
 
-  return { labels, createLabel, renameLabel, setLabelColor, deleteLabel };
+  return { labels, createLabel, renameLabel, deleteLabel };
 }
