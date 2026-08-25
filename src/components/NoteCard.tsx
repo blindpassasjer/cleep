@@ -345,6 +345,7 @@ export function NoteCard({
       {editing && originRect && (
         <NoteModal
           originRect={originRect}
+          getOriginRect={() => cardRef.current?.getBoundingClientRect() ?? null}
           title={title}
           content={content}
           isChecklist={note.isChecklist}

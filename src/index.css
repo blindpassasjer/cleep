@@ -737,10 +737,33 @@ button.user-account-link {
 }
 
 .sidebar-label-row {
+  position: relative;
   display: flex;
   align-items: center;
   border-radius: 8px;
 }
+
+/* Small solid accent dot marking a collection's color -- distinct from the pastel .color-* note
+   backgrounds (those are near-invisible tints meant for a whole card, not legible as a 10px dot). */
+.label-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
+.label-dot-default { background: var(--muted); }
+.label-dot-red { background: #e57373; }
+.label-dot-orange { background: #ffb74d; }
+.label-dot-yellow { background: #ffd54f; }
+.label-dot-green { background: #81c784; }
+.label-dot-teal { background: #4dd0c4; }
+.label-dot-blue { background: #64b5f6; }
+.label-dot-purple { background: #ba68c8; }
+.label-dot-pink { background: #f06292; }
+.label-dot-brown { background: #a1887f; }
+.label-dot-gray { background: #90a4ae; }
 
 .sidebar-label-row:hover {
   background: var(--surface);
@@ -776,6 +799,7 @@ button.user-account-link {
   flex-shrink: 0;
 }
 
+.sidebar-label-color,
 .sidebar-label-edit,
 .sidebar-label-delete {
   display: flex;
@@ -793,6 +817,7 @@ button.user-account-link {
   padding-right: 0.6rem;
 }
 
+.sidebar-label-row:hover .sidebar-label-color,
 .sidebar-label-row:hover .sidebar-label-edit,
 .sidebar-label-row:hover .sidebar-label-delete {
   visibility: visible;
@@ -801,6 +826,19 @@ button.user-account-link {
 .sidebar-label-edit:hover,
 .sidebar-label-delete:hover {
   color: var(--fg);
+}
+
+.sidebar-label-colorpicker {
+  position: absolute;
+  top: 100%;
+  right: 0.5rem;
+  z-index: 5;
+  margin-top: 0.2rem;
+  padding: 0.5rem;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-hover);
 }
 
 /* Inline rename form -- same row height/padding as .sidebar-label-name so swapping into and out
@@ -853,6 +891,10 @@ button.user-account-link {
   border-radius: 8px;
   background: var(--bg);
   color: var(--fg);
+}
+
+.sidebar-add-label .color-picker {
+  margin-top: 0.5rem;
 }
 
 .sidebar-label-error {
@@ -2449,7 +2491,8 @@ button.user-account-link {
        animation in reverse, unlike the View Transitions API's image-scale interpolation (used for
        the notes grid instead), which visibly reads differently shrinking vs. growing. */
     transition: width 0.2s ease, padding 0.2s ease, box-shadow 0.2s ease;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     z-index: 40;
   }
 
@@ -2470,18 +2513,26 @@ button.user-account-link {
 
   .sidebar-label-text,
   .sidebar-section-label,
+  .sidebar-label-color,
   .sidebar-label-edit,
   .sidebar-label-delete,
   .sidebar-add-label {
     display: none;
   }
 
-  /* Collapsed rail shows only the Notes/Archive/Trash icons -- collections are a secondary,
-     expand-to-use feature and stay hidden entirely (not just their labels) until opened.
+  /* Collapsed rail shows each collection as just its color dot -- a quick-glance/quick-jump rail --
+     renaming, recoloring, and deleting stay reachable only once the drawer is opened.
      (Specificity needs to beat ".sidebar button", which also matches this <button>.) */
-  .sidebar-label-row,
   .sidebar .sidebar-add-label-btn {
     display: none;
+  }
+
+  .sidebar-label-row {
+    border-radius: 0;
+  }
+
+  .sidebar:not(.open) .sidebar-label-name {
+    padding: 0.45rem 0;
   }
 
   .sidebar.open {
@@ -2511,7 +2562,8 @@ button.user-account-link {
   }
 
   /* Desktop gates these on :hover, which touch has no equivalent for -- without this they'd stay
-     visibility: hidden forever on mobile, making rename/delete unreachable by tap. */
+     visibility: hidden forever on mobile, making recolor/rename/delete unreachable by tap. */
+  .sidebar.open .sidebar-label-color,
   .sidebar.open .sidebar-label-edit,
   .sidebar.open .sidebar-label-delete {
     display: flex;

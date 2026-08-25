@@ -4,6 +4,7 @@ import { db } from '../db/client.js';
 import { notes, noteLabels, labels, attachments, type ChecklistItem } from '../db/schema.js';
 import { requireAuth } from '../middleware/session.js';
 import { attachmentToApi, deleteAttachmentFilesForNotes } from '../lib/attachments.js';
+import { VALID_COLORS } from '../lib/colors.js';
 
 const MAX_ITEMS = 300;
 
@@ -21,20 +22,6 @@ function parseChecklistItems(value: unknown): ChecklistItem[] | undefined {
 
 export const notesRouter = Router();
 notesRouter.use(requireAuth);
-
-const VALID_COLORS = new Set([
-  'default',
-  'red',
-  'orange',
-  'yellow',
-  'green',
-  'teal',
-  'blue',
-  'purple',
-  'pink',
-  'brown',
-  'gray',
-]);
 
 const MAX_PAGE_SIZE = 200;
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api/client';
-import type { Label } from '../types';
+import type { Label, NoteColor } from '../types';
 
 export function useLabels(enabled: boolean) {
   const [labels, setLabels] = useState<Label[]>([]);
@@ -18,8 +18,8 @@ export function useLabels(enabled: boolean) {
     reload();
   }, [reload]);
 
-  async function createLabel(name: string): Promise<string | null> {
-    const { label, error } = await api.createLabel(name);
+  async function createLabel(name: string, color?: NoteColor): Promise<string | null> {
+    const { label, error } = await api.createLabel(name, color);
     if (error) return error;
     if (label) setLabels((prev) => [...prev, label].sort((a, b) => a.name.localeCompare(b.name)));
     return null;
@@ -32,10 +32,16 @@ export function useLabels(enabled: boolean) {
     return null;
   }
 
+  async function setLabelColor(id: string, color: NoteColor) {
+    setLabels((prev) => prev.map((l) => (l.id === id ? { ...l, color } : l)));
+    const { error } = await api.setLabelColor(id, color);
+    if (error) await reload();
+  }
+
   async function deleteLabel(id: string) {
     setLabels((prev) => prev.filter((l) => l.id !== id));
     await api.deleteLabel(id);
   }
 
-  return { labels, createLabel, renameLabel, deleteLabel };
+  return { labels, createLabel, renameLabel, setLabelColor, deleteLabel };
 }

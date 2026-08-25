@@ -1,0 +1,1 @@
+ALTER TABLE "labels" ADD COLUMN "color" text DEFAULT 'default' NOT NULL;

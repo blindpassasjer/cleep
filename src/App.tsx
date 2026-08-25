@@ -111,7 +111,7 @@ export default function App() {
     deleteNote,
     emptyTrash,
   } = useNotes(view, show, !!user);
-  const { labels, createLabel, renameLabel, deleteLabel } = useLabels(!!user);
+  const { labels, createLabel, renameLabel, setLabelColor, deleteLabel } = useLabels(!!user);
 
   useEffect(() => {
     setSelectedIds(new Set());
@@ -217,6 +217,7 @@ export default function App() {
           labels={labels}
           onCreateLabel={createLabel}
           onRenameLabel={renameLabel}
+          onSetLabelColor={setLabelColor}
           onDeleteLabel={deleteLabel}
           notify={show}
           open={sidebarOpen}

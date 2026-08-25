@@ -50,6 +50,13 @@
       "when": 1787601234621,
       "tag": "0006_early_molecule_man",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787636594986,
+      "tag": "0007_marvelous_vin_gonzales",
+      "breakpoints": true
     }
   ]
 }

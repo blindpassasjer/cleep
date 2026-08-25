@@ -13,6 +13,7 @@ import type { Attachment, ChecklistItem, Label, NoteColor } from '../types';
 
 interface Props {
   originRect: DOMRect;
+  getOriginRect?: () => DOMRect | null;
   title: string;
   content: string;
   isChecklist: boolean;
@@ -39,6 +40,7 @@ interface Props {
 
 export function NoteModal({
   originRect,
+  getOriginRect,
   title,
   content,
   isChecklist,
@@ -67,7 +69,13 @@ export function NoteModal({
   const { mode: dateMode } = useDateFormat();
 
   return (
-    <FlipModal originRect={originRect} panelClassName={`color-${color}`} onClose={onClose} onCloseStart={onCloseStart}>
+    <FlipModal
+      originRect={originRect}
+      getOriginRect={getOriginRect}
+      panelClassName={`color-${color}`}
+      onClose={onClose}
+      onCloseStart={onCloseStart}
+    >
       {(close) => (
         <>
           <div className="note-modal-header">

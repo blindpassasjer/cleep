@@ -63,6 +63,7 @@ export const labels = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
+    color: text('color').notNull().default('default'),
   },
   (table) => ({
     userNameIdx: uniqueIndex('labels_user_name_idx').on(table.userId, table.name),

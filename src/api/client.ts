@@ -1,4 +1,4 @@
-import type { AdminUser, Attachment, ChecklistItem, Note, Label, PublicUser, View } from '../types';
+import type { AdminUser, Attachment, ChecklistItem, Note, NoteColor, Label, PublicUser, View } from '../types';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
@@ -82,9 +82,12 @@ export const api = {
     request<{ ok: true }>(`/notes/${id}`, { method: 'DELETE', keepalive: options?.keepalive }),
 
   listLabels: () => request<{ labels: Label[] }>('/labels'),
-  createLabel: (name: string) => request<{ label: Label | null; error: string | null }>('/labels', { method: 'POST', body: JSON.stringify({ name }) }),
+  createLabel: (name: string, color?: NoteColor) =>
+    request<{ label: Label | null; error: string | null }>('/labels', { method: 'POST', body: JSON.stringify({ name, color }) }),
   renameLabel: (id: string, name: string) =>
     request<{ label: Label | null; error: string | null }>(`/labels/${id}`, { method: 'PATCH', body: JSON.stringify({ name }) }),
+  setLabelColor: (id: string, color: NoteColor) =>
+    request<{ label: Label | null; error: string | null }>(`/labels/${id}`, { method: 'PATCH', body: JSON.stringify({ color }) }),
   deleteLabel: (id: string) => request<{ ok: true }>(`/labels/${id}`, { method: 'DELETE' }),
   attachLabel: (noteId: string, labelId: string) => request<{ ok: true }>(`/notes/${noteId}/labels/${labelId}`, { method: 'PUT' }),
   detachLabel: (noteId: string, labelId: string) => request<{ ok: true }>(`/notes/${noteId}/labels/${labelId}`, { method: 'DELETE' }),

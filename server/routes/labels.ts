@@ -3,6 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { labels } from '../db/schema.js';
 import { requireAuth } from '../middleware/session.js';
+import { VALID_COLORS } from '../lib/colors.js';
 
 const UNIQUE_VIOLATION = '23505';
 function isUniqueViolation(err: unknown): boolean {
@@ -24,7 +25,7 @@ labelsRouter.get('/', async (req, res) => {
 
 labelsRouter.post('/', async (req, res) => {
   try {
-    const { name } = (req.body ?? {}) as Record<string, unknown>;
+    const { name, color } = (req.body ?? {}) as Record<string, unknown>;
     const trimmed = typeof name === 'string' ? name.trim() : '';
     if (!trimmed || trimmed.length > 50) {
       res.json({ label: null, error: 'Label name must be 1-50 characters.' });
@@ -33,7 +34,12 @@ labelsRouter.post('/', async (req, res) => {
 
     const [row] = await db
       .insert(labels)
-      .values({ id: crypto.randomUUID(), userId: req.userId!, name: trimmed })
+      .values({
+        id: crypto.randomUUID(),
+        userId: req.userId!,
+        name: trimmed,
+        color: typeof color === 'string' && VALID_COLORS.has(color) ? color : 'default',
+      })
       .returning();
     res.status(201).json({ label: row });
   } catch (err) {
@@ -48,16 +54,22 @@ labelsRouter.post('/', async (req, res) => {
 
 labelsRouter.patch('/:id', async (req, res) => {
   try {
-    const { name } = (req.body ?? {}) as Record<string, unknown>;
-    const trimmed = typeof name === 'string' ? name.trim() : '';
-    if (!trimmed || trimmed.length > 50) {
-      res.json({ label: null, error: 'Label name must be 1-50 characters.' });
-      return;
+    const { name, color } = (req.body ?? {}) as Record<string, unknown>;
+    const updates: { name?: string; color?: string } = {};
+
+    if (name !== undefined) {
+      const trimmed = typeof name === 'string' ? name.trim() : '';
+      if (!trimmed || trimmed.length > 50) {
+        res.json({ label: null, error: 'Label name must be 1-50 characters.' });
+        return;
+      }
+      updates.name = trimmed;
     }
+    if (color !== undefined && typeof color === 'string' && VALID_COLORS.has(color)) updates.color = color;
 
     const [row] = await db
       .update(labels)
-      .set({ name: trimmed })
+      .set(updates)
       .where(and(eq(labels.id, req.params.id), eq(labels.userId, req.userId!)))
       .returning();
 

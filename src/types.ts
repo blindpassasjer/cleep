@@ -54,6 +54,7 @@ export interface Label {
   id: string;
   userId: string;
   name: string;
+  color: NoteColor;
 }
 
 export interface PublicUser {

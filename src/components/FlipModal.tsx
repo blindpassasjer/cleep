@@ -8,6 +8,14 @@ export type CloseFn = (mode?: 'flip' | 'fade') => void;
 
 interface Props {
   originRect: DOMRect;
+  /**
+   * Re-measures the origin rect right before the close animation starts. The source element (e.g.
+   * a note card) can stay mounted and change size while the modal is open -- an attachment added
+   * mid-edit grows the card and reflows the grid around it, so the rect captured at open time no
+   * longer matches where the card actually is by the time the modal closes. Falls back to the
+   * static `originRect` when omitted or when it returns null (e.g. the source has unmounted).
+   */
+  getOriginRect?: () => DOMRect | null;
   panelClassName?: string;
   /** Called once the close animation has fully finished — do state teardown here. */
   onClose: () => void;
@@ -30,7 +38,7 @@ function flipTransform(from: DOMRect, to: DOMRect) {
   return `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
 }
 
-export function FlipModal({ originRect, panelClassName, onClose, onCloseStart, onRequestClose, children }: Props) {
+export function FlipModal({ originRect, getOriginRect, panelClassName, onClose, onCloseStart, onRequestClose, children }: Props) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [closing, setClosing] = useState<'flip' | 'fade' | null>(null);
   // Tracks whether the mousedown that led to this click actually started on the backdrop itself,
@@ -81,8 +89,9 @@ export function FlipModal({ originRect, panelClassName, onClose, onCloseStart, o
     const el = modalRef.current;
     if (el && mode === 'flip') {
       const currentRect = el.getBoundingClientRect();
+      const dest = getOriginRect?.() ?? originRect;
       el.style.transition = `transform ${FLIP_CLOSE_MS}ms cubic-bezier(0.4, 0, 1, 1), opacity ${FLIP_CLOSE_MS}ms ease`;
-      el.style.transform = flipTransform(originRect, currentRect);
+      el.style.transform = flipTransform(dest, currentRect);
       el.style.opacity = '0';
     }
     setTimeout(onClose, FLIP_CLOSE_MS);
