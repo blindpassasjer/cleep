@@ -429,27 +429,6 @@ body {
   background: var(--accent);
 }
 
-/* Username, in the topbar -- reads as a name label with a subtle hover affordance, not another
-   button, even though it's clickable (opens Settings, same as the gear icon). The type selector on
-   ".user-menu button" outweighs a bare class, so its 1px border would otherwise win out over the
-   "border: none" below despite this rule coming later -- button.user-account-link matches that
-   specificity to actually override it. */
-button.user-account-link {
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  font: inherit;
-  padding: 0.4rem 0.6rem;
-  border-radius: 999px;
-  transition: background-color 0.12s ease, color 0.12s ease;
-}
-
-.user-account-link:hover {
-  background: var(--surface);
-  color: var(--fg);
-}
-
 /* Settings page -- a view within .main (like Notes/Archive/Trash), not a modal overlay, so it uses
    the page's own natural scroll instead of being boxed into a fixed max-height/overflow-y card.
    Capped at a comfortable reading width and centered, rather than stretching full-bleed edge to
@@ -459,8 +438,25 @@ button.user-account-link {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
   animation: composer-open 0.16s cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+
+/* Gives each settings section the same rounded, shadowed "note card" look as the notes grid --
+   fitting for a notes app, and it also visually separates the sections better than a bare list of
+   forms sitting one after another did. */
+.settings-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.settings-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
 }
 
 .settings-page-header {
@@ -1476,15 +1472,8 @@ button.user-account-link {
 }
 
 .note-modal-content {
-  /* flex-basis 0 + min-height 0 (rather than the old fixed 200px floor) lets this shrink to fit
-     whatever space is actually left once the header/title/attachments/footer around it have taken
-     theirs -- with a fixed floor, a short viewport (the on-screen keyboard eating half the screen)
-     couldn't fit everything, and the excess spilled the attachments panel/toolbar out past the
-     bottom of the modal instead of this text area giving way first. Scrolls internally past that
-     rather than growing the modal, so the toolbar and attachments stay reachable below it. */
-  flex: 1 1 0;
-  min-height: 60px;
-  overflow-y: auto;
+  min-height: 200px;
+  flex: 1;
   resize: none;
   font-size: 0.95rem;
 }
@@ -1642,15 +1631,6 @@ button.user-account-link {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-}
-
-/* In the note modal (not the grid card preview), this sits in the same flexible slot as
-   .note-modal-content -- same reasoning: shrink to fit and scroll internally rather than pushing
-   the attachments panel/footer out past the bottom of a short viewport. */
-.note-modal .checklist-editor {
-  flex: 1 1 0;
-  min-height: 60px;
-  overflow-y: auto;
 }
 
 .checklist-row {
@@ -2577,13 +2557,11 @@ button.user-account-link {
     margin: 0;
   }
 
-  /* The username link, Buy Me a Coffee, and the theme toggle all move into Settings on mobile
-     instead (see .settings-section-mobile-only, and Sign out's unconditional Account section) --
-     with the coffee popover, hamburger, brand, search, and the remaining topbar buttons all
-     fighting for a ~360px-wide bar, these were the lowest-frequency actions and the easiest to
-     make one tap deeper without losing reach to them. The gear icon stays as the one way into
-     Settings on mobile. */
-  .user-account-link,
+  /* Buy Me a Coffee and the theme toggle move into Settings on mobile instead (see
+     .settings-section-mobile-only, and Sign out's unconditional Account section) -- with the
+     coffee popover, hamburger, brand, search, and the remaining topbar buttons all fighting for a
+     ~360px-wide bar, these were the lowest-frequency actions and the easiest to make one tap deeper
+     without losing reach to them. The gear icon stays as the one way into Settings on mobile. */
   .coffee-menu,
   .theme-toggle {
     display: none;
@@ -2742,6 +2720,21 @@ button.user-account-link {
     max-height: var(--modal-vvh, 100vh);
     height: var(--modal-vvh, 100%);
     border-radius: 0;
+  }
+
+  /* Mobile only -- the modal here is a short, height-constrained full-screen sheet (see above), so
+     a long note or the on-screen keyboard can leave no room for the attachments panel/footer below
+     the text. flex-basis 0 + min-height 0 (rather than desktop's fixed 200px floor) lets this
+     shrink to fit whatever's actually left once the header/title/attachments/footer around it have
+     taken theirs, and scrolls internally past that rather than growing the sheet -- keeping the
+     toolbar and attachments reachable below it instead of pushed off past the bottom. Desktop's
+     centered card has no such squeeze (plenty of vertical room, no keyboard overlay), so it keeps
+     the simpler "grow the whole card, let .note-modal scroll" behavior instead. */
+  .note-modal-content,
+  .note-modal .checklist-editor {
+    flex: 1 1 0;
+    min-height: 60px;
+    overflow-y: auto;
   }
 
   /* With the keyboard up there's rarely room for both a comfortable typing area and the footer

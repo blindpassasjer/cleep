@@ -99,7 +99,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         <h1 className="settings-title">Settings</h1>
       </div>
 
-      <form className="settings-form" onSubmit={submitProfile}>
+      <form className="settings-form settings-card" onSubmit={submitProfile}>
         <h3 className="settings-section-title">Profile</h3>
         <label className="settings-field">
           <span>Username</span>
@@ -116,7 +116,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         </button>
       </form>
 
-      <form className="settings-form" onSubmit={submitPassword}>
+      <form className="settings-form settings-card" onSubmit={submitPassword}>
         <h3 className="settings-section-title">Change password</h3>
         <label className="settings-field">
           <span>Current password</span>
@@ -158,7 +158,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
       </form>
 
       {import.meta.env.VITE_DEMO === 'true' && (
-        <div className="settings-form">
+        <div className="settings-form settings-card">
           <h3 className="settings-section-title">Demo</h3>
           <button
             type="button"
@@ -174,7 +174,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         </div>
       )}
 
-      <div className="settings-form">
+      <div className="settings-form settings-card">
         <h3 className="settings-section-title">Account</h3>
         {onOpenAdmin && (
           <button type="button" className="settings-toggle" onClick={onOpenAdmin}>
@@ -186,7 +186,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         </button>
       </div>
 
-      <div className="settings-form">
+      <div className="settings-form settings-card">
         <h3 className="settings-section-title">Date display</h3>
         <div className="settings-toggle-group">
           <button
@@ -208,7 +208,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
 
       {/* Only shown on mobile -- on wider screens theme and Buy Me a Coffee already live in the
           topbar, so repeating them here would just be clutter. */}
-      <div className="settings-form settings-section-mobile-only">
+      <div className="settings-form settings-card settings-section-mobile-only">
         <h3 className="settings-section-title">Appearance</h3>
         <div className="settings-toggle-group">
           <button type="button" className={`settings-toggle ${theme === 'light' ? 'active' : ''}`} onClick={() => theme === 'dark' && onToggleTheme()}>
@@ -220,7 +220,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         </div>
       </div>
 
-      <div className="settings-form settings-section-mobile-only">
+      <div className="settings-form settings-card settings-section-mobile-only">
         <h3 className="settings-section-title">Support</h3>
         <div className="settings-support-header">
           <img src={`${import.meta.env.BASE_URL}assets/developer.jpg`} alt="" className="coffee-popover-avatar" aria-hidden="true" />

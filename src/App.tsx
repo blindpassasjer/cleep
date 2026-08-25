@@ -193,7 +193,6 @@ export default function App() {
     <div className="app" ref={appRef}>
       <TopBar
         ref={searchInputRef}
-        user={user}
         search={search}
         onSearchChange={setSearch}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
