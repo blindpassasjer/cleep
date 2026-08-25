@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { ColorPicker } from './ColorPicker';
+import { ColorPicker, COLORS } from './ColorPicker';
 import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTrash } from './Icons';
 import type { Label, NoteColor, View } from '../types';
 import type { NotifyFn } from '../hooks/useToast';
+
+// 'default' (no color) isn't in the rotation -- auto-assigning it would defeat the point of
+// auto-assigning a color at all.
+const AUTO_COLORS = COLORS.filter((c) => c !== 'default');
 
 interface Props {
   view: View;
@@ -161,7 +165,13 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
           <ColorPicker value={newColor} onChange={setNewColor} />
         </form>
       ) : (
-        <button className="sidebar-add-label-btn" onClick={() => setAdding(true)}>
+        <button
+          className="sidebar-add-label-btn"
+          onClick={() => {
+            setNewColor(AUTO_COLORS[labels.length % AUTO_COLORS.length]);
+            setAdding(true);
+          }}
+        >
           <IconPlus width={14} height={14} /> <span className="sidebar-label-text">New collection</span>
         </button>
       )}
