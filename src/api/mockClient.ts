@@ -64,7 +64,7 @@ function sortNotes(notes: Note[]): Note[] {
 }
 
 export const mockApi = {
-  login: (_email: string, _password: string, _rememberMe: boolean) => {
+  login: () => {
     state.loggedIn = true;
     save();
     return delay({ user: DEMO_USER, error: null });
@@ -79,7 +79,7 @@ export const mockApi = {
   updateProfile: (patch: Partial<Pick<PublicUser, 'email' | 'username'>>) =>
     delay({ user: { ...DEMO_USER, ...patch }, error: null }),
   registrationStatus: () => delay({ open: false }),
-  register: (_email: string, _username: string, _password: string) => {
+  register: () => {
     state.loggedIn = true;
     save();
     return delay({ user: DEMO_USER, error: null });

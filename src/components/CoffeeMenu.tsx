@@ -38,7 +38,7 @@ export function CoffeeMenu() {
       {open && (
         <div className="coffee-popover" role="dialog" aria-label="Buy me a coffee">
           <div className="coffee-popover-header">
-            <img src="/assets/developer.jpg" alt="" className="coffee-popover-avatar" aria-hidden="true" />
+            <img src={`${import.meta.env.BASE_URL}assets/developer.jpg`} alt="" className="coffee-popover-avatar" aria-hidden="true" />
             <div>
               <h2>Buy me a coffee</h2>
               <p>Support keeps Cleep running</p>

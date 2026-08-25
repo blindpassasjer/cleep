@@ -204,6 +204,23 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
       />
+      {import.meta.env.VITE_DEMO === 'true' && (
+        <div className="demo-banner">
+          You're viewing a live demo — notes are saved only in this browser, nothing reaches a server. Want the real thing?{' '}
+          <a href="https://github.com/blindpassasjer/cleep" target="_blank" rel="noopener noreferrer">
+            Self-host Cleep
+          </a>
+          .
+        </div>
+      )}
+      {import.meta.env.VITE_DEMO === 'true' && (
+        <div className="demo-banner">
+          Demo mode — your changes are saved only in this browser, nothing is sent anywhere.{' '}
+          <a href="https://github.com/blindpassasjer/cleep" target="_blank" rel="noopener noreferrer">
+            Self-host the real thing
+          </a>
+        </div>
+      )}
       {error && <div className="error-banner">{error}</div>}
       <div className="app-body">
         {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}

@@ -8,6 +8,10 @@ own Postgres database.
 [![Docker Image](https://img.shields.io/badge/ghcr.io-blindpassasjer%2Fcleep-2496ED?logo=docker&logoColor=white)](https://github.com/blindpassasjer/cleep/pkgs/container/cleep)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white)](package.json)
 
+**[Try the live demo →](https://blindpassasjer.github.io/cleep/)** — a static build with a mocked,
+browser-only backend (see [Demo mode](#demo-mode)) so you can click around without installing
+anything.
+
 No subscriptions, no ads, no third party reading your notes — just your data, on your server.
 
 ## Features
@@ -66,6 +70,22 @@ The `docker-publish.yml` GitHub Actions workflow builds and pushes
 their first publish, even in a public repo — after the first workflow run, open the package
 settings on GitHub and set its visibility to public so `docker compose pull` works without
 authentication.
+
+## Demo mode
+
+The [live demo](https://blindpassasjer.github.io/cleep/) is a static build deployed to GitHub
+Pages by [`.github/workflows/deploy-demo.yml`](.github/workflows/deploy-demo.yml) on every push to
+`main`. GitHub Pages can only serve static files, so the demo build swaps the real Express/Postgres
+API (`src/api/client.ts`) for a mock (`src/api/mockClient.ts`) that runs entirely in the browser:
+notes and labels are saved to `localStorage` on your own device, attachments live only in memory
+for the session, and there's no real login, multi-user, or admin behavior. Nothing is sent to a
+server. Use "Reset demo data" in Settings to start over.
+
+Build it yourself with:
+
+```sh
+VITE_DEMO=true npm run build
+```
 
 ## PWA and HTTPS
 

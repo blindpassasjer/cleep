@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconArrowLeft, IconArrowUpRight, IconMoon, IconSun } from './Icons';
 import { api } from '../api/client';
+import { resetDemoData } from '../api/mockClient';
 import { useDateFormat } from '../hooks/useDateFormat';
 import type { PublicUser } from '../types';
 
@@ -156,6 +157,23 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         </button>
       </form>
 
+      {import.meta.env.VITE_DEMO === 'true' && (
+        <div className="settings-form">
+          <h3 className="settings-section-title">Demo</h3>
+          <button
+            type="button"
+            className="settings-toggle"
+            onClick={() => {
+              if (confirm('Reset the demo back to its starting notes? This clears everything you changed in this browser.')) {
+                resetDemoData();
+              }
+            }}
+          >
+            Reset demo data
+          </button>
+        </div>
+      )}
+
       <div className="settings-form">
         <h3 className="settings-section-title">Account</h3>
         {onOpenAdmin && (
@@ -205,7 +223,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
       <div className="settings-form settings-section-mobile-only">
         <h3 className="settings-section-title">Support</h3>
         <div className="settings-support-header">
-          <img src="/assets/developer.jpg" alt="" className="coffee-popover-avatar" aria-hidden="true" />
+          <img src={`${import.meta.env.BASE_URL}assets/developer.jpg`} alt="" className="coffee-popover-avatar" aria-hidden="true" />
           <p>Support keeps Cleep running</p>
         </div>
         <div className="coffee-popover-options">

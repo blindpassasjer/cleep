@@ -919,6 +919,58 @@ button.user-account-link {
   animation: drop-in 0.15s ease;
 }
 
+.demo-banner {
+  background: #e6f0fe;
+  color: #1a56db;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.demo-banner a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .demo-banner {
+    background: #1b2a4a;
+    color: #8ab4f8;
+  }
+}
+
+:root[data-theme='dark'] .demo-banner {
+  background: #1b2a4a;
+  color: #8ab4f8;
+}
+
+.demo-banner {
+  background: #e6f0fe;
+  color: #1a56db;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.demo-banner a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .demo-banner {
+    background: #1b2a4a;
+    color: #8ab4f8;
+  }
+}
+
+:root[data-theme='dark'] .demo-banner {
+  background: #1b2a4a;
+  color: #8ab4f8;
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .error-banner {
     background: #442726;

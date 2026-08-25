@@ -24,7 +24,7 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
           <IconMenu width={22} height={22} />
         </button>
         <div className="brand">
-          <img src="/favicon.svg" alt="" className="brand-icon" />
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="brand-icon" />
           <span className="brand-text">Cleep</span>
         </div>
       </div>
