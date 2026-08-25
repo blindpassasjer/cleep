@@ -1,4 +1,5 @@
 import type { AdminUser, Attachment, ChecklistItem, Note, NoteColor, Label, PublicUser, View } from '../types';
+import { mockApi } from './mockClient';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
@@ -22,7 +23,7 @@ async function upload<T>(path: string, formData: FormData): Promise<T> {
   return data as T;
 }
 
-export const api = {
+const realApi = {
   login: (email: string, password: string, rememberMe: boolean) =>
     request<{ user: PublicUser | null; error: string | null }>('/auth/login', {
       method: 'POST',
@@ -100,3 +101,7 @@ export const api = {
   deleteAttachment: (noteId: string, attachmentId: string) =>
     request<{ ok: true }>(`/notes/${noteId}/attachments/${attachmentId}`, { method: 'DELETE' }),
 };
+
+// The demo build (VITE_DEMO=true, used for the GitHub Pages deploy) has no server to talk to --
+// swap in the localStorage-backed mock, which implements the exact same shape.
+export const api: typeof realApi = import.meta.env.VITE_DEMO === 'true' ? (mockApi as typeof realApi) : realApi;
