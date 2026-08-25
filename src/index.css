@@ -2671,6 +2671,15 @@ body {
     padding-right: 0;
   }
 
+  /* .sidebar-labels-list's grid columns size to content (see there), which on the collapsed rail
+     is just a ~20px icon -- far narrower than the rail itself. A grid's unfilled space sits at the
+     end by default (justify-content: start), so without this the icon sits flush left instead of
+     centered like the Notes/Archive/Trash buttons above it, which each center within their own
+     full-width button. */
+  .sidebar:not(.open) .sidebar-labels-list {
+    justify-content: center;
+  }
+
   .sidebar-label-text,
   .sidebar-section-label,
   .sidebar-label-edit,
