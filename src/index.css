@@ -745,9 +745,16 @@ button.user-account-link {
 /* Tag icon tinted to a collection's auto-assigned color -- distinct from the pastel .color-*
    note backgrounds (those are near-invisible tints meant for a whole card, not legible at icon size). */
 .label-icon {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
+}
+
+/* Beats ".sidebar button svg" (which also matches the icon inside .sidebar-label-name, itself a
+   button) so the tag icon stays the same size in the row as it is in the rename form. */
+.sidebar-label-name .label-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .label-icon-default { color: var(--muted); }

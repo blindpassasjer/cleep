@@ -48,6 +48,15 @@ export function IconTag(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function IconTagFilled(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon fill="currentColor" {...props}>
+      <path d="M12.5 4H6.5A2.5 2.5 0 0 0 4 6.5v6l9.5 9.5a2 2 0 0 0 2.8 0l5.2-5.2a2 2 0 0 0 0-2.8L12.5 4Z" />
+      <circle cx="8.5" cy="8.5" r="1.25" fill="var(--bg)" stroke="none" />
+    </Icon>
+  );
+}
+
 export function IconPin(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

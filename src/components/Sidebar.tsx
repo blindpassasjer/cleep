@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { COLORS } from './ColorPicker';
-import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTag, IconTrash } from './Icons';
+import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTagFilled, IconTrash } from './Icons';
 import type { Label, NoteColor, View } from '../types';
 import type { NotifyFn } from '../hooks/useToast';
 
@@ -87,7 +87,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
       {labels.map((label) =>
         editingId === label.id ? (
           <form key={label.id} className="sidebar-edit-label" onSubmit={(e) => submitEdit(e, label)}>
-            <IconTag className={`label-icon label-icon-${label.color}`} width={16} height={16} aria-hidden="true" />
+            <IconTagFilled className={`label-icon label-icon-${label.color}`} aria-hidden="true" />
             <input
               autoFocus
               value={editName}
@@ -105,7 +105,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
               title={label.name}
               onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}
             >
-              <IconTag className={`label-icon label-icon-${label.color}`} width={16} height={16} aria-hidden="true" />
+              <IconTagFilled className={`label-icon label-icon-${label.color}`} aria-hidden="true" />
               <span className="sidebar-label-text">{label.name}</span>
             </button>
             <button className="sidebar-label-edit" title="Rename collection" onClick={() => startEdit(label)}>
