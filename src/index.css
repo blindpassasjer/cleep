@@ -1258,6 +1258,7 @@ button.user-account-link {
   border-top: 1px solid var(--border);
   font-size: 0.85rem;
   animation: drop-in 0.15s ease;
+  flex-shrink: 0;
 }
 
 @keyframes drop-in {
@@ -1449,6 +1450,11 @@ button.user-account-link {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.15rem;
+  flex-shrink: 0;
+}
+
+.note-modal input.note-title {
+  flex-shrink: 0;
 }
 
 .note-modal-header button {
@@ -1470,8 +1476,15 @@ button.user-account-link {
 }
 
 .note-modal-content {
-  min-height: 200px;
-  flex: 1;
+  /* flex-basis 0 + min-height 0 (rather than the old fixed 200px floor) lets this shrink to fit
+     whatever space is actually left once the header/title/attachments/footer around it have taken
+     theirs -- with a fixed floor, a short viewport (the on-screen keyboard eating half the screen)
+     couldn't fit everything, and the excess spilled the attachments panel/toolbar out past the
+     bottom of the modal instead of this text area giving way first. Scrolls internally past that
+     rather than growing the modal, so the toolbar and attachments stay reachable below it. */
+  flex: 1 1 0;
+  min-height: 60px;
+  overflow-y: auto;
   resize: none;
   font-size: 0.95rem;
 }
@@ -1480,15 +1493,60 @@ button.user-account-link {
   font-size: 0.78rem;
   color: var(--muted);
   margin-top: 0.2rem;
+  flex-shrink: 0;
 }
 
 .note-modal-footer {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.15rem;
   border-top: 1px solid var(--border);
   padding-top: 0.65rem;
   margin-top: 0.4rem;
+  flex-shrink: 0;
+}
+
+.color-picker-button-wrap {
+  display: flex;
+}
+
+.color-picker-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  padding: 0.4rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.color-picker-toggle:hover {
+  background: var(--surface);
+}
+
+.color-picker-toggle .color-swatch {
+  /* Swatches are normally interactive buttons (see .color-swatch:hover/:active) -- as the single
+     always-visible one representing the current color, it shouldn't visually react to hover/press
+     itself, that already happens on the wrapping .color-picker-toggle button. */
+  pointer-events: none;
+}
+
+.color-picker-popover {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 5;
+  margin-bottom: 0.4rem;
+  padding: 0.6rem;
+  max-width: min(240px, 80vw);
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-hover);
+  animation: drop-in 0.15s ease;
 }
 
 .note-modal-footer > button:not(.text-action) {
@@ -1584,6 +1642,15 @@ button.user-account-link {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+}
+
+/* In the note modal (not the grid card preview), this sits in the same flexible slot as
+   .note-modal-content -- same reasoning: shrink to fit and scroll internally rather than pushing
+   the attachments panel/footer out past the bottom of a short viewport. */
+.note-modal .checklist-editor {
+  flex: 1 1 0;
+  min-height: 60px;
+  overflow-y: auto;
 }
 
 .checklist-row {
@@ -2099,6 +2166,7 @@ button.user-account-link {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .attachment-grid {

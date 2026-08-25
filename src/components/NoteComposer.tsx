@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { FlipModal, type CloseFn } from './FlipModal';
-import { ColorPicker } from './ColorPicker';
+import { ColorPickerButton } from './ColorPickerButton';
 import { ChecklistEditor } from './ChecklistEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
@@ -228,7 +228,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
           </AttachmentsPanel>
           {error && <div className="composer-error">{error}</div>}
           <div className="note-modal-footer">
-            <ColorPicker value={color} onChange={setColor} />
+            <ColorPickerButton value={color} onChange={setColor} />
             <button type="button" className="text-action" onClick={() => attemptClose(close)} disabled={saving}>
               {saving ? 'Saving…' : 'Close'}
             </button>

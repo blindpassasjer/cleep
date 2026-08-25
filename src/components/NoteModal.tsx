@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { FlipModal } from './FlipModal';
-import { ColorPicker } from './ColorPicker';
+import { ColorPickerButton } from './ColorPickerButton';
 import { ChecklistEditor } from './ChecklistEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
@@ -125,7 +125,7 @@ export function NoteModal({
           )}
           <div className="note-modal-timestamp">Edited {formatNoteDate(updatedAt, dateMode)}</div>
           <div className="note-modal-footer">
-            <ColorPicker value={color} onChange={onColorChange} />
+            <ColorPickerButton value={color} onChange={onColorChange} />
             <button type="button" title="Collections" onClick={() => setShowLabels((v) => !v)}>
               <IconTag />
             </button>
