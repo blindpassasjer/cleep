@@ -292,6 +292,15 @@ body {
   transition: background-color 0.12s ease, transform 0.1s ease;
 }
 
+/* Plain label, not a button -- it's read-only identity ("who am I logged in as"), not a second
+   path to Settings duplicating the gear icon right next to it. */
+.user-account-name {
+  padding: 0.5rem 0.2rem;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .user-menu button:hover,
 .user-menu a.icon-only:hover {
   background: var(--surface);
@@ -2582,11 +2591,12 @@ body {
     margin: 0;
   }
 
-  /* Buy Me a Coffee and the theme toggle move into Settings on mobile instead (see
-     .settings-section-mobile-only, and Sign out's unconditional Account section) -- with the
+  /* The username label, Buy Me a Coffee, and the theme toggle all move into Settings on mobile
+     instead (see .settings-section-mobile-only, and Sign out's own card at the bottom) -- with the
      coffee popover, hamburger, brand, search, and the remaining topbar buttons all fighting for a
      ~360px-wide bar, these were the lowest-frequency actions and the easiest to make one tap deeper
      without losing reach to them. The gear icon stays as the one way into Settings on mobile. */
+  .user-account-name,
   .coffee-menu,
   .theme-toggle {
     display: none;

@@ -1,8 +1,10 @@
 import { forwardRef } from 'react';
 import { CoffeeMenu } from './CoffeeMenu';
 import { IconMenu, IconMoon, IconSearch, IconSettings, IconSun } from './Icons';
+import type { PublicUser } from '../types';
 
 interface Props {
+  user: PublicUser;
   search: string;
   onSearchChange: (value: string) => void;
   onToggleSidebar: () => void;
@@ -12,7 +14,7 @@ interface Props {
 }
 
 export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
-  { search, onSearchChange, onToggleSidebar, onOpenSettings, theme, onToggleTheme },
+  { user, search, onSearchChange, onToggleSidebar, onOpenSettings, theme, onToggleTheme },
   searchRef,
 ) {
   return (
@@ -44,6 +46,7 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
         />
       </div>
       <div className="user-menu">
+        <span className="user-account-name">{user.username}</span>
         <CoffeeMenu />
         <button
           type="button"
