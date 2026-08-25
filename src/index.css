@@ -2672,6 +2672,16 @@ body {
     justify-content: flex-start;
   }
 
+  /* Desktop's flex: 1 (see .sidebar-label-name) is meant to stretch the clickable name to the far
+     edge where the hover-revealed rename/delete buttons sit -- but those are permanently visible
+     on mobile (no hover to gate them on), so that same flex: 1 left a wide, empty-looking gap
+     between a short name and the buttons on every single row, not just the one being hovered.
+     Shrink-to-content here instead, so the buttons sit right after the name like the rest of the
+     row's content, not pinned to the far right. */
+  .sidebar.open .sidebar-label-name {
+    flex: 0 1 auto;
+  }
+
   .sidebar.open .sidebar-label-text {
     display: inline;
   }
