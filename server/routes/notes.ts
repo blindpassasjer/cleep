@@ -125,7 +125,10 @@ notesRouter.post('/', async (req, res) => {
       })
       .returning();
 
-    res.status(201).json({ note: row });
+    // A brand new note has neither yet -- but the client's Note type requires both fields, and
+    // omitting them (the raw `notes` row has no such columns) crashes any render that assumes
+    // they're arrays (e.g. `note.attachments.find(...)`) the instant this note lands in the grid.
+    res.status(201).json({ note: { ...row, labelIds: [] as string[], attachments: [] as ReturnType<typeof attachmentToApi>[] } });
   } catch (err) {
     console.error('Create note failed:', err);
     res.status(500).json({ error: 'Something went wrong. Please try again.' });
@@ -160,7 +163,21 @@ notesRouter.patch('/:id', async (req, res) => {
       return;
     }
 
-    res.json({ note: row });
+    // Unlike POST, an existing note can already have attachments/labels attached from before this
+    // edit -- has to actually look them up (same as the list route) rather than assuming empty,
+    // or a client that trusted this response would silently wipe them from view.
+    const [labelRows, attachmentRows] = await Promise.all([
+      db.select({ labelId: noteLabels.labelId }).from(noteLabels).where(eq(noteLabels.noteId, row.id)),
+      db.select().from(attachments).where(eq(attachments.noteId, row.id)).orderBy(asc(attachments.createdAt)),
+    ]);
+
+    res.json({
+      note: {
+        ...row,
+        labelIds: labelRows.map((lr) => lr.labelId),
+        attachments: attachmentRows.map(attachmentToApi),
+      },
+    });
   } catch (err) {
     console.error('Update note failed:', err);
     res.status(500).json({ error: 'Something went wrong. Please try again.' });

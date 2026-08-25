@@ -774,9 +774,13 @@ body {
   border-radius: 8px;
 }
 
-/* Truncates a long collection name instead of letting it force the row (and so the sidebar) wider
-   -- only takes effect once .sidebar-label-name above actually has room to shrink into. */
+/* Truncates a long collection name instead of letting it force the row (and so the sidebar) wider.
+   min-width: 0 is needed here too, not just on .sidebar-label-name above -- this span is itself a
+   flex item (.sidebar-label-name is display: flex), so without overriding its own min-width: auto
+   default it still refused to shrink below the text's full width, which pushed .sidebar-label-name
+   (and so the row) wider regardless of the fix one level up. */
 .sidebar-label-text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
