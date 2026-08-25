@@ -204,6 +204,10 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
 
       <div className="settings-form settings-section-mobile-only">
         <h3 className="settings-section-title">Support</h3>
+        <div className="settings-support-header">
+          <img src="/assets/developer.jpg" alt="" className="coffee-popover-avatar" aria-hidden="true" />
+          <p>Support keeps Cleep running</p>
+        </div>
         <div className="coffee-popover-options">
           <a
             href="https://qr.vipps.no/box/26128ed0-008f-4b5a-bd8d-9a936f58cf83/pay-in"

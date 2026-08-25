@@ -380,6 +380,21 @@ body {
   padding: 0;
 }
 
+/* Same avatar + line as .coffee-popover-header, minus its card framing (border/padding), which
+   only makes sense floating over the page -- inside .settings-form the section title above already
+   separates this from the rest of the page. */
+.settings-support-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.settings-support-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .coffee-option {
   display: flex;
   align-items: center;
@@ -1884,7 +1899,7 @@ button.user-account-link {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 1.75rem;
+  bottom: calc(1.75rem + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   background: #1d1d1f;
   color: #f5f5f7;
