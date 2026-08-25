@@ -229,6 +229,7 @@ export default function App() {
           onDeleteLabel={deleteLabel}
           notify={show}
           open={sidebarOpen}
+          onExpand={() => setSidebarOpen(true)}
         />
         <main className="main">
           {adminOpen ? (

@@ -714,7 +714,13 @@ body {
 }
 
 .sidebar {
-  width: 220px;
+  /* Grows past the 220px default when a collection name needs more room instead of truncating it
+     -- .sidebar-labels-list's grid columns size to the longest name (see there), but that's moot if
+     this container never gives them the room to. No max-width: collection names are already capped
+     at 50 characters server-side (see labels.ts), so this can't grow unboundedly; the
+     .sidebar-label-text ellipsis stays in place as a fallback regardless. */
+  width: max-content;
+  min-width: 220px;
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -877,6 +883,10 @@ body {
 }
 
 .sidebar-label-delete {
+  /* Tighter on the left (toward rename) than the right (toward the row's edge) -- rename/delete
+     read as a paired action, so they should sit close to each other, with the row's own edge
+     giving the breathing room instead. */
+  padding-left: 0.05rem;
   padding-right: 0.6rem;
 }
 

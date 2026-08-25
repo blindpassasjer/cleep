@@ -18,9 +18,10 @@ interface Props {
   onDeleteLabel: (id: string) => void;
   notify: NotifyFn;
   open: boolean;
+  onExpand: () => void;
 }
 
-export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, onDeleteLabel, notify, open }: Props) {
+export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, onDeleteLabel, notify, open, onExpand }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +90,15 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
   }
 
   return (
-    <nav className={`sidebar ${open ? 'open' : ''}`}>
+    <nav
+      className={`sidebar ${open ? 'open' : ''}`}
+      onClick={(e) => {
+        // Only the bare nav background, not a bubbled click from one of its buttons/rows -- e.g.
+        // the empty space below the icon rail on mobile's collapsed state, which had no way to open
+        // the drawer short of hitting the topbar's hamburger.
+        if (e.target === e.currentTarget) onExpand();
+      }}
+    >
       <button className={view.kind === 'notes' ? 'active' : ''} onClick={() => onChange({ kind: 'notes' })}>
         <IconNotes /> <span className="sidebar-label-text">Notes</span>
       </button>
