@@ -41,8 +41,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
     if (!showRowActions) setEditingId(null);
   }, [showRowActions]);
 
-  async function submitLabel(e: React.FormEvent) {
-    e.preventDefault();
+  async function commitAdd() {
     const trimmed = name.trim();
     if (!trimmed) {
       setAdding(false);
@@ -56,6 +55,11 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
     setName('');
     setAdding(false);
     setError(null);
+  }
+
+  async function submitLabel(e: React.FormEvent) {
+    e.preventDefault();
+    await commitAdd();
   }
 
   function startEdit(label: Label) {
@@ -153,7 +157,9 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
           className="sidebar-add-label"
           onSubmit={submitLabel}
           onBlur={(e) => {
-            if (!name.trim() && !e.currentTarget.contains(e.relatedTarget as Node)) setAdding(false);
+            if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+            if (name.trim()) commitAdd();
+            else setAdding(false);
           }}
         >
           <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Collection name" />

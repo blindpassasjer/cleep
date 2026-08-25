@@ -261,10 +261,27 @@ export default function App() {
                 view.kind === 'trash' &&
                 notes.length > 0 && (
                   <div className="trash-actions">
-                    <button type="button" onClick={restoreAllTrash}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        show(`Restore ${notes.length} note${notes.length === 1 ? '' : 's'}?`, {
+                          actionLabel: 'Restore',
+                          onUndo: restoreAllTrash,
+                        })
+                      }
+                    >
                       Restore all
                     </button>
-                    <button type="button" className="trash-actions-danger" onClick={emptyTrash}>
+                    <button
+                      type="button"
+                      className="trash-actions-danger"
+                      onClick={() =>
+                        show(`Permanently delete ${notes.length} note${notes.length === 1 ? '' : 's'}?`, {
+                          actionLabel: 'Empty trash',
+                          onUndo: emptyTrash,
+                        })
+                      }
+                    >
                       Empty trash
                     </button>
                   </div>
