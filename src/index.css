@@ -1610,19 +1610,30 @@ body {
 }
 
 .color-picker-toggle {
+  /* Matches the other footer icons' color (pin, labels, archive, delete) -- those get
+     var(--muted)/var(--fg) from ".note-modal-footer > button:not(.text-action)", but that selector
+     only reaches *direct* children of the footer, and this button sits one level deeper inside
+     .color-picker-button-wrap. Left unset, it fell back to inheriting var(--fg) instead, reading
+     visibly darker than every icon next to it. */
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   background: transparent;
+  color: var(--muted);
   padding: 0.4rem;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.12s ease;
+  transition: background-color 0.12s ease, color 0.12s ease, transform 0.1s ease;
 }
 
 .color-picker-toggle:hover {
   background: var(--surface);
+  color: var(--fg);
+}
+
+.color-picker-toggle:active {
+  transform: scale(0.9);
 }
 
 .color-picker-popover {
