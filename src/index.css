@@ -729,12 +729,7 @@ body {
   gap: 0.1rem;
 }
 
-/* :not()s exclude the small icon-only rename/delete/add-collection buttons -- this selector's
-   specificity (type + class) already beats their own (class-only) rule for any property both
-   declare, which was harmless while both agreed on `display: flex`, but would now silently hand
-   them this grid layout (and its fixed icon column, sized for a 22px icon + label text neither of
-   them has) instead of their own flex + centered-icon layout. */
-.sidebar button:not(.sidebar-label-edit):not(.sidebar-label-delete):not(.sidebar-add-label-btn) {
+.sidebar button {
   /* Grid, not flex, with a fixed-width first column for the icon -- the icon's position is then
      purely a function of that column plus the (never-animated) padding-left, both constant across
      every state. Collapsing/expanding the rail only ever changes the second column's content (the
@@ -897,8 +892,11 @@ body {
      class-only selector anyway. */
 }
 
-.sidebar-label-edit,
-.sidebar-label-delete {
+/* "button." prefix, not just the class -- matches .sidebar button's own specificity (type +
+   class), so this rule's display: flex wins the tie via source order (it comes later) instead of
+   losing outright to .sidebar button's display: grid the way a class-only selector would. */
+button.sidebar-label-edit,
+button.sidebar-label-delete {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -910,17 +908,16 @@ body {
   visibility: hidden;
 }
 
-.sidebar-label-edit {
-  /* Tighter on the right (toward delete) than the left (toward the name column) -- rename/delete
-     read as a paired action, so they should sit close to each other. */
-  padding-right: 0.05rem;
+button.sidebar-label-edit {
+  /* Some room toward delete (not flush, as before) so the two read as distinct actions rather
+     than a single fused control, while still sitting closer to each other than to the name column
+     on one side or the row's edge on the other. */
+  padding-right: 0.25rem;
 }
 
-.sidebar-label-delete {
-  /* Tighter on the left (toward rename) than the right (toward the row's edge) -- rename/delete
-     read as a paired action, so they should sit close to each other, with the row's own edge
-     giving the breathing room instead. */
-  padding-left: 0.05rem;
+button.sidebar-label-delete {
+  /* Mirrors .sidebar-label-edit's padding-right above. */
+  padding-left: 0.25rem;
   padding-right: 0.6rem;
 }
 
@@ -970,7 +967,10 @@ body {
   font-size: 0.95rem;
 }
 
-.sidebar-add-label-btn {
+/* "button." prefix -- same reasoning as button.sidebar-label-edit above: matches .sidebar
+   button's specificity so this display: flex wins the tie via source order instead of losing to
+   .sidebar button's display: grid outright. */
+button.sidebar-add-label-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
