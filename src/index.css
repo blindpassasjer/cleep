@@ -2765,11 +2765,16 @@ body {
   }
 
   .sidebar.open .sidebar-label-text {
-    /* Generous enough for any real label/nav name at this font size; only needs to exceed the
-       text's own natural width since overflow: hidden + white-space: nowrap (base rule) keep it
-       from ever visibly stretching past that. Delayed slightly so the fade trails just behind the
-       row's own gap/width reveal instead of racing it. */
-    max-width: 200px;
+    /* A large fixed endpoint purely so the max-width transition below has a real number to
+       interpolate toward (it can't animate to "none"/auto any more than .sidebar's own width can
+       animate to max-content) -- NOT meant to be the thing that actually bounds the text. A cap
+       here that's anywhere near a real name's width re-clips it before it reaches its natural
+       size, silently undoing the "column sizes to the longest label name" fix elsewhere (a max-width
+       also caps an element's own contribution when an ancestor's grid column sizes to its
+       max-content). 600px safely clears every realistic name and the drawer's own 340px cap, so the
+       *actual* bound stays the drawer width + ellipsis fallback, same as before this animation
+       existed. Delayed slightly so the fade trails just behind the row's own gap/width reveal. */
+    max-width: 600px;
     opacity: 1;
     transition: max-width 0.2s ease, opacity 0.2s ease 0.05s;
   }
