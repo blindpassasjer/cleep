@@ -5,6 +5,7 @@ import { MiniWaveform } from './MiniWaveform';
 import { api } from '../api/client';
 import { sanitizeHtml } from '../lib/sanitizeHtml';
 import { toggleNoteLabel } from '../lib/toggleNoteLabel';
+import { useOutsideClick } from '../hooks/useOutsideClick';
 import { IconArchive, IconDragHandle, IconMic, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash, IconVideo } from './Icons';
 import type { Attachment, ChecklistItem, Label, Note, NoteColor, View } from '../types';
 
@@ -68,6 +69,10 @@ export function NoteCard({
   const [showLabels, setShowLabels] = useState(false);
   const [showColors, setShowColors] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  useOutsideClick(cardRef, showColors || showLabels, () => {
+    setShowColors(false);
+    setShowLabels(false);
+  });
   const editable = view.kind === 'notes' || view.kind === 'recordings' || view.kind === 'archive' || view.kind === 'label';
 
   function leaveThen(action: () => void) {

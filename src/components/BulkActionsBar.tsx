@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { IconArchive, IconClose, IconPalette, IconTag, IconTrash } from './Icons';
 import { ColorPicker } from './ColorPicker';
+import { useOutsideClick } from '../hooks/useOutsideClick';
 import type { Label, NoteColor } from '../types';
 
 interface Props {
@@ -16,9 +17,14 @@ interface Props {
 export function BulkActionsBar({ count, labels, onClear, onArchive, onTrash, onColor, onLabel }: Props) {
   const [showColors, setShowColors] = useState(false);
   const [showLabels, setShowLabels] = useState(false);
+  const barRef = useRef<HTMLDivElement>(null);
+  useOutsideClick(barRef, showColors || showLabels, () => {
+    setShowColors(false);
+    setShowLabels(false);
+  });
 
   return (
-    <div className="bulk-bar">
+    <div className="bulk-bar" ref={barRef}>
       <div className="bulk-bar-row">
         <button type="button" className="bulk-bar-close" title="Clear selection" onClick={onClear}>
           <IconClose />

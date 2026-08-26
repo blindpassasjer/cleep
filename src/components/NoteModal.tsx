@@ -9,6 +9,7 @@ import { IconArchive, IconClose, IconPin, IconPinFilled, IconTag, IconTrash } fr
 import { useDateFormat } from '../hooks/useDateFormat';
 import { formatNoteDate } from '../lib/formatDate';
 import { insertEditorImage } from '../lib/insertEditorImage';
+import { useOutsideClick } from '../hooks/useOutsideClick';
 import type { Attachment, ChecklistItem, Label, NoteColor } from '../types';
 
 interface Props {
@@ -66,6 +67,9 @@ export function NoteModal({
 }: Props) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [showLabels, setShowLabels] = useState(false);
+  const labelsToggleRef = useRef<HTMLButtonElement>(null);
+  const labelsPanelRef = useRef<HTMLDivElement>(null);
+  useOutsideClick([labelsToggleRef, labelsPanelRef], showLabels, () => setShowLabels(false));
   const { mode: dateMode } = useDateFormat();
 
   return (
@@ -113,7 +117,7 @@ export function NoteModal({
             {!isChecklist && <TextFormatToolbar editorRef={contentRef} onChange={onContentChange} />}
           </AttachmentsPanel>
           {showLabels && (
-            <div className="note-labels-editor">
+            <div className="note-labels-editor" ref={labelsPanelRef}>
               {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}
               {labels.map((label) => (
                 <label key={label.id} className="note-label-toggle">
@@ -126,7 +130,7 @@ export function NoteModal({
           <div className="note-modal-timestamp">Edited {formatNoteDate(updatedAt, dateMode)}</div>
           <div className="note-modal-footer">
             <ColorPickerButton value={color} onChange={onColorChange} />
-            <button type="button" title="Collections" onClick={() => setShowLabels((v) => !v)}>
+            <button type="button" title="Collections" ref={labelsToggleRef} onClick={() => setShowLabels((v) => !v)}>
               <IconTag />
             </button>
             <button
