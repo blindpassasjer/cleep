@@ -9,7 +9,6 @@ import { api } from '../api/client';
 import { insertEditorImage } from '../lib/insertEditorImage';
 import { isRichContentEmpty } from '../lib/isRichContentEmpty';
 import { toggleNoteLabel } from '../lib/toggleNoteLabel';
-import { useOutsideClick } from '../hooks/useOutsideClick';
 import { IconArchive, IconChecklist, IconImage, IconMic, IconPlus, IconTag, IconTrash } from './Icons';
 import type { Attachment, ChecklistItem, Label, Note, NoteColor } from '../types';
 
@@ -48,9 +47,6 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [labelIds, setLabelIds] = useState<string[]>([]);
   const [showLabels, setShowLabels] = useState(false);
-  const labelsToggleRef = useRef<HTMLButtonElement>(null);
-  const labelsPanelRef = useRef<HTMLDivElement>(null);
-  useOutsideClick([labelsToggleRef, labelsPanelRef], showLabels, () => setShowLabels(false));
   const [startWith, setStartWith] = useState<'image' | 'audio' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -270,7 +266,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
             {!isChecklist && <TextFormatToolbar editorRef={contentRef} onChange={setContent} />}
           </AttachmentsPanel>
           {showLabels && (
-            <div className="note-labels-editor" ref={labelsPanelRef}>
+            <div className="note-labels-editor">
               {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}
               {labels.map((label) => (
                 <label key={label.id} className="note-label-toggle">
@@ -283,7 +279,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
           {error && <div className="composer-error">{error}</div>}
           <div className="note-modal-footer">
             <ColorPickerButton value={color} onChange={setColor} />
-            <button type="button" title="Collections" ref={labelsToggleRef} onClick={() => setShowLabels((v) => !v)}>
+            <button type="button" title="Collections" onClick={() => setShowLabels((v) => !v)}>
               <IconTag />
             </button>
             <button type="button" title="Archive" onClick={() => finishDraftNote(close, onArchive)}>

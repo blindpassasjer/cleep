@@ -36,6 +36,21 @@ if (process.env.TRUST_PROXY === 'true') {
   // a client could spoof X-Forwarded-For to forge req.ip and dodge the auth rate limiter.
   app.set('trust proxy', 1);
 }
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // Everything the app actually loads is same-origin, except note images/media which the
+  // sanitizer (src/lib/sanitizeHtml.ts) and attachment previews can point at http(s) URLs or
+  // blob: object URLs -- img-src/media-src need to allow those. No inline/eval script or style is
+  // used anywhere (the one inline script moved to public/theme-init.js for this reason), so
+  // script-src/style-src stay locked to 'self'.
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: http: blob: data:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+  );
+  next();
+});
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser(process.env.SESSION_SECRET));
 app.use(attachSession);
