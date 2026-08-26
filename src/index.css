@@ -780,6 +780,11 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
+  /* Always a single line -- on the collapsed 64px rail (see mobile media query) this text is
+     invisible but its box still reserves the vertical space it takes when open, so if it wrapped
+     there onto two lines that reserved height would no longer match the open (single-line) state,
+     and the label icons below it would jump vertically again anyway. */
+  white-space: nowrap;
 }
 
 /* A shared grid across every row (see Sidebar.tsx) rather than each row sizing its own name column
@@ -2713,11 +2718,20 @@ body {
     transition: max-width 0.2s ease, opacity 0.15s ease;
   }
 
-  .sidebar-section-label,
   .sidebar-label-edit,
   .sidebar-label-delete,
   .sidebar-add-label {
     display: none;
+  }
+
+  /* Collapsed rail hides the "Collections" heading's text but keeps the vertical space it
+     occupies -- display: none (used for the rest of the rename/delete/add-collection UI above,
+     which have no such concern) would remove it from flow entirely, so the label icons below it
+     would jump up to fill that freed space every time the rail collapses instead of staying put at
+     the same y position the open drawer left them at. */
+  .sidebar-section-label {
+    opacity: 0;
+    transition: opacity 0.15s ease;
   }
 
   /* Collapsed rail shows each collection as just its color-tinted tag icon -- a quick-glance/quick-jump rail --
@@ -2765,7 +2779,7 @@ body {
   }
 
   .sidebar.open .sidebar-section-label {
-    display: block;
+    opacity: 1;
   }
 
   /* Desktop gates these on :hover, which touch has no equivalent for -- without this they'd stay
