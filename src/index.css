@@ -713,6 +713,16 @@ body {
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Momentarily disables transitions across the drawer while Sidebar.tsx's useLayoutEffect measures
+   its natural (uncapped) width -- without this, .sidebar-label-text's own max-width/opacity
+   transition (still sitting at its pre-transition value the instant .open is applied, since no
+   frame has played yet to start animating it) gets measured mid-flight, undersizing the drawer to
+   whatever that transient value allows and clipping the label text. See Sidebar.tsx. */
+.sidebar.measuring,
+.sidebar.measuring * {
+  transition: none !important;
+}
+
 .sidebar {
   /* Grows past the 220px default when a collection name needs more room instead of truncating it
      -- .sidebar-labels-list's grid columns size to the longest name (see there), but that's moot if

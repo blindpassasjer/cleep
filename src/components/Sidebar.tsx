@@ -61,9 +61,16 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
       return;
     }
     const prevWidth = nav.style.width;
+    // .sidebar-label-text's own max-width/opacity transition is still sitting at its
+    // pre-transition value right now (no frame has played yet to start animating it toward
+    // .open's target) -- measuring through it would undersize the drawer to that transient value.
+    // Suspend transitions for the measurement so the read reflects the settled size, then restore
+    // them before animating the real width in below.
+    nav.classList.add('measuring');
     nav.style.width = '';
     const natural = nav.getBoundingClientRect().width;
     nav.style.width = prevWidth;
+    nav.classList.remove('measuring');
     const frame = requestAnimationFrame(() => {
       nav.style.width = `${natural}px`;
     });
