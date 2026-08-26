@@ -2704,27 +2704,25 @@ body {
     justify-content: flex-start;
   }
 
-  /* Collapsed rail is narrow and its labels are hidden entirely (see .sidebar-label-text below),
-     so left-aligning the icon (as the open drawer does, to line up with its now-visible text)
-     would just push it off-center in the slim column. Center it instead. gap: 0 collapses the
-     (now-transitioning, see .sidebar button) space reserved for the label text -- without it, a
-     fixed gap would sit between the icon and the text's collapsed zero width, pushing the icon off
-     center same as if it weren't zeroed at all. */
+  /* Left (not centered): justify-content is a discrete property, not an animatable one -- it would
+     flip between center and flex-start the instant .open toggles, on the same frame the width/gap/
+     padding transitions are still at their pre-transition values. That snapped the icon sideways
+     immediately, then the padding/width transition eased it back the other way afterward, reading
+     as a bounce. Keeping justify-content and padding-left fixed at all times means the icon's own
+     position never moves -- only padding-right and gap (the space *after* it, where the label text
+     lives) animate to reveal/hide the text. gap: 0 collapses that reserved space so a fixed gap
+     doesn't leave a dead gap next to the collapsed (zero-width) text. */
   .sidebar:not(.open) button {
-    justify-content: center;
-    padding-left: 0;
     padding-right: 0;
     gap: 0;
   }
 
-  /* .sidebar-labels-list's grid columns size to content (see there), which on the collapsed rail
-     is just a ~20px icon -- far narrower than the rail itself. A grid's unfilled space sits at the
-     end by default (justify-content: start), so without this the icon sits flush left instead of
-     centered like the Notes/Archive/Trash buttons above it, which each center within their own
-     full-width button. */
-  .sidebar:not(.open) .sidebar-labels-list {
-    justify-content: center;
-  }
+  /* Left-aligned (not centered): .sidebar-labels-list's justify-content controls where the grid's
+     *tracks* sit, and .sidebar-label-name's icon lives in the first track -- centering it would
+     shift the icon sideways between collapsed and open the same way button centering did above
+     (see the comment there). Left stays put; only the row's own padding-right/gap (already
+     collapsed via ".sidebar:not(.open) button", which also matches this row's <button>) hide the
+     text next to it. */
 
   /* Collapsed to zero width/opacity rather than display: none -- so opening the drawer can reveal
      each name with a little slide-and-fade instead of it just popping into existence the instant
@@ -2772,12 +2770,6 @@ body {
 
   .sidebar.open .sidebar-add-label-btn {
     display: flex;
-  }
-
-  .sidebar.open button,
-  .sidebar.open .sidebar-label-name,
-  .sidebar.open .sidebar-add-label-btn {
-    justify-content: flex-start;
   }
 
   .sidebar.open .sidebar-label-text {
