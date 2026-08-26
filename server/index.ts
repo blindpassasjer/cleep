@@ -31,6 +31,11 @@ const DIST_DIR = path.resolve(__dirname, '../dist');
 
 const app = express();
 app.disable('x-powered-by');
+if (process.env.TRUST_PROXY === 'true') {
+  // Only enable when a reverse proxy sits in front (see TRUST_PROXY in .env.example) -- otherwise
+  // a client could spoof X-Forwarded-For to forge req.ip and dodge the auth rate limiter.
+  app.set('trust proxy', 1);
+}
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser(process.env.SESSION_SECRET));
 app.use(attachSession);

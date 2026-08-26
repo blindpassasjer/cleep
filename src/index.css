@@ -2246,8 +2246,12 @@ button.sidebar-add-label-btn {
   min-width: 1.5px;
   min-height: 12%;
   border-radius: 999px;
-  /* Contrasts against the note's own tint, same approach as .waveform-progress__bar. */
-  background: color-mix(in srgb, var(--fg) 28%, transparent);
+  /* mix-blend-mode inverts against whatever's actually underneath, so this stays legible
+     regardless of the note's tint -- a fixed color (even one derived from --fg) can't do
+     that since it doesn't know the tint's lightness. Same approach as .waveform-progress__bar. */
+  background: #fff;
+  mix-blend-mode: difference;
+  opacity: 0.45;
 }
 
 /* Attachments panel (inside the note modal) */
@@ -2391,17 +2395,21 @@ button.sidebar-add-label-btn {
   min-height: 12%;
   align-self: center;
   border-radius: 999px;
-  /* Contrasts against the tinted track above regardless of which note color that tint is. */
-  background: color-mix(in srgb, var(--fg) 28%, transparent);
-  transition: background-color 0.08s ease;
+  /* mix-blend-mode inverts against the tinted track underneath, so contrast holds regardless
+     of which note color that tint is -- a fixed color can't do that since it doesn't know
+     the tint's lightness. */
+  background: #fff;
+  mix-blend-mode: difference;
+  opacity: 0.45;
+  transition: opacity 0.08s ease;
 }
 
 .waveform-progress__bar--played {
-  background: var(--fg);
+  opacity: 1;
 }
 
 .waveform-progress__bar--hover {
-  background: color-mix(in srgb, var(--fg) 55%, transparent);
+  opacity: 0.75;
 }
 
 /* Live recording (see useAudioRecorder/LiveWaveform) -- distinct from .waveform-progress above,

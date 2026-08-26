@@ -49,7 +49,7 @@ No subscriptions, no ads, no third party reading your notes — just your data, 
      you can sign in immediately instead of building a registration flow
 
    Every variable is documented inline in [.env.example](.env.example), including `COOKIE_SECURE`
-   for deployments behind a reverse proxy.
+   and `TRUST_PROXY` for deployments behind a reverse proxy.
 
 2. **Start it:**
 
@@ -104,7 +104,10 @@ on a plain `http://<nas-ip>:6169` origin, so with the default setup above neithe
 nor offline support will be available — the app itself still works fine either way.
 
 To unlock both, put a reverse proxy with a TLS certificate in front of Cleep — Caddy, Traefik,
-Nginx Proxy Manager, or your NAS's built-in one all work well.
+Nginx Proxy Manager, or your NAS's built-in one all work well. Once you do, also set
+`TRUST_PROXY=true` in `.env` — otherwise every request looks to the app like it's coming from the
+proxy's own IP, which shares the login rate limiter across all visitors and can trip a
+"Too many requests" error after perfectly normal use.
 
 ## Local development
 
