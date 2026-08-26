@@ -4,6 +4,7 @@ import { NoteModal } from './NoteModal';
 import { MiniWaveform } from './MiniWaveform';
 import { api } from '../api/client';
 import { sanitizeHtml } from '../lib/sanitizeHtml';
+import { toggleNoteLabel } from '../lib/toggleNoteLabel';
 import { IconArchive, IconDragHandle, IconMic, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash, IconVideo } from './Icons';
 import type { Attachment, ChecklistItem, Label, Note, NoteColor, View } from '../types';
 
@@ -103,17 +104,7 @@ export function NoteCard({
   }
 
   async function toggleLabel(labelId: string) {
-    const attached = labelIds.includes(labelId);
-    setLabelIds((prev) => (attached ? prev.filter((id) => id !== labelId) : [...prev, labelId]));
-    try {
-      if (attached) {
-        await api.detachLabel(note.id, labelId);
-      } else {
-        await api.attachLabel(note.id, labelId);
-      }
-    } catch {
-      setLabelIds(note.labelIds);
-    }
+    await toggleNoteLabel(note.id, labelId, labelIds, setLabelIds, () => setLabelIds(note.labelIds));
   }
 
   async function uploadAttachment(file: File | Blob, filename?: string, waveformPeaks?: number[]) {
@@ -226,19 +217,22 @@ export function NoteCard({
             ) : (
               note.content && <div className="note-content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
             )}
-            {labelIds.length > 0 && (
-              <div className="note-labels">
-                {labelIds.map((id) => {
-                  const label = labels.find((l) => l.id === id);
-                  return label ? (
-                    <span key={id} className="note-label-chip">
-                      {label.name}
-                    </span>
-                  ) : null;
-                })}
-              </div>
-            )}
           </div>
+          {/* Outside .note-body (not its last child) -- that box clips to a fixed max-height (see
+              .note-body in index.css) for long notes, which was cutting labels off along with the
+              overflowing text instead of leaving them visible below the fade. */}
+          {labelIds.length > 0 && (
+            <div className="note-labels">
+              {labelIds.map((id) => {
+                const label = labels.find((l) => l.id === id);
+                return label ? (
+                  <span key={id} className="note-label-chip">
+                    {label.name}
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
         </div>
 
         {showColors && editable && (

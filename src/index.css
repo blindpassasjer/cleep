@@ -729,7 +729,12 @@ body {
   gap: 0.1rem;
 }
 
-.sidebar button {
+/* :not()s exclude the small icon-only rename/delete/add-collection buttons -- this selector's
+   specificity (type + class) already beats their own (class-only) rule for any property both
+   declare, which was harmless while both agreed on `display: flex`, but would now silently hand
+   them this grid layout (and its fixed icon column, sized for a 22px icon + label text neither of
+   them has) instead of their own flex + centered-icon layout. */
+.sidebar button:not(.sidebar-label-edit):not(.sidebar-label-delete):not(.sidebar-add-label-btn) {
   /* Grid, not flex, with a fixed-width first column for the icon -- the icon's position is then
      purely a function of that column plus the (never-animated) padding-left, both constant across
      every state. Collapsing/expanding the rail only ever changes the second column's content (the
@@ -1609,32 +1614,11 @@ body {
   display: flex;
 }
 
-.color-picker-toggle {
-  /* Matches the other footer icons' color (pin, labels, archive, delete) -- those get
-     var(--muted)/var(--fg) from ".note-modal-footer > button:not(.text-action)", but that selector
-     only reaches *direct* children of the footer, and this button sits one level deeper inside
-     .color-picker-button-wrap. Left unset, it fell back to inheriting var(--fg) instead, reading
-     visibly darker than every icon next to it. */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  padding: 0.4rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.12s ease, color 0.12s ease, transform 0.1s ease;
-}
-
-.color-picker-toggle:hover {
-  background: var(--surface);
-  color: var(--fg);
-}
-
-.color-picker-toggle:active {
-  transform: scale(0.9);
-}
+/* .color-picker-toggle joins the shared footer-icon rules below (".note-modal-footer >
+   button:not(.text-action)" and its :hover/:active) rather than repeating them -- it sits one
+   level deeper in the DOM, inside .color-picker-button-wrap, so that ">"  direct-child selector
+   can't reach it on its own. Styled identically to its sibling footer icons (pin, labels, archive,
+   delete) so the palette icon doesn't read visibly darker than the rest. */
 
 .color-picker-popover {
   position: absolute;
@@ -1651,7 +1635,8 @@ body {
   animation: drop-in 0.15s ease;
 }
 
-.note-modal-footer > button:not(.text-action) {
+.note-modal-footer > button:not(.text-action),
+.color-picker-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1664,12 +1649,14 @@ body {
   transition: background-color 0.12s ease, color 0.12s ease, transform 0.1s ease;
 }
 
-.note-modal-footer > button:not(.text-action):hover {
+.note-modal-footer > button:not(.text-action):hover,
+.color-picker-toggle:hover {
   background: var(--surface);
   color: var(--fg);
 }
 
-.note-modal-footer > button:not(.text-action):active {
+.note-modal-footer > button:not(.text-action):active,
+.color-picker-toggle:active {
   transform: scale(0.9);
 }
 

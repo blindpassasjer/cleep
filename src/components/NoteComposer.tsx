@@ -8,6 +8,7 @@ import { RichTextEditor } from './RichTextEditor';
 import { api } from '../api/client';
 import { insertEditorImage } from '../lib/insertEditorImage';
 import { isRichContentEmpty } from '../lib/isRichContentEmpty';
+import { toggleNoteLabel } from '../lib/toggleNoteLabel';
 import { IconArchive, IconChecklist, IconImage, IconMic, IconPlus, IconTag, IconTrash } from './Icons';
 import type { Attachment, ChecklistItem, Label, Note, NoteColor } from '../types';
 
@@ -105,14 +106,10 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   // attach to a note that doesn't exist on the server yet.
   async function toggleLabel(labelId: string) {
     const noteId = await ensureDraftNote();
-    const attached = labelIds.includes(labelId);
-    setLabelIds((prev) => (attached ? prev.filter((id) => id !== labelId) : [...prev, labelId]));
-    try {
-      if (attached) await api.detachLabel(noteId, labelId);
-      else await api.attachLabel(noteId, labelId);
-    } catch {
-      setLabelIds((prev) => (attached ? [...prev, labelId] : prev.filter((id) => id !== labelId)));
-    }
+    const wasAttached = labelIds.includes(labelId);
+    await toggleNoteLabel(noteId, labelId, labelIds, setLabelIds, () =>
+      setLabelIds((prev) => (wasAttached ? [...prev, labelId] : prev.filter((id) => id !== labelId))),
+    );
   }
 
   // Archive/delete bypass attemptClose's save-or-discard logic entirely -- the user has made an
@@ -120,16 +117,20 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   // cause it to be silently discarded instead. 'fade' (not the default flip-back-to-origin
   // animation) matches NoteModal's own archive/trash buttons, since the composer's origin element
   // may no longer represent where this note is going.
-  async function archiveDraftNote(close: CloseFn) {
+  //
+  // If nothing has actually been saved yet (no draft, no title/content/items, no attachments),
+  // there's nothing on the server to archive/trash -- ensureDraftNote() would otherwise create a
+  // note just to immediately archive/discard it, two round trips for a no-op.
+  async function finishDraftNote(close: CloseFn, action: (id: string) => void) {
+    const cleanedItems = items.filter((item) => item.text.trim().length > 0);
+    const isEmpty = isChecklist ? cleanedItems.length === 0 && !title.trim() : !title.trim() && isRichContentEmpty(content);
+    if (!draftNoteIdRef.current && isEmpty && attachmentsRef.current.length === 0) {
+      close('fade');
+      return;
+    }
     const noteId = await ensureDraftNote();
     close('fade');
-    onArchive(noteId);
-  }
-
-  async function trashDraftNote(close: CloseFn) {
-    const noteId = await ensureDraftNote();
-    close('fade');
-    onTrash(noteId);
+    action(noteId);
   }
 
   // Tracked as a pending promise so attemptClose (Close button, Escape, and backdrop-click all
@@ -281,10 +282,10 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
             <button type="button" title="Collections" onClick={() => setShowLabels((v) => !v)}>
               <IconTag />
             </button>
-            <button type="button" title="Archive" onClick={() => archiveDraftNote(close)}>
+            <button type="button" title="Archive" onClick={() => finishDraftNote(close, onArchive)}>
               <IconArchive />
             </button>
-            <button type="button" title="Delete" onClick={() => trashDraftNote(close)}>
+            <button type="button" title="Delete" onClick={() => finishDraftNote(close, onTrash)}>
               <IconTrash />
             </button>
             <button type="button" className="text-action" onClick={() => attemptClose(close)} disabled={saving}>

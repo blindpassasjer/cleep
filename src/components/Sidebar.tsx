@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { COLORS } from './ColorPicker';
 import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTagFilled, IconTrash } from './Icons';
 import type { Label, NoteColor, View } from '../types';
@@ -42,20 +42,6 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
   useEffect(() => {
     if (!showRowActions) setEditingId(null);
   }, [showRowActions]);
-
-  const navRef = useRef<HTMLElement>(null);
-
-  // .sidebar.open sizes itself with `width: max-content` (see index.css) so the drawer always
-  // shows every name in full, however wide that needs to be -- letting CSS resolve it directly
-  // (rather than pre-computing a pixel value in JS to animate toward) means there's no risk of
-  // that computed value ever going stale or under-measuring mid-transition. The tradeoff is that
-  // `max-content` can't be transitioned (it's a keyword, not a length), so opening/closing the
-  // drawer snaps its width instead of sliding it -- padding and box-shadow still transition.
-  useLayoutEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    nav.style.width = isMobile ? (open ? '' : '64px') : '';
-  }, [open, isMobile]);
 
   async function commitAdd() {
     const trimmed = name.trim();
@@ -106,7 +92,6 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
 
   return (
     <nav
-      ref={navRef}
       className={`sidebar ${open ? 'open' : ''}`}
       onClick={(e) => {
         // Only the bare nav background, not a bubbled click from one of its buttons/rows -- e.g.
