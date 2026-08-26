@@ -2246,7 +2246,8 @@ button.sidebar-add-label-btn {
   min-width: 1.5px;
   min-height: 12%;
   border-radius: 999px;
-  background: var(--border);
+  /* Contrasts against the note's own tint, same approach as .waveform-progress__bar. */
+  background: color-mix(in srgb, var(--fg) 28%, transparent);
 }
 
 /* Attachments panel (inside the note modal) */
