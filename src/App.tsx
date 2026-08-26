@@ -29,55 +29,9 @@ export default function App() {
   const appRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<NoteComposerHandle>(null);
-  const [pendingComposerOpen, setPendingComposerOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { toast, show, dismiss } = useToast();
 
-  // Global keyboard shortcuts: "/" focuses search, "c"/"n" starts a new note. Ignored while typing
-  // in any field (except "/", which should work even from another input to jump to search) or
-  // while a modal/dialog is open, since those already own Escape/typing themselves.
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      const target = e.target as HTMLElement;
-      const isTyping = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
-
-      if (e.key === '/') {
-        if (target === searchInputRef.current) return;
-        e.preventDefault();
-        searchInputRef.current?.focus();
-        searchInputRef.current?.select();
-        return;
-      }
-
-      if (isTyping) return;
-      if (document.querySelector('.note-modal-backdrop, .image-lightbox-backdrop')) return;
-
-      if (e.key === 'c' || e.key === 'n') {
-        e.preventDefault();
-        if (composerRef.current) {
-          composerRef.current.open();
-        } else {
-          // Composer isn't mounted (e.g. we're viewing Settings, a label/archive/trash, or
-          // bulk-select is active) -- leave Settings if that's why, switch to the notes view and
-          // clear selection, then open it once it mounts.
-          setSettingsOpen(false);
-          setView({ kind: 'notes' });
-          setSelectedIds(new Set());
-          setPendingComposerOpen(true);
-        }
-      }
-    }
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, []);
-
-  useEffect(() => {
-    if (pendingComposerOpen && composerRef.current) {
-      composerRef.current.open();
-      setPendingComposerOpen(false);
-    }
-  }, [pendingComposerOpen, view, selectedIds]);
 
   // Exposes the topbar's real rendered height as a CSS variable so the mobile sidebar drawer --
   // which needs to visually extend under the topbar while keeping its icons aligned with the
