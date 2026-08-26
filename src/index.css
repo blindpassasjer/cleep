@@ -799,7 +799,15 @@ body {
    the content. max-content is exempt from that stretch step. */
 .sidebar-labels-list {
   display: grid;
-  grid-template-columns: minmax(0, max-content) max-content max-content;
+  /* Trailing 1fr -- absorbs whatever width the first three (content-sized) columns don't use.
+     Without it, .sidebar-label-row's box (grid-column: 1 / -1, see below) only spans as wide as
+     those three tracks actually need, so its .active/:hover background ended noticeably narrower
+     than the Notes/Archive/Trash buttons above it (plain flex-column children, which stretch to
+     the sidebar's full width by default) -- most visible on the collapsed rail, where the
+     edit/delete columns are hidden and only the ~22px icon column is left to size against. This
+     4th column stays empty (nothing is ever placed in it) purely so the row's span reaches the
+     same right edge those buttons do. */
+  grid-template-columns: minmax(0, max-content) max-content max-content 1fr;
 }
 
 /* subgrid -- rather than each row defining its own 3-column grid -- makes this row's tracks the
