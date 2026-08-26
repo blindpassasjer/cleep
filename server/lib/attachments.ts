@@ -11,6 +11,10 @@ type AttachmentRow = typeof attachments.$inferSelect;
 export type AttachmentKind = 'image' | 'video' | 'audio';
 
 export function kindFromMime(mimeType: string): AttachmentKind | null {
+  // SVG is excluded even though it's an image/* type -- it can embed <script>, and attachment
+  // files are served back with Content-Disposition: inline, so accepting it would let a script
+  // execute in the app's origin whenever the file URL is opened directly.
+  if (mimeType === 'image/svg+xml') return null;
   if (mimeType.startsWith('image/')) return 'image';
   if (mimeType.startsWith('video/')) return 'video';
   if (mimeType.startsWith('audio/')) return 'audio';

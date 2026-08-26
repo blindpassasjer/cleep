@@ -6,7 +6,10 @@
 const ALLOWED_TAGS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'H1', 'H2', 'H3', 'UL', 'OL', 'LI', 'BR', 'DIV', 'P', 'IMG', 'SPAN']);
 
 function isSafeImageSrc(src: string): boolean {
-  return /^(https?:\/\/|\/)/i.test(src);
+  // Deliberately excludes protocol-relative URLs ("//host/...") -- those resolve to an external
+  // host too, just without a scheme written out, so allowing them would defeat the same-origin
+  // intent of the leading-"/" case below.
+  return /^(https?:\/\/|\/(?!\/))/i.test(src);
 }
 
 function clean(node: ChildNode): ChildNode[] {
