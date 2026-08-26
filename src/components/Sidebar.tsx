@@ -61,26 +61,9 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
       return;
     }
     const prevWidth = nav.style.width;
-
-    // .sidebar-label-text has its own max-width/opacity transition for the reveal (see index.css)
-    // that's still sitting at its pre-transition (collapsed) value right now -- the .open class
-    // just landed in this same commit, so no frame has played yet to actually start animating it
-    // toward its target. Measuring through it would read that collapsed value and undersize the
-    // drawer. Force each label's transition off *and flush that as the committed style* (the
-    // `void nav.offsetHeight` read) before touching anything else -- otherwise the transition-off
-    // and the value change below would land in the same style recalc, and the transition can still
-    // be judged against the pre-disable style rather than the one we just set. Restored once the
-    // measurement is done so the next real open/close still animates normally.
-    const texts = nav.querySelectorAll<HTMLElement>('.sidebar-label-text');
-    texts.forEach((el) => el.style.setProperty('transition', 'none', 'important'));
-    void nav.offsetHeight;
-
     nav.style.width = '';
     const natural = nav.getBoundingClientRect().width;
     nav.style.width = prevWidth;
-
-    texts.forEach((el) => el.style.removeProperty('transition'));
-
     const frame = requestAnimationFrame(() => {
       nav.style.width = `${natural}px`;
     });
