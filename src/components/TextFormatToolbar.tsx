@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconBold, IconBulletList, IconGif, IconHeading, IconItalic, IconNumberedList } from './Icons';
+import { sanitizeHtml } from '../lib/sanitizeHtml';
 
 interface Props {
   editorRef: React.RefObject<HTMLDivElement>;
@@ -100,7 +101,10 @@ export function TextFormatToolbar({ editorRef, onChange }: Props) {
     const url = imageUrl.trim();
     if (!url) return;
     const alt = imageAlt.trim();
-    run(() => document.execCommand('insertHTML', false, `<img src="${escapeAttr(url)}" alt="${escapeAttr(alt)}">`));
+    // Goes through the same allowlist sanitizer as pasted HTML (RichTextEditor's handlePaste) --
+    // this URL is free-typed by the user, so it needs the same http(s)/same-origin src check
+    // rather than trusting it just because it's wrapped in an <img> tag.
+    run(() => document.execCommand('insertHTML', false, sanitizeHtml(`<img src="${escapeAttr(url)}" alt="${escapeAttr(alt)}">`)));
     setShowImageForm(false);
     setImageUrl('');
     setImageAlt('');
