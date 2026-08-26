@@ -112,6 +112,18 @@ export function NoteModal({
           >
             {!isChecklist && <TextFormatToolbar editorRef={contentRef} onChange={onContentChange} />}
           </AttachmentsPanel>
+          {labelIds.length > 0 && (
+            <div className="note-labels">
+              {labelIds.map((id) => {
+                const label = labels.find((l) => l.id === id);
+                return label ? (
+                  <span key={id} className={`note-label-chip note-label-chip-${label.color}`}>
+                    {label.name}
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
           {showLabels && (
             <div className="note-labels-editor">
               {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}

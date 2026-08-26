@@ -35,9 +35,13 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
     if (!enabled) return;
     const requestId = ++requestIdRef.current;
     setLoading(true);
+    setError(null);
     let firstPage: Note[];
     try {
       ({ notes: firstPage } = await api.listNotes(view, { limit: FIRST_PAGE_SIZE }));
+    } catch (err) {
+      if (requestId === requestIdRef.current) setError(errorMessage(err));
+      return;
     } finally {
       if (requestId === requestIdRef.current) setLoading(false);
     }
@@ -45,9 +49,13 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
     setNotes(firstPage);
 
     if (firstPage.length === FIRST_PAGE_SIZE) {
-      const { notes: rest } = await api.listNotes(view, { offset: FIRST_PAGE_SIZE });
-      if (requestId === requestIdRef.current && rest.length > 0) {
-        setNotes((prev) => [...prev, ...rest]);
+      try {
+        const { notes: rest } = await api.listNotes(view, { offset: FIRST_PAGE_SIZE });
+        if (requestId === requestIdRef.current && rest.length > 0) {
+          setNotes((prev) => [...prev, ...rest]);
+        }
+      } catch (err) {
+        if (requestId === requestIdRef.current) setError(errorMessage(err));
       }
     }
   }, [view, enabled]);

@@ -226,7 +226,7 @@ export function NoteCard({
               {labelIds.map((id) => {
                 const label = labels.find((l) => l.id === id);
                 return label ? (
-                  <span key={id} className="note-label-chip">
+                  <span key={id} className={`note-label-chip note-label-chip-${label.color}`}>
                     {label.name}
                   </span>
                 ) : null;

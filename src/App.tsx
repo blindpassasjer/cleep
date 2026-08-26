@@ -75,7 +75,12 @@ export default function App() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return notes;
-    return notes.filter((n) => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q));
+    return notes.filter(
+      (n) =>
+        n.title.toLowerCase().includes(q) ||
+        n.content.toLowerCase().includes(q) ||
+        n.items.some((item) => item.text.toLowerCase().includes(q)),
+    );
   }, [notes, search]);
 
   function toggleSelect(id: string) {
