@@ -2636,7 +2636,14 @@ body {
     min-height: 44px;
   }
 
+  /* Left-aligned rather than centered in its touch target, with padding-left tuned so its icon
+     lines up with the sidebar's own icon column below it (nav padding-left 0.4rem + button
+     padding-left 0.75rem = 1.15rem from the viewport edge, see .sidebar button) instead of sitting
+     wherever centering a 44px box against .topbar's 0.85rem padding happens to land it (1.15rem -
+     0.85rem = 0.3rem). min-width/min-height still keep the full 44px touch target. */
   .sidebar-toggle {
+    justify-content: flex-start;
+    padding-left: 0.3rem;
     min-width: 44px;
     min-height: 44px;
   }
