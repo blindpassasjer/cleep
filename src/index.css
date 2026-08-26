@@ -2747,14 +2747,15 @@ body {
 
   .sidebar.open {
     /* max-content, not a fixed width -- the drawer should end right after its widest row (the
-       delete button, rightmost element in a label row), not always reach out to 340px/88vw
+       delete button, rightmost element in a label row), not always reach out to a fixed size
        regardless of how short the label names are. min-width keeps it from looking cramped when
-       there's little/no content. max-width is only a viewport-overflow safety net (88vw), not a
-       content cap -- a fixed 340px cap would ellipsis a genuinely long label name even though the
-       grid (see .sidebar-labels-list) has already sized its column to fit it completely. */
+       there's little/no content. No max-width: a cap here would ellipsis a genuinely long label
+       name even though the grid (see .sidebar-labels-list) has already sized its column to fit it
+       completely -- collection names are already capped at 50 characters server-side (see
+       labels.ts), so this can't grow unboundedly, and the drawer is allowed to run past the
+       viewport edge (scrollable) sooner than it would ever truncate a name. */
     width: max-content;
     min-width: 200px;
-    max-width: 88vw;
     padding: 0.85rem 0.75rem 1.1rem 0.4rem;
     z-index: 50;
     box-shadow: var(--shadow-hover);
@@ -2775,8 +2776,8 @@ body {
        real name's width would re-clip it before it reaches its natural size, undoing the "column
        sizes to the longest label name" fix elsewhere (a max-width also caps an element's own
        contribution when an ancestor's grid column sizes to its max-content). 600px safely clears
-       every realistic name and the drawer's own 88vw cap, so the *actual* bound stays the drawer
-       width + ellipsis fallback.
+       every realistic name (they're capped at 50 characters server-side, see labels.ts), so the
+       *actual* bound stays the drawer width + ellipsis fallback.
 
        Deliberately NOT in the transition below (only opacity is) -- Sidebar.tsx's
        useLayoutEffect measures the drawer's natural width the instant .open lands, in the same
