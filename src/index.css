@@ -741,10 +741,12 @@ body {
   cursor: pointer;
   border-radius: 8px;
   font-size: 0.95rem;
-  /* gap is itself an animatable length -- transitioning it (mobile collapses it to 0, see there)
-     is what lets the icon slide back to center instead of the label text's reveal leaving a fixed
-     empty gap behind it. Harmless on desktop, where gap never actually changes. */
-  transition: background-color 0.12s ease, transform 0.1s ease, gap 0.2s ease;
+  /* gap and padding are themselves animatable lengths -- transitioning them (mobile collapses
+     gap to 0 and padding-left/right to 0 when the rail is collapsed, see there) is what lets the
+     icon slide smoothly between centered-in-the-rail and left-aligned-next-to-its-label instead of
+     jumping there instantly while the row's width is still animating around it (which read as a
+     bounce/stutter). Harmless on desktop, where neither ever actually changes. */
+  transition: background-color 0.12s ease, transform 0.1s ease, gap 0.2s ease, padding 0.2s ease;
 }
 
 /* Same icon/text size on desktop and mobile -- only touch-target padding differs (see the mobile
@@ -877,7 +879,9 @@ body {
   cursor: pointer;
   font-size: 0.95rem;
   border-radius: 8px;
-  transition: gap 0.2s ease;
+  /* Not declared here -- `.sidebar button` (type selector too, and so higher specificity) already
+     supplies gap/padding transitions, and would silently win over anything redeclared on this
+     class-only selector anyway. */
 }
 
 .sidebar-label-edit,

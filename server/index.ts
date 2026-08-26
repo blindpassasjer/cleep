@@ -50,8 +50,23 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(DIST_DIR));
+// index.html and the service worker script must never be cached by the browser (or a proxy in
+// between) -- workbox's precache manifest (which is what actually makes a new build's JS/CSS get
+// fetched) lives inside sw.js, and the hashed asset filenames a new build needs are referenced from
+// index.html, so a stale copy of *either* keeps an installed PWA on the old build indefinitely no
+// matter how aggressively the app's own update-check code (src/main.tsx) polls -- there's nothing
+// left for it to discover if the browser never re-requests these two.
+app.use(
+  express.static(DIST_DIR, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('sw.js') || filePath.endsWith('index.html')) {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    },
+  }),
+);
 app.get('*', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(DIST_DIR, 'index.html'));
 });
 
