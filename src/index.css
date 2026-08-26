@@ -730,7 +730,15 @@ body {
 }
 
 .sidebar button {
-  display: flex;
+  /* Grid, not flex, with a fixed-width first column for the icon -- the icon's position is then
+     purely a function of that column plus the (never-animated) padding-left, both constant across
+     every state. Collapsing/expanding the rail only ever changes the second column's content (the
+     label, see .sidebar-label-text) or padding-right, neither of which the icon sits in, so it can
+     never drift sideways while the drawer opens/closes -- unlike padding-left, gap, or
+     justify-content, which were all also read as horizontal icon position and used to visibly
+     shift the icon during that transition when toggled. */
+  display: grid;
+  grid-template-columns: 22px 1fr;
   align-items: center;
   gap: 0.7rem;
   text-align: left;
@@ -741,12 +749,7 @@ body {
   cursor: pointer;
   border-radius: 8px;
   font-size: 0.95rem;
-  /* gap and padding are themselves animatable lengths -- transitioning them (mobile collapses
-     gap to 0 and padding-left/right to 0 when the rail is collapsed, see there) is what lets the
-     icon slide smoothly between centered-in-the-rail and left-aligned-next-to-its-label instead of
-     jumping there instantly while the row's width is still animating around it (which read as a
-     bounce/stutter). Harmless on desktop, where neither ever actually changes. */
-  transition: background-color 0.12s ease, transform 0.1s ease, gap 0.2s ease, padding 0.2s ease;
+  transition: background-color 0.12s ease, transform 0.1s ease, padding-right 0.2s ease;
 }
 
 /* Same icon/text size on desktop and mobile -- only touch-target padding differs (see the mobile
@@ -2678,7 +2681,11 @@ body {
     width: 64px;
     min-width: 0;
     max-width: none;
-    padding: 0.85rem 0.2rem;
+    /* Left padding matches .sidebar.open's below (0.4rem) -- kept identical rather than each state
+       picking its own, so this padding isn't itself one more thing shifting the icon column
+       sideways while it transitions (see .sidebar button). Only the right/bottom padding, which sit
+       past the icon, differ between collapsed and open. */
+    padding: 0.85rem 0.2rem 0.85rem 0.4rem;
     /* A plain, direction-agnostic transition -- collapsing and expanding play the exact same
        animation in reverse, unlike the View Transitions API's image-scale interpolation (used for
        the notes grid instead), which visibly reads differently shrinking vs. growing. */
@@ -2688,32 +2695,11 @@ body {
     z-index: 40;
   }
 
-  .sidebar button,
-  .sidebar-label-name,
-  .sidebar-add-label-btn {
-    justify-content: flex-start;
-  }
-
-  /* Collapsed rail is narrow and its labels are hidden entirely (see .sidebar-label-text below),
-     so left-aligning the icon (as the open drawer does, to line up with its now-visible text)
-     would just push it off-center in the slim column. Center it instead. gap: 0 collapses the
-     (now-transitioning, see .sidebar button) space reserved for the label text -- without it, a
-     fixed gap would sit between the icon and the text's collapsed zero width, pushing the icon off
-     center same as if it weren't zeroed at all. */
+  /* Icon column is fixed (see .sidebar button), so the only thing that needs to collapse here is
+     the space held for the label text next to it -- zeroing padding-right removes the touch-target
+     padding that would otherwise sit past invisible (max-width: 0, see .sidebar-label-text) text. */
   .sidebar:not(.open) button {
-    justify-content: center;
-    padding-left: 0;
     padding-right: 0;
-    gap: 0;
-  }
-
-  /* .sidebar-labels-list's grid columns size to content (see there), which on the collapsed rail
-     is just a ~20px icon -- far narrower than the rail itself. A grid's unfilled space sits at the
-     end by default (justify-content: start), so without this the icon sits flush left instead of
-     centered like the Notes/Archive/Trash buttons above it, which each center within their own
-     full-width button. */
-  .sidebar:not(.open) .sidebar-labels-list {
-    justify-content: center;
   }
 
   /* Collapsed to zero width/opacity rather than display: none -- so opening the drawer can reveal
@@ -2763,12 +2749,6 @@ body {
 
   .sidebar.open .sidebar-add-label-btn {
     display: flex;
-  }
-
-  .sidebar.open button,
-  .sidebar.open .sidebar-label-name,
-  .sidebar.open .sidebar-add-label-btn {
-    justify-content: flex-start;
   }
 
   .sidebar.open .sidebar-label-text {
