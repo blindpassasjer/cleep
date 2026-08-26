@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { COLORS } from './ColorPicker';
 import { IconArchive, IconClose, IconEdit, IconNotes, IconPlus, IconTagFilled, IconTrash } from './Icons';
 import type { Label, NoteColor, View } from '../types';
@@ -42,6 +42,39 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
   useEffect(() => {
     if (!showRowActions) setEditingId(null);
   }, [showRowActions]);
+
+  const navRef = useRef<HTMLElement>(null);
+
+  // .sidebar.open sizes itself with `width: max-content` (see index.css) so the drawer never
+  // reaches out further than its content needs -- but `max-content` is a keyword, not a length,
+  // and CSS transitions can't interpolate to/from one (same reason `width: auto` can't animate).
+  // Left alone, opening/closing would just snap instead of sliding. So drive `width` from here
+  // instead, always as a real px number: measure the natural (uncapped-by-us) target by briefly
+  // clearing the inline override so the stylesheet's max-content/min/max rules resolve it, read
+  // that, restore the previous value synchronously (nothing paints in between), then set the real
+  // target on the next frame so the change is a normal, animatable px-to-px transition.
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    if (!nav || !isMobile) return;
+    if (!open) {
+      nav.style.width = '64px';
+      return;
+    }
+    const prevWidth = nav.style.width;
+    nav.style.width = '';
+    const natural = nav.getBoundingClientRect().width;
+    nav.style.width = prevWidth;
+    const frame = requestAnimationFrame(() => {
+      nav.style.width = `${natural}px`;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [open, isMobile, labels, editingId]);
+
+  useEffect(() => {
+    if (isMobile) return;
+    const nav = navRef.current;
+    if (nav) nav.style.width = '';
+  }, [isMobile]);
 
   async function commitAdd() {
     const trimmed = name.trim();
@@ -92,6 +125,7 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
 
   return (
     <nav
+      ref={navRef}
       className={`sidebar ${open ? 'open' : ''}`}
       onClick={(e) => {
         // Only the bare nav background, not a bubbled click from one of its buttons/rows -- e.g.
@@ -119,55 +153,60 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
           at the same x across every row (as wide as the single longest label name needs), rather
           than each row's buttons trailing right after that row's own, differently-sized name. */}
       <div className="sidebar-labels-list">
-        {labels.map((label) =>
-          editingId === label.id ? (
-            <form key={label.id} className="sidebar-edit-label" onSubmit={(e) => submitEdit(e, label)}>
+        {labels.map((label) => (
+          // The row itself always renders, editing or not -- keeping it in the DOM means its
+          // (fixed, name-driven) size keeps feeding the shared grid's column widths the same way
+          // regardless of edit state. The rename form is layered on top via position: absolute
+          // (see .sidebar-edit-label) instead of replacing the row as a sibling grid item, which is
+          // what previously let its own, differently-sized content (an input with room to type)
+          // widen the *whole* grid -- and so the sidebar -- while any row was being renamed.
+          <div key={label.id} className={`sidebar-label-row ${view.kind === 'label' && view.id === label.id ? 'active' : ''}`}>
+            <button
+              className="sidebar-label-name"
+              title={label.name}
+              onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}
+            >
               <IconTagFilled className={`label-icon label-icon-${label.color}`} aria-hidden="true" />
-              <input
-                autoFocus
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') setEditingId(null);
-                }}
-                onBlur={() => commitEdit(label)}
-              />
-            </form>
-          ) : (
-            <div key={label.id} className={`sidebar-label-row ${view.kind === 'label' && view.id === label.id ? 'active' : ''}`}>
-              <button
-                className="sidebar-label-name"
-                title={label.name}
-                onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}
-              >
+              <span className="sidebar-label-text">{label.name}</span>
+            </button>
+            {showRowActions && (
+              <>
+                <button className="sidebar-label-edit" title="Rename collection" onClick={() => startEdit(label)}>
+                  <IconEdit width={14} height={14} />
+                </button>
+                <button
+                  className="sidebar-label-delete"
+                  title="Delete collection"
+                  onClick={() => {
+                    notify(`Delete "${label.name}"?`, {
+                      actionLabel: 'Delete',
+                      onUndo: () => {
+                        if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
+                        onDeleteLabel(label.id);
+                      },
+                    });
+                  }}
+                >
+                  <IconClose width={14} height={14} />
+                </button>
+              </>
+            )}
+            {editingId === label.id && (
+              <form className="sidebar-edit-label" onSubmit={(e) => submitEdit(e, label)}>
                 <IconTagFilled className={`label-icon label-icon-${label.color}`} aria-hidden="true" />
-                <span className="sidebar-label-text">{label.name}</span>
-              </button>
-              {showRowActions && (
-                <>
-                  <button className="sidebar-label-edit" title="Rename collection" onClick={() => startEdit(label)}>
-                    <IconEdit width={14} height={14} />
-                  </button>
-                  <button
-                    className="sidebar-label-delete"
-                    title="Delete collection"
-                    onClick={() => {
-                      notify(`Delete "${label.name}"?`, {
-                        actionLabel: 'Delete',
-                        onUndo: () => {
-                          if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
-                          onDeleteLabel(label.id);
-                        },
-                      });
-                    }}
-                  >
-                    <IconClose width={14} height={14} />
-                  </button>
-                </>
-              )}
-            </div>
-          ),
-        )}
+                <input
+                  autoFocus
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setEditingId(null);
+                  }}
+                  onBlur={() => commitEdit(label)}
+                />
+              </form>
+            )}
+          </div>
+        ))}
       </div>
       {editError && <div className="sidebar-label-error">{editError}</div>}
 

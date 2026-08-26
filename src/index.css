@@ -741,7 +741,10 @@ body {
   cursor: pointer;
   border-radius: 8px;
   font-size: 0.95rem;
-  transition: background-color 0.12s ease, transform 0.1s ease;
+  /* gap is itself an animatable length -- transitioning it (mobile collapses it to 0, see there)
+     is what lets the icon slide back to center instead of the label text's reveal leaving a fixed
+     empty gap behind it. Harmless on desktop, where gap never actually changes. */
+  transition: background-color 0.12s ease, transform 0.1s ease, gap 0.2s ease;
 }
 
 /* Same icon/text size on desktop and mobile -- only touch-target padding differs (see the mobile
@@ -795,6 +798,9 @@ body {
    had. Still its own box (not display: contents), so :hover/.active's full-row background below
    keeps working. */
 .sidebar-label-row {
+  /* Anchors .sidebar-edit-label's position: absolute overlay (see there) to this row's own box,
+     not the page. */
+  position: relative;
   display: grid;
   grid-template-columns: subgrid;
   grid-column: 1 / -1;
@@ -871,6 +877,7 @@ body {
   cursor: pointer;
   font-size: 0.95rem;
   border-radius: 8px;
+  transition: gap 0.2s ease;
 }
 
 .sidebar-label-edit,
@@ -911,17 +918,22 @@ body {
 }
 
 /* Inline rename form -- same row height/padding as .sidebar-label-name so swapping into and out
-   of edit mode doesn't shift anything above/below it. grid-column spans the full width of the
-   parent .sidebar-labels-list grid -- without it, this would only fill the (possibly narrow) first
-   "name" column like any other ungoverned child, instead of the whole sidebar width it needs while
-   editing. */
+   of edit mode doesn't shift anything above/below it. position: absolute over the (still-rendered,
+   see Sidebar.tsx) row rather than a sibling grid item spanning the row's columns -- a spanning
+   item's own content feeds back into that shared grid's column-width calculation, so an input with
+   room to type made the *whole* sidebar widen while any row was being renamed. Sized only against
+   its own row's already-settled width (via inset: 0 against .sidebar-label-row, position: relative)
+   instead, so it can never influence that grid. */
 .sidebar-edit-label {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   gap: 0.65rem;
   padding: 0.5rem 0.75rem;
   color: var(--muted);
-  grid-column: 1 / -1;
+  background: var(--bg);
+  border-radius: 8px;
 }
 
 .sidebar-edit-label input {
@@ -2680,11 +2692,15 @@ body {
 
   /* Collapsed rail is narrow and its labels are hidden entirely (see .sidebar-label-text below),
      so left-aligning the icon (as the open drawer does, to line up with its now-visible text)
-     would just push it off-center in the slim column. Center it instead. */
+     would just push it off-center in the slim column. Center it instead. gap: 0 collapses the
+     (now-transitioning, see .sidebar button) space reserved for the label text -- without it, a
+     fixed gap would sit between the icon and the text's collapsed zero width, pushing the icon off
+     center same as if it weren't zeroed at all. */
   .sidebar:not(.open) button {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
+    gap: 0;
   }
 
   /* .sidebar-labels-list's grid columns size to content (see there), which on the collapsed rail
@@ -2696,7 +2712,17 @@ body {
     justify-content: center;
   }
 
-  .sidebar-label-text,
+  /* Collapsed to zero width/opacity rather than display: none -- so opening the drawer can reveal
+     each name with a little slide-and-fade instead of it just popping into existence the instant
+     .open lands (display can't be transitioned at all). overflow: hidden + white-space: nowrap
+     (both already set on the base rule) keep the mid-transition text clipped instead of wrapping. */
+  .sidebar-label-text {
+    display: inline-block;
+    max-width: 0;
+    opacity: 0;
+    transition: max-width 0.2s ease, opacity 0.15s ease;
+  }
+
   .sidebar-section-label,
   .sidebar-label-edit,
   .sidebar-label-delete,
@@ -2739,7 +2765,13 @@ body {
   }
 
   .sidebar.open .sidebar-label-text {
-    display: inline;
+    /* Generous enough for any real label/nav name at this font size; only needs to exceed the
+       text's own natural width since overflow: hidden + white-space: nowrap (base rule) keep it
+       from ever visibly stretching past that. Delayed slightly so the fade trails just behind the
+       row's own gap/width reveal instead of racing it. */
+    max-width: 200px;
+    opacity: 1;
+    transition: max-width 0.2s ease, opacity 0.2s ease 0.05s;
   }
 
   .sidebar.open .sidebar-section-label {
