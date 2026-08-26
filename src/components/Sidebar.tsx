@@ -45,36 +45,17 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
 
   const navRef = useRef<HTMLElement>(null);
 
-  // .sidebar.open sizes itself with `width: max-content` (see index.css) so the drawer never
-  // reaches out further than its content needs -- but `max-content` is a keyword, not a length,
-  // and CSS transitions can't interpolate to/from one (same reason `width: auto` can't animate).
-  // Left alone, opening/closing would just snap instead of sliding. So drive `width` from here
-  // instead, always as a real px number: measure the natural (uncapped-by-us) target by briefly
-  // clearing the inline override so the stylesheet's max-content/min/max rules resolve it, read
-  // that, restore the previous value synchronously (nothing paints in between), then set the real
-  // target on the next frame so the change is a normal, animatable px-to-px transition.
+  // .sidebar.open sizes itself with `width: max-content` (see index.css) so the drawer always
+  // shows every name in full, however wide that needs to be -- letting CSS resolve it directly
+  // (rather than pre-computing a pixel value in JS to animate toward) means there's no risk of
+  // that computed value ever going stale or under-measuring mid-transition. The tradeoff is that
+  // `max-content` can't be transitioned (it's a keyword, not a length), so opening/closing the
+  // drawer snaps its width instead of sliding it -- padding and box-shadow still transition.
   useLayoutEffect(() => {
     const nav = navRef.current;
-    if (!nav || !isMobile) return;
-    if (!open) {
-      nav.style.width = '64px';
-      return;
-    }
-    const prevWidth = nav.style.width;
-    nav.style.width = '';
-    const natural = nav.getBoundingClientRect().width;
-    nav.style.width = prevWidth;
-    const frame = requestAnimationFrame(() => {
-      nav.style.width = `${natural}px`;
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [open, isMobile, labels, editingId]);
-
-  useEffect(() => {
-    if (isMobile) return;
-    const nav = navRef.current;
-    if (nav) nav.style.width = '';
-  }, [isMobile]);
+    if (!nav) return;
+    nav.style.width = isMobile ? (open ? '' : '64px') : '';
+  }, [open, isMobile]);
 
   async function commitAdd() {
     const trimmed = name.trim();

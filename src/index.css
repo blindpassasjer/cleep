@@ -2777,15 +2777,8 @@ body {
        sizes to the longest label name" fix elsewhere (a max-width also caps an element's own
        contribution when an ancestor's grid column sizes to its max-content). 600px safely clears
        every realistic name (they're capped at 50 characters server-side, see labels.ts), so the
-       *actual* bound stays the drawer width + ellipsis fallback.
-
-       Deliberately NOT in the transition below (only opacity is) -- Sidebar.tsx's
-       useLayoutEffect measures the drawer's natural width the instant .open lands, in the same
-       tick, before any transition has had a chance to actually start animating. If max-width
-       transitioned too, that measurement would read its still-collapsed pre-transition value and
-       undersize the drawer. Snapping it straight to 600px instead (a visual no-op, since real
-       content is always narrower) keeps the measurement correct on the very first read; opacity
-       still fades in for the reveal. */
+       *actual* bound stays the drawer width + ellipsis fallback. Not in the transition below --
+       only opacity fades in; the text itself just snaps to its full size along with the drawer. */
     max-width: 600px;
     opacity: 1;
     transition: opacity 0.2s ease 0.05s;
