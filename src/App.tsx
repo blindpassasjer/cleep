@@ -219,7 +219,15 @@ export default function App() {
                   onLabel={bulkLabel}
                 />
               ) : view.kind === 'notes' ? (
-                <NoteComposer ref={composerRef} onCreate={createNote} onUpdateDraft={updateNote} onDiscardDraft={discardDraftNote} />
+                <NoteComposer
+                  ref={composerRef}
+                  onCreate={createNote}
+                  onUpdateDraft={updateNote}
+                  onDiscardDraft={discardDraftNote}
+                  labels={labels}
+                  onArchive={(id) => updateNote(id, { archived: true })}
+                  onTrash={trashNote}
+                />
               ) : view.kind === 'recordings' ? (
                 <QuickRecorder onCreate={createNote} onReload={reload} />
               ) : (

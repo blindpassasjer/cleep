@@ -8,8 +8,8 @@ import { RichTextEditor } from './RichTextEditor';
 import { api } from '../api/client';
 import { insertEditorImage } from '../lib/insertEditorImage';
 import { isRichContentEmpty } from '../lib/isRichContentEmpty';
-import { IconChecklist, IconImage, IconMic, IconPlus } from './Icons';
-import type { Attachment, ChecklistItem, Note, NoteColor } from '../types';
+import { IconArchive, IconChecklist, IconImage, IconMic, IconPlus, IconTag, IconTrash } from './Icons';
+import type { Attachment, ChecklistItem, Label, Note, NoteColor } from '../types';
 
 interface Props {
   onCreate: (
@@ -20,6 +20,9 @@ interface Props {
   ) => Promise<Note>;
   onUpdateDraft: (id: string, patch: Partial<Pick<Note, 'title' | 'content' | 'isChecklist' | 'items'>>) => void;
   onDiscardDraft: (id: string) => void;
+  labels: Label[];
+  onArchive: (id: string) => void;
+  onTrash: (id: string) => void;
 }
 
 export interface NoteComposerHandle {
@@ -27,7 +30,7 @@ export interface NoteComposerHandle {
 }
 
 export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteComposer(
-  { onCreate, onUpdateDraft, onDiscardDraft },
+  { onCreate, onUpdateDraft, onDiscardDraft, labels, onArchive, onTrash },
   handleRef,
 ) {
   const collapsedRef = useRef<HTMLDivElement>(null);
@@ -41,6 +44,8 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [color, setColor] = useState<NoteColor>('default');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [labelIds, setLabelIds] = useState<string[]>([]);
+  const [showLabels, setShowLabels] = useState(false);
   const [startWith, setStartWith] = useState<'image' | 'audio' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -76,6 +81,8 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
     setColor('default');
     setIsChecklist(false);
     setAttachments([]);
+    setLabelIds([]);
+    setShowLabels(false);
     draftNoteIdRef.current = null;
     attachmentsRef.current = [];
     setStartWith(null);
@@ -92,6 +99,37 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
     const note = await onCreate(title.trim(), content.trim(), color, isChecklist ? { isChecklist: true, items: cleanedItems } : undefined);
     draftNoteIdRef.current = note.id;
     return note.id;
+  }
+
+  // Same "force the note into existence early" reasoning as attachments above -- collections can't
+  // attach to a note that doesn't exist on the server yet.
+  async function toggleLabel(labelId: string) {
+    const noteId = await ensureDraftNote();
+    const attached = labelIds.includes(labelId);
+    setLabelIds((prev) => (attached ? prev.filter((id) => id !== labelId) : [...prev, labelId]));
+    try {
+      if (attached) await api.detachLabel(noteId, labelId);
+      else await api.attachLabel(noteId, labelId);
+    } catch {
+      setLabelIds((prev) => (attached ? [...prev, labelId] : prev.filter((id) => id !== labelId)));
+    }
+  }
+
+  // Archive/delete bypass attemptClose's save-or-discard logic entirely -- the user has made an
+  // explicit choice here, not just dismissed the composer, so an empty title/content shouldn't
+  // cause it to be silently discarded instead. 'fade' (not the default flip-back-to-origin
+  // animation) matches NoteModal's own archive/trash buttons, since the composer's origin element
+  // may no longer represent where this note is going.
+  async function archiveDraftNote(close: CloseFn) {
+    const noteId = await ensureDraftNote();
+    close('fade');
+    onArchive(noteId);
+  }
+
+  async function trashDraftNote(close: CloseFn) {
+    const noteId = await ensureDraftNote();
+    close('fade');
+    onTrash(noteId);
   }
 
   // Tracked as a pending promise so attemptClose (Close button, Escape, and backdrop-click all
@@ -226,9 +264,29 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
           >
             {!isChecklist && <TextFormatToolbar editorRef={contentRef} onChange={setContent} />}
           </AttachmentsPanel>
+          {showLabels && (
+            <div className="note-labels-editor">
+              {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}
+              {labels.map((label) => (
+                <label key={label.id} className="note-label-toggle">
+                  <input type="checkbox" checked={labelIds.includes(label.id)} onChange={() => toggleLabel(label.id)} />
+                  {label.name}
+                </label>
+              ))}
+            </div>
+          )}
           {error && <div className="composer-error">{error}</div>}
           <div className="note-modal-footer">
             <ColorPickerButton value={color} onChange={setColor} />
+            <button type="button" title="Collections" onClick={() => setShowLabels((v) => !v)}>
+              <IconTag />
+            </button>
+            <button type="button" title="Archive" onClick={() => archiveDraftNote(close)}>
+              <IconArchive />
+            </button>
+            <button type="button" title="Delete" onClick={() => trashDraftNote(close)}>
+              <IconTrash />
+            </button>
             <button type="button" className="text-action" onClick={() => attemptClose(close)} disabled={saving}>
               {saving ? 'Saving…' : 'Close'}
             </button>
