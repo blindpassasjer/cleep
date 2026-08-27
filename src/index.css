@@ -1359,23 +1359,20 @@ button.sidebar-add-label-btn {
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
   background: var(--surface);
-  color: var(--muted);
+  color: #1a1a1a;
 }
 
-.note-label-chip-default { background: var(--surface); color: var(--muted); }
-.note-label-chip-red { background: color-mix(in srgb, #e57373 18%, var(--surface)); color: #e57373; }
-.note-label-chip-orange { background: color-mix(in srgb, #ffb74d 18%, var(--surface)); color: #ffb74d; }
-.note-label-chip-yellow { background: color-mix(in srgb, #ffd54f 22%, var(--surface)); color: #b58f1a; }
-.note-label-chip-green { background: color-mix(in srgb, #81c784 18%, var(--surface)); color: #4c9350; }
-.note-label-chip-teal { background: color-mix(in srgb, #4dd0c4 18%, var(--surface)); color: #2fa89c; }
-.note-label-chip-blue { background: color-mix(in srgb, #64b5f6 18%, var(--surface)); color: #4a90d9; }
-.note-label-chip-purple { background: color-mix(in srgb, #ba68c8 18%, var(--surface)); color: #a352b3; }
-.note-label-chip-pink { background: color-mix(in srgb, #f06292 18%, var(--surface)); color: #e8508a; }
-.note-label-chip-brown { background: color-mix(in srgb, #a1887f 18%, var(--surface)); color: #8a6f64; }
-.note-label-chip-gray { background: color-mix(in srgb, #90a4ae 18%, var(--surface)); color: #6b7d87; }
-
-:root:not([data-theme='light']) .note-label-chip-yellow { color: #ffd54f; }
-:root[data-theme='dark'] .note-label-chip-yellow { color: #ffd54f; }
+.note-label-chip-default { background: var(--surface); }
+.note-label-chip-red { background: color-mix(in srgb, #e57373 18%, var(--surface)); }
+.note-label-chip-orange { background: color-mix(in srgb, #ffb74d 18%, var(--surface)); }
+.note-label-chip-yellow { background: color-mix(in srgb, #ffd54f 22%, var(--surface)); }
+.note-label-chip-green { background: color-mix(in srgb, #81c784 18%, var(--surface)); }
+.note-label-chip-teal { background: color-mix(in srgb, #4dd0c4 18%, var(--surface)); }
+.note-label-chip-blue { background: color-mix(in srgb, #64b5f6 18%, var(--surface)); }
+.note-label-chip-purple { background: color-mix(in srgb, #ba68c8 18%, var(--surface)); }
+.note-label-chip-pink { background: color-mix(in srgb, #f06292 18%, var(--surface)); }
+.note-label-chip-brown { background: color-mix(in srgb, #a1887f 18%, var(--surface)); }
+.note-label-chip-gray { background: color-mix(in srgb, #90a4ae 18%, var(--surface)); }
 
 .note-inline-picker {
   padding: 0.5rem 0;
