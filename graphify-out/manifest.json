@@ -1,0 +1,642 @@
+{
+  "/workspaces/cleep/package.json": {
+    "mtime": 1787819321.0322337,
+    "ast_hash": "1b1c6376b43129843ea2f8554c8aca73",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/drizzle.config.ts": {
+    "mtime": 1787333199.7778656,
+    "ast_hash": "f209296b21e99d2fbdec1fa8f917129d",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/vite.config.ts": {
+    "mtime": 1787653068.2124193,
+    "ast_hash": "291b33eaa6e9b1851717e6c29f4696fd",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/docker-entrypoint.sh": {
+    "mtime": 1787334889.1057544,
+    "ast_hash": "ce856ad8023d5893ff3d37b033810a55",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/tsconfig.json": {
+    "mtime": 1787333194.7419615,
+    "ast_hash": "0ae30e40e3c5158b36aa279e47ca6e8c",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/tsconfig.node.json": {
+    "mtime": 1787333195.9019394,
+    "ast_hash": "767b2e9abe6452170cdc399ca052cfbc",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/vitest.config.ts": {
+    "mtime": 1787818647.2769086,
+    "ast_hash": "c5c968804c5c42b31fcfbe6efbe89e30",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/types.ts": {
+    "mtime": 1787818559.5665596,
+    "ast_hash": "d705b4eb7a29cc52226f48ec7906dc3c",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/main.tsx": {
+    "mtime": 1787652946.4547002,
+    "ast_hash": "2413b78bfb4c1ea9cfa51eba303fa9b8",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/vite-env.d.ts": {
+    "mtime": 1787648757.825104,
+    "ast_hash": "287952ca3f15107bee47a473684c5cc2",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/App.tsx": {
+    "mtime": 1787818559.5585597,
+    "ast_hash": "e9fec117b7d9abbc823d11c3b286816b",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/QuickRecorder.tsx": {
+    "mtime": 1787548842.8976324,
+    "ast_hash": "5b9b4a053ab37d2285a974ff19d94ffd",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/ColorPicker.tsx": {
+    "mtime": 1787818574.4022803,
+    "ast_hash": "c2b6007f2c4bcec4cfc829701e73ef30",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/LiveWaveform.tsx": {
+    "mtime": 1787517491.3433106,
+    "ast_hash": "4c7c4de5c9f0d145a24e747516476090",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/AttachmentsPanel.tsx": {
+    "mtime": 1787517526.9986348,
+    "ast_hash": "a6482d5ea5bffc26d869906cd8021890",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/NoteCard.tsx": {
+    "mtime": 1787812312.3440843,
+    "ast_hash": "f468830614bbfc8fd76551d2a9cd0f78",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/AdminPage.tsx": {
+    "mtime": 1787818559.5625596,
+    "ast_hash": "f05f7239803d21431473e3c23047ea80",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/SettingsPage.tsx": {
+    "mtime": 1787821427.07335,
+    "ast_hash": "d60798e2881b50d03cb6a137f3c39f5a",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/NoteModal.tsx": {
+    "mtime": 1787812358.495213,
+    "ast_hash": "930014ed3e9e960a6ff2990bf021ac73",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/FlipModal.tsx": {
+    "mtime": 1787685895.2267728,
+    "ast_hash": "cccb1a7481b926077047a24a6ffb4f85",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/BulkActionsBar.tsx": {
+    "mtime": 1787774229.213783,
+    "ast_hash": "3408a19f080cd7ee0ea6b2b9dbd61549",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/Toast.tsx": {
+    "mtime": 1787584398.4338753,
+    "ast_hash": "4e1555a5978f7d883e414a8b328ac85c",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/TextFormatToolbar.tsx": {
+    "mtime": 1787775056.9421046,
+    "ast_hash": "0640f0c992f95ea9ff47e9ffbd19d0e6",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/RichTextEditor.tsx": {
+    "mtime": 1787508251.3852925,
+    "ast_hash": "241bd5d00f841e7463ae7a650563948d",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/NotesGrid.tsx": {
+    "mtime": 1787602688.4510539,
+    "ast_hash": "771ff031c1c8c1712c5ab9040c8de545",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/NoteComposer.tsx": {
+    "mtime": 1787818559.5625596,
+    "ast_hash": "3de153292c68f44770f3e7fd474d671c",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/WaveformPlayer.tsx": {
+    "mtime": 1787480253.5768573,
+    "ast_hash": "55a357391b46768206706d45b5ff30cf",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/ColorPickerButton.tsx": {
+    "mtime": 1787774229.2257829,
+    "ast_hash": "4cb6fc934b620a4379a7b8dab592d1ed",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/LoginPage.tsx": {
+    "mtime": 1787601261.9338176,
+    "ast_hash": "4271bb8149a6f7df58979b23b43b5de8",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/Sidebar.tsx": {
+    "mtime": 1787818559.5625596,
+    "ast_hash": "fbc5072c2076dc25ba2002f3d73134cb",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/ImageLightbox.tsx": {
+    "mtime": 1787498807.7266324,
+    "ast_hash": "f5c051d87a19a69b6c5d3c01cc24feb9",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/TopBar.tsx": {
+    "mtime": 1787688070.7135494,
+    "ast_hash": "730203b04b125fbf8af89f865060bb21",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/MiniWaveform.tsx": {
+    "mtime": 1787480259.304749,
+    "ast_hash": "8fa4d20799d779cae79eccf525c69923",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/CoffeeMenu.tsx": {
+    "mtime": 1787774229.213783,
+    "ast_hash": "bec7909cc32fc681dd4818b3e244af30",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/ChecklistEditor.tsx": {
+    "mtime": 1787400721.6460457,
+    "ast_hash": "d5bd8be72eae7a7d7e2633b8fbe777e1",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/Icons.tsx": {
+    "mtime": 1787691705.4579303,
+    "ast_hash": "e69c0e7046ea2b2e14c88b714e873f79",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/components/ShortcutsHelp.tsx": {
+    "mtime": 1787818417.8412273,
+    "ast_hash": "4bdfdb5c1ec1448dcd660080eba62e76",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/hooks/useAudioRecorder.ts": {
+    "mtime": 1787587389.6731577,
+    "ast_hash": "62c3a30c2df426212cbaddcb2be41c78",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/hooks/useMasonryLayout.ts": {
+    "mtime": 1787515239.7740846,
+    "ast_hash": "0a7d7dc3b9438629e7c0993642380c10",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/hooks/useAuth.ts": {
+    "mtime": 1787335068.5383427,
+    "ast_hash": "5ebcb611ec20c977a3841d2f93a71fd0",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/hooks/useTheme.ts": {
+    "mtime": 1787479628.0047054,
+    "ast_hash": "85853fb17c6b4737993002ae82bc01e6",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/hooks/useDateFormat.ts": {
+    "mtime": 1787480174.7023497,
+    "ast_hash": "958cb5a1f0610b1ada74c6e14ca64abc",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/hooks/useToast.ts": {
+    "mtime": 1787584395.1179388,
+    "ast_hash": "b7da23f5e70c6e4ff309466e2cda374d",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/hooks/useLabels.ts": {
+    "mtime": 1787818559.5625596,
+    "ast_hash": "11a887ae1bbb458601c75b38cad6a823",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/hooks/useIsMobile.ts": {
+    "mtime": 1787646587.1658537,
+    "ast_hash": "08d0f50fb312fe46c1a45751581d75b2",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/hooks/useNotes.ts": {
+    "mtime": 1787774653.5017464,
+    "ast_hash": "e14f7e527597d158275e57eee9bc2d62",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/hooks/useHotkeys.ts": {
+    "mtime": 1787818404.9654698,
+    "ast_hash": "74cb0db2bbed0a7c2816b0df73f29ecf",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/api/mockClient.ts": {
+    "mtime": 1787818559.5625596,
+    "ast_hash": "17236e3b8b3f5b01951a3216790e4077",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/api/client.ts": {
+    "mtime": 1787818559.5585597,
+    "ast_hash": "100a91dd353e92dc0d22544319de3cd5",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/api/demoSeed.ts": {
+    "mtime": 1787654615.9430635,
+    "ast_hash": "0b86c51357588655ce4ab9ad54550c0a",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/lib/toggleNoteLabel.ts": {
+    "mtime": 1787749210.558391,
+    "ast_hash": "5b97069cea66c72d436ef981b67d011e",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/lib/formatElapsed.ts": {
+    "mtime": 1787517533.9225037,
+    "ast_hash": "37be299c4d561a6a15f21881e4014fc1",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/lib/formatDate.ts": {
+    "mtime": 1787480168.1184745,
+    "ast_hash": "686c3bbe41d89ea482137750293ed738",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/lib/waveform.ts": {
+    "mtime": 1787480243.5610468,
+    "ast_hash": "da4f8f8cd57d890ce40ef892cf0d5e86",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/lib/sanitizeHtml.ts": {
+    "mtime": 1787773923.883566,
+    "ast_hash": "7de6fc9aec56cb44b6e419f5343e5eb5",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/lib/insertEditorImage.ts": {
+    "mtime": 1787508279.1568246,
+    "ast_hash": "7a42d60df56cbe05659b2ebc72d70553",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/lib/viewTransition.ts": {
+    "mtime": 1787503750.9531765,
+    "ast_hash": "a01702b2cfed65cde084c91852eb7838",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/src/lib/isRichContentEmpty.ts": {
+    "mtime": 1787508284.4527352,
+    "ast_hash": "d0cc8d873aeccd3ca39077ba0fa92faa",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/test/helpers.ts": {
+    "mtime": 1787818683.6642237,
+    "ast_hash": "aa8a716cff4e081e4bcb7a8d187ad203",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/test/env.ts": {
+    "mtime": 1787818653.9047837,
+    "ast_hash": "11e7a6578ee329c39209255e6fa79cba",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/test/notes.test.ts": {
+    "mtime": 1787818713.823656,
+    "ast_hash": "b35c8fc12c2a974150dd0e68eb1f96c5",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/test/security.test.ts": {
+    "mtime": 1787818729.9513526,
+    "ast_hash": "c0591e2efd217d8d56cb1f2975d2f1ae",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/test/dataTransfer.test.ts": {
+    "mtime": 1787818754.8708835,
+    "ast_hash": "ce577073943e73b8bf02a6c78ac0f5ca",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/test/globalSetup.ts": {
+    "mtime": 1787818658.7526925,
+    "ast_hash": "6f8e18dfece244b41b8947dff7232bba",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/test/admin.test.ts": {
+    "mtime": 1787818723.0794818,
+    "ast_hash": "0ad13757fedac2178556b43f113c9659",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/test/auth.test.ts": {
+    "mtime": 1787818701.8558812,
+    "ast_hash": "945c95482e8d5a750c4268aa85eb8741",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/test/rateLimit.test.ts": {
+    "mtime": 1787818736.9232213,
+    "ast_hash": "2a111bc27965d4354254632f61d9aa8d",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/test/setup.ts": {
+    "mtime": 1787818664.9125767,
+    "ast_hash": "5a4fcc4f642348094ab02bf41fcda78f",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/scripts/restore.sh": {
+    "mtime": 1787819043.549451,
+    "ast_hash": "3770519fe3e6a60c10cda6ddfc2f5a5c",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/scripts/backup.sh": {
+    "mtime": 1787819033.993631,
+    "ast_hash": "087158e41c5248268e1613e8586f8d77",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/scripts/generate-pwa-icons.mjs": {
+    "mtime": 1787408173.2330878,
+    "ast_hash": "86189923bdaa4c65b818a29a4a6f8cf3",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/tsconfig.json": {
+    "mtime": 1787333197.3659115,
+    "ast_hash": "584ef6911777eb01b48096f6a4d94583",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/index.ts": {
+    "mtime": 1787818559.5585597,
+    "ast_hash": "f5c5e9c63748dd2495f625d285f6a0d4",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/app.ts": {
+    "mtime": 1787819240.1257522,
+    "ast_hash": "f24fc7ca6d50b65e397447014cf427d8",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/middleware/session.ts": {
+    "mtime": 1787601188.2192137,
+    "ast_hash": "2bcf8ac3b23b8113f39b13f72c44f33c",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/middleware/securityHeaders.ts": {
+    "mtime": 1787818022.5566714,
+    "ast_hash": "73d27a828715cd64688565d5efa2a918",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/middleware/rateLimit.ts": {
+    "mtime": 1787818559.5585597,
+    "ast_hash": "06bb8810af0150f5a32ea8c09d5d9187",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrate.ts": {
+    "mtime": 1787333220.7974656,
+    "ast_hash": "fdc6e6f3e8fc427d35e719e9b7b0311e",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/purgeTrash.ts": {
+    "mtime": 1787404712.1186452,
+    "ast_hash": "c9cdfad36975ee8b3b8300af0fb99a44",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/client.ts": {
+    "mtime": 1787333218.2255144,
+    "ast_hash": "eaea48dde4d47b34482280e5f6d1dff8",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/bootstrapAdmin.ts": {
+    "mtime": 1787333480.2645261,
+    "ast_hash": "4b136739f2148f889a491e6ce727de11",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/schema.ts": {
+    "mtime": 1787636626.8659492,
+    "ast_hash": "b72592a393b9c03b0d28261a1ac4bf77",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/0000_rich_stature.sql": {
+    "mtime": 1787335164.9965086,
+    "ast_hash": "0bcf9937968bdf4887d4667105d9f744",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/0007_marvelous_vin_gonzales.sql": {
+    "mtime": 1787636594.9865513,
+    "ast_hash": "67a28a1e21d95cf8d81ccd95a019abc3",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/0005_deep_warbound.sql": {
+    "mtime": 1787548842.8856325,
+    "ast_hash": "56a8b85ed2cde625b3a161c88c23da82",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/0004_volatile_xorn.sql": {
+    "mtime": 1787405731.1393213,
+    "ast_hash": "b85d177e04942d39136a28b98a3e7b30",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/0001_robust_crystal.sql": {
+    "mtime": 1787392253.749786,
+    "ast_hash": "c731b06b661f182360571dd361c0d234",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/0003_fair_dark_beast.sql": {
+    "mtime": 1787403408.59517,
+    "ast_hash": "d103419e6b1ca0e59861fa9b94b4f23f",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/0002_chilly_shape.sql": {
+    "mtime": 1787400509.150101,
+    "ast_hash": "2853e91c3e12e88ee04d65f7255bcc58",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/0006_early_molecule_man.sql": {
+    "mtime": 1787601234.618335,
+    "ast_hash": "56472ffc9c5f0b21ceb3332b5811c1e6",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/meta/0006_snapshot.json": {
+    "mtime": 1787601234.618335,
+    "ast_hash": "0f5b4aa32db69bbf0794109304e76a13",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/meta/0000_snapshot.json": {
+    "mtime": 1787335164.9965086,
+    "ast_hash": "b4f73e286dbb15919bec554ddce603c9",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/meta/0001_snapshot.json": {
+    "mtime": 1787392253.749786,
+    "ast_hash": "705926e1a0669362c6d1b189842b6d99",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/meta/0005_snapshot.json": {
+    "mtime": 1787548842.8896325,
+    "ast_hash": "3ba11654c23dc42ef4cccd807715f635",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/meta/0004_snapshot.json": {
+    "mtime": 1787405731.1393213,
+    "ast_hash": "69a607efc6a588dc4513b5ffa7e2ecb4",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/meta/0007_snapshot.json": {
+    "mtime": 1787636594.9825513,
+    "ast_hash": "8b4b98551f88bad91fb306010b9f982f",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/meta/0003_snapshot.json": {
+    "mtime": 1787403408.59517,
+    "ast_hash": "9e47b32a967a00cc7503d8c7af0d7848",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/meta/_journal.json": {
+    "mtime": 1787636626.8619494,
+    "ast_hash": "c5798848099f5120c106331b999f0f93",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/db/migrations/meta/0002_snapshot.json": {
+    "mtime": 1787400509.150101,
+    "ast_hash": "41b6225ef0154afae23eaa3510ff3041",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/routes/auth.ts": {
+    "mtime": 1787601219.5786197,
+    "ast_hash": "221d9036abc3afbf50fd413e1a469d3b",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/routes/noteAttachments.ts": {
+    "mtime": 1787405713.1596687,
+    "ast_hash": "600ca6e119989d35d7819808d1f68df1",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/routes/dataTransfer.ts": {
+    "mtime": 1787818231.9567273,
+    "ast_hash": "b2dc3dbd6989e7ec53d93a1516cc2e1e",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/routes/admin.ts": {
+    "mtime": 1787818893.916267,
+    "ast_hash": "eddeebbaade9db03a2a6950075937784",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/routes/labels.ts": {
+    "mtime": 1787818902.0681133,
+    "ast_hash": "af7595613e90979f01d85df61408ba48",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/routes/notes.ts": {
+    "mtime": 1787818559.5585597,
+    "ast_hash": "0849b656271e458d857f5696963081bb",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/routes/attachmentFiles.ts": {
+    "mtime": 1787403314.4049523,
+    "ast_hash": "6a728996f597d6bc80f6fb72e602c783",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/storage/localStorageAdapter.ts": {
+    "mtime": 1787403232.5425014,
+    "ast_hash": "bc734f740a6bc51abd10a37b6ffcc6e0",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/storage/StorageAdapter.ts": {
+    "mtime": 1787403222.5466907,
+    "ast_hash": "1041a2bbc70fa3ce970f3bb55d5bcb0c",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/lib/user.ts": {
+    "mtime": 1787333556.3150783,
+    "ast_hash": "cb0516cdb66d6ecf5b7ad46841f01daa",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/lib/attachments.ts": {
+    "mtime": 1787773919.3636515,
+    "ast_hash": "e863655fa0420f63eeb58019163d894e",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/lib/settings.ts": {
+    "mtime": 1787601177.5994148,
+    "ast_hash": "116c2b73f8b93ac5db6e7b058f6ed38b",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/server/lib/colors.ts": {
+    "mtime": 1787636358.107025,
+    "ast_hash": "75e8d8162d787fc1f8d3c64c0dda4dab",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/public/theme-init.js": {
+    "mtime": 1787774113.3599772,
+    "ast_hash": "42567364c19d1567523564996f2945bf",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/index.html": {
+    "mtime": 1787774117.2159042,
+    "ast_hash": "910731f137a6ec6b467e809ed1a1ca98",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/docker-compose.yml": {
+    "mtime": 1787819072.9248984,
+    "ast_hash": "5e211c5efdb4b4125019272b4493ad06",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/README.md": {
+    "mtime": 1787820654.0157053,
+    "ast_hash": "3cdbfdbdf32318938a7b48269ba08ce7",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/.github/workflows/ci.yml": {
+    "mtime": 1787819055.1532328,
+    "ast_hash": "1b5d239a3ffb426bea97817c8e6158e3",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/.github/workflows/docker-publish.yml": {
+    "mtime": 1787693314.8760097,
+    "ast_hash": "ce4dd2e00d809f675b9318995e036ad2",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/.github/workflows/deploy-demo.yml": {
+    "mtime": 1787652972.8302062,
+    "ast_hash": "1fdbaa3523db21c86b01ab16a1bd2baf",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/docs/screenshots/notes-grid-light.png": {
+    "mtime": 1787654922.2932801,
+    "ast_hash": "38aa9dff377257c389f44c3fa9ef08a6",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/docs/screenshots/notes-grid-dark.png": {
+    "mtime": 1787654922.29728,
+    "ast_hash": "d2fedee2c77e19ea2f64681b570907f1",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/docs/screenshots/checklist-note.png": {
+    "mtime": 1787654922.30128,
+    "ast_hash": "d4ea317787f6215c280bb7809db1399e",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/public/favicon.svg": {
+    "mtime": 1787333202.905806,
+    "ast_hash": "c617f5614d29c1739ae0b577df2b5e5e",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/public/apple-touch-icon.png": {
+    "mtime": 1787408181.2409382,
+    "ast_hash": "960c5b5a79f96bc4345b8b80b92730a2",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/public/pwa-512.png": {
+    "mtime": 1787408181.2129388,
+    "ast_hash": "778ecaea2743a2c39d307e9c744ff329",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/public/pwa-192.png": {
+    "mtime": 1787408181.1969392,
+    "ast_hash": "8d037f18f20c282fcfe45818b2820ca3",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/public/pwa-maskable-512.png": {
+    "mtime": 1787408181.2369385,
+    "ast_hash": "778ecaea2743a2c39d307e9c744ff329",
+    "semantic_hash": ""
+  },
+  "/workspaces/cleep/public/assets/developer.jpg": {
+    "mtime": 1787502675.9734993,
+    "ast_hash": "c583cba770f381fc770ff6045b603e08",
+    "semantic_hash": ""
+  }
+}
