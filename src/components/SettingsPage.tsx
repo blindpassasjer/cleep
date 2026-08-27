@@ -195,10 +195,15 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
             (export your data with Google Takeout, then upload the <code>.zip</code> here).
           </p>
           <div className="settings-toggle-group settings-toggle-group-row">
-            <a className="settings-toggle" href={api.exportUrl()}>
+            <a className="settings-toggle settings-toggle-accent" href={api.exportUrl()}>
               Export all data
             </a>
-            <button type="button" className="settings-toggle" disabled={importing} onClick={() => importInputRef.current?.click()}>
+            <button
+              type="button"
+              className="settings-toggle settings-toggle-accent"
+              disabled={importing}
+              onClick={() => importInputRef.current?.click()}
+            >
               {importing ? 'Importing…' : 'Import from Google Keep'}
             </button>
           </div>
@@ -211,7 +216,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
       {onShowShortcuts && (
         <div className="settings-form settings-card">
           <h3 className="settings-section-title">Keyboard shortcuts</h3>
-          <button type="button" className="settings-toggle" onClick={onShowShortcuts}>
+          <button type="button" className="settings-toggle settings-toggle-accent" onClick={onShowShortcuts}>
             View shortcuts
           </button>
         </div>

@@ -51,7 +51,8 @@ No subscriptions, no ads, no third party reading your notes — just your data, 
      you can sign in immediately instead of building a registration flow
 
    Every variable is documented inline in [.env.example](.env.example), including `COOKIE_SECURE`
-   and `TRUST_PROXY` for deployments behind a reverse proxy.
+   and `TRUST_PROXY` for deployments behind a reverse proxy, and the optional
+   `AUTH_RATE_LIMIT_MAX` / `UPLOAD_RATE_LIMIT_MAX` knobs for tuning the rate limiter.
 
 2. **Start it:**
 
@@ -62,6 +63,26 @@ No subscriptions, no ads, no third party reading your notes — just your data, 
 3. **Open `http://<host>:6169`** and sign in with the admin account you configured above.
 
 That's it — Postgres migrations run automatically before the app starts.
+
+### Upgrading
+
+```sh
+git pull            # if you track the repo (for docker-compose.yml + scripts)
+docker compose pull
+docker compose up -d
+```
+
+Schema migrations run automatically on container start. **No `.env` changes are required** — every
+setting added since your last pull is optional and defaults to the previous behavior. Two things
+worth knowing:
+
+- If you already run behind TLS with `COOKIE_SECURE=true`, Cleep now also sends an `HSTS` header
+  (6-month max-age). That's correct for an HTTPS deployment but means browsers will refuse plain
+  `http://` to that hostname for a while — as before, only set `COOKIE_SECURE=true` when TLS is
+  actually terminated in front of Cleep.
+- If you deploy with this repo's `docker-compose.yml`, `git pull` it so the new
+  `AUTH_RATE_LIMIT_*` / `UPLOAD_RATE_LIMIT_*` passthrough lines are present (they default to empty
+  and are harmless if missing).
 
 ### Where your data lives
 

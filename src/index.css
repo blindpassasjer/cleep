@@ -3030,6 +3030,11 @@ a.settings-toggle {
   justify-content: center;
 }
 
+.settings-toggle:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 /* --- Sidebar: multi-label match toggle ------------------------------------- */
 .sidebar-label-match {
   display: flex;
