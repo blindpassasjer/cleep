@@ -74,4 +74,4 @@ export type View =
   | { kind: 'recordings' }
   | { kind: 'archive' }
   | { kind: 'trash' }
-  | { kind: 'label'; id: string; name: string };
+  | { kind: 'label'; ids: string[]; names: string[]; match: 'any' | 'all' };

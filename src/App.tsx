@@ -4,6 +4,7 @@ import { useNotes } from './hooks/useNotes';
 import { useLabels } from './hooks/useLabels';
 import { useToast } from './hooks/useToast';
 import { useTheme } from './hooks/useTheme';
+import { useHotkeys } from './hooks/useHotkeys';
 import { api } from './api/client';
 import { withGridViewTransition } from './lib/viewTransition';
 import { LoginPage } from './components/LoginPage';
@@ -16,6 +17,7 @@ import { BulkActionsBar } from './components/BulkActionsBar';
 import { Toast } from './components/Toast';
 import { SettingsPage } from './components/SettingsPage';
 import { AdminPage } from './components/AdminPage';
+import { ShortcutsHelp } from './components/ShortcutsHelp';
 import type { NoteColor, View } from './types';
 
 export default function App() {
@@ -26,6 +28,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const appRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<NoteComposerHandle>(null);
@@ -65,12 +68,37 @@ export default function App() {
     deleteNote,
     emptyTrash,
   } = useNotes(view, show, !!user);
-  const { labels, createLabel, renameLabel, deleteLabel } = useLabels(!!user);
+  const { labels, reload: reloadLabels, createLabel, renameLabel, deleteLabel } = useLabels(!!user);
 
   useEffect(() => {
     setSelectedIds(new Set());
     setSidebarOpen(false);
   }, [view]);
+
+  const goToView = (v: View) => {
+    setSettingsOpen(false);
+    setAdminOpen(false);
+    withGridViewTransition(appRef.current?.querySelector('.notes-grid-root') ?? null, () => setView(v));
+  };
+
+  useHotkeys(
+    {
+      focusSearch: () => searchInputRef.current?.focus(),
+      newNote: () => {
+        goToView({ kind: 'notes' });
+        requestAnimationFrame(() => composerRef.current?.open());
+      },
+      newChecklist: () => {
+        goToView({ kind: 'notes' });
+        requestAnimationFrame(() => composerRef.current?.openChecklist());
+      },
+      goNotes: () => goToView({ kind: 'notes' }),
+      goArchive: () => goToView({ kind: 'archive' }),
+      goTrash: () => goToView({ kind: 'trash' }),
+      openHelp: () => setHelpOpen(true),
+    },
+    !!user && !settingsOpen && !adminOpen,
+  );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -177,11 +205,7 @@ export default function App() {
         {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
         <Sidebar
           view={view}
-          onChange={(v) => {
-            setSettingsOpen(false);
-            setAdminOpen(false);
-            withGridViewTransition(appRef.current?.querySelector('.notes-grid-root') ?? null, () => setView(v));
-          }}
+          onChange={goToView}
           labels={labels}
           onCreateLabel={createLabel}
           onRenameLabel={renameLabel}
@@ -210,6 +234,11 @@ export default function App() {
                     }
                   : undefined
               }
+              onDataImported={() => {
+                reload();
+                reloadLabels();
+              }}
+              onShowShortcuts={() => setHelpOpen(true)}
             />
           ) : (
             <>
@@ -286,6 +315,7 @@ export default function App() {
         </main>
       </div>
       <Toast toast={toast} onDismiss={dismiss} />
+      {helpOpen && <ShortcutsHelp onClose={() => setHelpOpen(false)} />}
     </div>
   );
 }

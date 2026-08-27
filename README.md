@@ -27,8 +27,10 @@ No subscriptions, no ads, no third party reading your notes — just your data, 
 - 📝 **Notes & checklists** — pin, color, archive, trash (with undo everywhere it matters)
 - 🖼️ **Attachments** — photos, videos, and audio recorded straight from the browser
 - 🏷️ **Labels** for organizing notes into collections, plus multi-select bulk actions
-- 🔍 **Search** across your whole library
-- 👥 **Multi-user accounts** with session-based auth — everyone gets their own private notes
+- 🔍 **Search** across your whole library, plus filter by one or several collections at once (Any/All)
+- ⌨️ **Keyboard shortcuts** — `/` to search, `c` new note, `l` new checklist, `g n/a/t` to jump around, `?` for the full list
+- 👥 **Multi-user accounts** with session-based auth — everyone gets their own private notes; admins can reset a locked-out user's password
+- 📦 **Import from Google Keep** and **export everything** as a zip — your data is never trapped
 - 📱 **Installable as a PWA** — add it to your home screen and it works offline (needs HTTPS, see below)
 - 🐳 **One `docker compose up`** — Postgres and the app, nothing else to configure
 
@@ -70,6 +72,27 @@ browse, back up, or move it like any other files:
 |---|---|
 | Notes, users, labels (Postgres) | `./data/postgres` |
 | Photos, videos, audio recordings | `./data/attachments/<user-id>/<note-id>/<file>` |
+
+### Backups
+
+`scripts/backup.sh` writes a timestamped folder (a `pg_dump` of the database + a tar of
+`./data/attachments`) under `./backups`. Run it from the directory with `docker-compose.yml`:
+
+```sh
+./scripts/backup.sh                       # -> ./backups/<timestamp>/
+./scripts/backup.sh --keep 7              # prune to the 7 newest afterwards
+```
+
+Restore one with `./scripts/restore.sh ./backups/<timestamp>` (it prompts before overwriting;
+pass `--yes` to skip). A daily backup is one cron line: `0 3 * * * cd /srv/cleep && ./scripts/backup.sh --keep 14`.
+
+### Import / export
+
+**Settings → Your data** has an **Export all data** button (a `.zip` of every note, label and
+attachment) and an **Import from Google Keep** picker — export your notes from
+[Google Takeout](https://takeout.google.com/) (select *Keep*), then upload the resulting `.zip`.
+Titles, checklists, colors, labels, pin/archive state and media all come across; trashed Keep
+notes are skipped.
 
 ### Publishing your own image
 
@@ -119,6 +142,17 @@ npm run dev           # Vite dev server on :5173, proxies /api to :6169
 
 Point `DATABASE_URL` at a local Postgres instance, set `SESSION_SECRET` and `ATTACHMENTS_DIR` (any
 local folder for uploaded files), then run `npm run db:migrate` before starting the server.
+
+### Tests
+
+```sh
+DATABASE_URL_TEST=postgres://cleep:cleep@localhost:5432/cleep_test npm test
+```
+
+`npm test` runs the Vitest server-integration suite against a real Postgres (it creates and
+truncates tables itself — point `DATABASE_URL_TEST` at a throwaway database). CI
+([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, both builds, and the tests
+against a Postgres service container on every push and PR.
 
 ## Tech stack
 

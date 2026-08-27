@@ -7,7 +7,11 @@ import { VALID_COLORS } from '../lib/colors.js';
 
 const UNIQUE_VIOLATION = '23505';
 function isUniqueViolation(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && 'code' in err && (err as { code?: string }).code === UNIQUE_VIOLATION;
+  // drizzle can surface the driver error directly or wrapped under `.cause`.
+  for (let e: unknown = err; e && typeof e === 'object'; e = (e as { cause?: unknown }).cause) {
+    if ((e as { code?: string }).code === UNIQUE_VIOLATION) return true;
+  }
+  return false;
 }
 
 export const labelsRouter = Router();

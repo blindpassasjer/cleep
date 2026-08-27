@@ -49,6 +49,13 @@ const realApi = {
       body: JSON.stringify({ email, username, password, role }),
     }),
   adminDeleteUser: (id: string) => request<{ ok: true }>(`/admin/users/${id}`, { method: 'DELETE' }),
+  adminUpdateUser: (id: string, patch: Partial<Pick<PublicUser, 'email' | 'username'>>) =>
+    request<{ user: AdminUser | null; error: string | null }>(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+  adminResetUserPassword: (id: string, newPassword?: string) =>
+    request<{ ok: boolean; tempPassword?: string; error: string | null }>(`/admin/users/${id}/password`, {
+      method: 'POST',
+      body: JSON.stringify(newPassword ? { newPassword } : {}),
+    }),
   adminGetSettings: () => request<{ registrationOpen: boolean }>('/admin/settings'),
   adminSetRegistrationOpen: (registrationOpen: boolean) =>
     request<{ registrationOpen: boolean; error: string | null }>('/admin/settings', {
@@ -61,7 +68,10 @@ const realApi = {
     if (view.kind === 'archive') params.set('view', 'archive');
     else if (view.kind === 'trash') params.set('view', 'trash');
     else if (view.kind === 'recordings') params.set('view', 'recordings');
-    else if (view.kind === 'label') params.set('label', view.id);
+    else if (view.kind === 'label') {
+      for (const id of view.ids) params.append('label', id);
+      params.set('labelMatch', view.match);
+    }
     if (page?.limit !== undefined) params.set('limit', String(page.limit));
     if (page?.offset !== undefined) params.set('offset', String(page.offset));
     const qs = params.toString();
@@ -100,6 +110,13 @@ const realApi = {
   },
   deleteAttachment: (noteId: string, attachmentId: string) =>
     request<{ ok: true }>(`/notes/${noteId}/attachments/${attachmentId}`, { method: 'DELETE' }),
+
+  exportUrl: () => '/api/export',
+  importGoogleKeep: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return upload<{ imported: number; skippedTrashed: number; errors: string[] }>('/import/keep', formData);
+  },
 };
 
 // The demo build (VITE_DEMO=true, used for the GitHub Pages deploy) has no server to talk to --

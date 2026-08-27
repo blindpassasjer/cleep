@@ -1,8 +1,9 @@
+import crypto from 'node:crypto';
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { eq, sql } from 'drizzle-orm';
 import { db } from '../db/client.js';
-import { users, notes } from '../db/schema.js';
+import { users, notes, sessions } from '../db/schema.js';
 import { requireAuth, requireAdmin } from '../middleware/session.js';
 import { getRegistrationOpen, setRegistrationOpen } from '../lib/settings.js';
 import { deleteAttachmentFilesForNotes } from '../lib/attachments.js';
@@ -11,7 +12,11 @@ const BCRYPT_ROUNDS = 12;
 
 const UNIQUE_VIOLATION = '23505';
 function isUniqueViolation(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && 'code' in err && (err as { code?: string }).code === UNIQUE_VIOLATION;
+  // drizzle can surface the driver error directly or wrapped under `.cause`.
+  for (let e: unknown = err; e && typeof e === 'object'; e = (e as { cause?: unknown }).cause) {
+    if ((e as { code?: string }).code === UNIQUE_VIOLATION) return true;
+  }
+  return false;
 }
 
 export const adminRouter = Router();
@@ -114,6 +119,88 @@ adminRouter.delete('/users/:id', async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('Delete user failed:', err);
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
+});
+
+adminRouter.patch('/users/:id', async (req, res) => {
+  try {
+    const { email, username } = (req.body ?? {}) as Record<string, unknown>;
+    const updates: { email?: string; emailLower?: string; username?: string } = {};
+
+    if (email !== undefined) {
+      if (typeof email !== 'string' || !email.includes('@')) {
+        res.json({ user: null, error: 'A valid email is required.' });
+        return;
+      }
+      updates.email = email.trim();
+      updates.emailLower = email.trim().toLowerCase();
+    }
+    if (username !== undefined) {
+      if (typeof username !== 'string' || username.trim().length < 2) {
+        res.json({ user: null, error: 'Username must be at least 2 characters.' });
+        return;
+      }
+      updates.username = username.trim();
+    }
+    if (Object.keys(updates).length === 0) {
+      res.json({ user: null, error: 'Nothing to update.' });
+      return;
+    }
+
+    const [row] = await db.update(users).set(updates).where(eq(users.id, req.params.id)).returning();
+    if (!row) {
+      res.status(404).json({ error: 'User not found.' });
+      return;
+    }
+    const [countRow] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(notes)
+      .where(eq(notes.userId, row.id));
+    res.json({
+      user: { id: row.id, email: row.email, username: row.username, role: row.role, createdAt: row.createdAt, noteCount: countRow?.count ?? 0 },
+      error: null,
+    });
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      res.status(409).json({ error: 'An account with this email already exists.' });
+      return;
+    }
+    console.error('Update user failed:', err);
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
+});
+
+adminRouter.post('/users/:id/password', async (req, res) => {
+  try {
+    const rows = await db.select({ id: users.id }).from(users).where(eq(users.id, req.params.id)).limit(1);
+    if (!rows[0]) {
+      res.status(404).json({ error: 'User not found.' });
+      return;
+    }
+
+    const { newPassword } = (req.body ?? {}) as Record<string, unknown>;
+    let password: string;
+    let generated = false;
+    if (newPassword === undefined || newPassword === null || newPassword === '') {
+      // A URL-safe random temp password the admin passes to the user out-of-band.
+      password = crypto.randomBytes(12).toString('base64url');
+      generated = true;
+    } else if (typeof newPassword !== 'string' || newPassword.length < 8) {
+      res.json({ ok: false, error: 'Password must be at least 8 characters.' });
+      return;
+    } else {
+      password = newPassword;
+    }
+
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    await db.update(users).set({ passwordHash }).where(eq(users.id, req.params.id));
+    // Force every existing session for this user to re-authenticate.
+    await db.delete(sessions).where(eq(sessions.userId, req.params.id));
+
+    res.json({ ok: true, tempPassword: generated ? password : undefined, error: null });
+  } catch (err) {
+    console.error('Reset user password failed:', err);
     res.status(500).json({ error: 'Something went wrong. Please try again.' });
   }
 });

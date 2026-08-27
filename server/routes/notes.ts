@@ -27,22 +27,52 @@ const MAX_PAGE_SIZE = 200;
 
 notesRouter.get('/', async (req, res) => {
   try {
-    const { view, label } = req.query;
+    const { view } = req.query;
     const filters = [eq(notes.userId, req.userId!)];
+
+    const labelParam = req.query.label;
+    const labelIds = (Array.isArray(labelParam) ? labelParam : labelParam !== undefined ? [labelParam] : []).filter(
+      (v): v is string => typeof v === 'string' && v.length > 0,
+    );
+    const labelMatch = req.query.labelMatch === 'all' ? 'all' : 'any';
 
     const rawLimit = Number(req.query.limit);
     const limit = Number.isInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, MAX_PAGE_SIZE) : undefined;
     const rawOffset = Number(req.query.offset);
     const offset = Number.isInteger(rawOffset) && rawOffset > 0 ? rawOffset : 0;
 
-    if (typeof label === 'string' && label) {
-      const labeledRows = await db.select({ noteId: noteLabels.noteId }).from(noteLabels).where(eq(noteLabels.labelId, label));
-      const noteIds = labeledRows.map((r) => r.noteId);
-      if (noteIds.length === 0) {
+    if (labelIds.length > 0) {
+      // Only filter by labels the caller actually owns -- a foreign id would otherwise silently
+      // narrow the result to nothing.
+      const ownedFlags = await Promise.all(labelIds.map((id) => assertOwnsLabel(req.userId!, id)));
+      const ownedIds = labelIds.filter((_, i) => ownedFlags[i]);
+      if (ownedIds.length === 0) {
         res.json({ notes: [] });
         return;
       }
-      filters.push(inArray(notes.id, noteIds), isNull(notes.trashedAt), eq(notes.archived, false));
+      const labeledRows = await db
+        .select({ noteId: noteLabels.noteId, labelId: noteLabels.labelId })
+        .from(noteLabels)
+        .where(inArray(noteLabels.labelId, ownedIds));
+
+      let matchingNoteIds: string[];
+      if (labelMatch === 'all') {
+        const labelsByNote = new Map<string, Set<string>>();
+        for (const r of labeledRows) {
+          const set = labelsByNote.get(r.noteId) ?? new Set<string>();
+          set.add(r.labelId);
+          labelsByNote.set(r.noteId, set);
+        }
+        matchingNoteIds = [...labelsByNote].filter(([, set]) => set.size === ownedIds.length).map(([id]) => id);
+      } else {
+        matchingNoteIds = [...new Set(labeledRows.map((r) => r.noteId))];
+      }
+
+      if (matchingNoteIds.length === 0) {
+        res.json({ notes: [] });
+        return;
+      }
+      filters.push(inArray(notes.id, matchingNoteIds), isNull(notes.trashedAt), eq(notes.archived, false));
     } else if (view === 'trash') {
       filters.push(isNotNull(notes.trashedAt));
     } else if (view === 'recordings') {

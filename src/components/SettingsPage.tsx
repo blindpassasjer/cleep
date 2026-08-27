@@ -13,9 +13,13 @@ interface Props {
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
   onOpenAdmin?: () => void;
+  onDataImported?: () => void;
+  onShowShortcuts?: () => void;
 }
 
-export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onToggleTheme, onOpenAdmin }: Props) {
+const IS_DEMO = import.meta.env.VITE_DEMO === 'true';
+
+export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onToggleTheme, onOpenAdmin, onDataImported, onShowShortcuts }: Props) {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -61,6 +65,32 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+
+  async function onImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setImporting(true);
+    setImportMessage(null);
+    setImportError(null);
+    try {
+      const result = await api.importGoogleKeep(file);
+      const parts = [`Imported ${result.imported} note${result.imported === 1 ? '' : 's'}`];
+      if (result.skippedTrashed) parts.push(`${result.skippedTrashed} trashed note${result.skippedTrashed === 1 ? '' : 's'} skipped`);
+      if (result.errors.length) parts.push(`${result.errors.length} warning${result.errors.length === 1 ? '' : 's'}`);
+      setImportMessage(parts.join(' · '));
+      if (result.imported > 0) onDataImported?.();
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Import failed. Please try again.');
+    } finally {
+      setImporting(false);
+    }
+  }
 
   async function submitPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -157,7 +187,37 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         </button>
       </form>
 
-      {import.meta.env.VITE_DEMO === 'true' && (
+      {!IS_DEMO && (
+        <div className="settings-form settings-card">
+          <h3 className="settings-section-title">Your data</h3>
+          <p className="settings-help-text">
+            Download every note, label, and attachment as a <code>.zip</code>, or bring your notes over from Google Keep
+            (export your data with Google Takeout, then upload the <code>.zip</code> here).
+          </p>
+          <div className="settings-toggle-group settings-toggle-group-row">
+            <a className="settings-toggle" href={api.exportUrl()}>
+              Export all data
+            </a>
+            <button type="button" className="settings-toggle" disabled={importing} onClick={() => importInputRef.current?.click()}>
+              {importing ? 'Importing…' : 'Import from Google Keep'}
+            </button>
+          </div>
+          <input ref={importInputRef} type="file" accept=".zip,application/zip" hidden onChange={onImportFile} />
+          {importMessage && <div className="settings-success">{importMessage}</div>}
+          {importError && <div className="composer-error">{importError}</div>}
+        </div>
+      )}
+
+      {onShowShortcuts && (
+        <div className="settings-form settings-card">
+          <h3 className="settings-section-title">Keyboard shortcuts</h3>
+          <button type="button" className="settings-toggle" onClick={onShowShortcuts}>
+            View shortcuts
+          </button>
+        </div>
+      )}
+
+      {IS_DEMO && (
         <div className="settings-form settings-card">
           <h3 className="settings-section-title">Demo</h3>
           <button

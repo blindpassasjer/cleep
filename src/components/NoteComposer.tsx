@@ -28,6 +28,7 @@ interface Props {
 
 export interface NoteComposerHandle {
   open: () => void;
+  openChecklist: () => void;
 }
 
 export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteComposer(
@@ -65,7 +66,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
     setExpanded(true);
   }
 
-  useImperativeHandle(handleRef, () => ({ open: () => open() }));
+  useImperativeHandle(handleRef, () => ({ open: () => open(), openChecklist: () => startChecklist() }));
 
   function startChecklist() {
     setIsChecklist(true);

@@ -90,6 +90,22 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
     await commitEdit(label);
   }
 
+  const activeLabelIds = view.kind === 'label' ? view.ids : [];
+
+  function selectLabel(label: Label, additive: boolean) {
+    const current = view.kind === 'label' ? view.ids : [];
+    if (additive && view.kind === 'label') {
+      const next = current.includes(label.id) ? current.filter((id) => id !== label.id) : [...current, label.id];
+      if (next.length === 0) {
+        onChange({ kind: 'notes' });
+        return;
+      }
+      onChange({ kind: 'label', ids: next, names: labels.filter((l) => next.includes(l.id)).map((l) => l.name), match: view.match });
+      return;
+    }
+    onChange({ kind: 'label', ids: [label.id], names: [label.name], match: 'any' });
+  }
+
   return (
     <nav
       className={`sidebar ${open ? 'open' : ''}`}
@@ -115,6 +131,23 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
       </button>
 
       <div className="sidebar-section-label">Collections</div>
+      {view.kind === 'label' && view.ids.length > 1 && (
+        <div className="sidebar-label-match">
+          <span className="sidebar-label-text">Match</span>
+          <button
+            className={view.match === 'any' ? 'active' : ''}
+            onClick={() => onChange({ ...view, match: 'any' })}
+          >
+            Any
+          </button>
+          <button
+            className={view.match === 'all' ? 'active' : ''}
+            onClick={() => onChange({ ...view, match: 'all' })}
+          >
+            All
+          </button>
+        </div>
+      )}
       {/* A shared grid, not each row sizing independently -- so the rename/delete column lines up
           at the same x across every row (as wide as the single longest label name needs), rather
           than each row's buttons trailing right after that row's own, differently-sized name. */}
@@ -126,11 +159,11 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
           // (see .sidebar-edit-label) instead of replacing the row as a sibling grid item, which is
           // what previously let its own, differently-sized content (an input with room to type)
           // widen the *whole* grid -- and so the sidebar -- while any row was being renamed.
-          <div key={label.id} className={`sidebar-label-row ${view.kind === 'label' && view.id === label.id ? 'active' : ''}`}>
+          <div key={label.id} className={`sidebar-label-row ${activeLabelIds.includes(label.id) ? 'active' : ''}`}>
             <button
               className="sidebar-label-name"
-              title={label.name}
-              onClick={() => onChange({ kind: 'label', id: label.id, name: label.name })}
+              title={`${label.name}\n(⌘/Ctrl-click to combine collections)`}
+              onClick={(e) => selectLabel(label, e.metaKey || e.ctrlKey || e.shiftKey)}
             >
               <IconTagFilled className={`label-icon label-icon-${label.color}`} aria-hidden="true" />
               <span className="sidebar-label-text">{label.name}</span>
@@ -147,7 +180,14 @@ export function Sidebar({ view, onChange, labels, onCreateLabel, onRenameLabel, 
                     notify(`Delete "${label.name}"?`, {
                       actionLabel: 'Delete',
                       onUndo: () => {
-                        if (view.kind === 'label' && view.id === label.id) onChange({ kind: 'notes' });
+                        if (view.kind === 'label' && view.ids.includes(label.id)) {
+                          const next = view.ids.filter((id) => id !== label.id);
+                          onChange(
+                            next.length === 0
+                              ? { kind: 'notes' }
+                              : { kind: 'label', ids: next, names: view.names.filter((_, i) => view.ids[i] !== label.id), match: view.match },
+                          );
+                        }
                         onDeleteLabel(label.id);
                       },
                     });

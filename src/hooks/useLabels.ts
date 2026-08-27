@@ -37,5 +37,5 @@ export function useLabels(enabled: boolean) {
     await api.deleteLabel(id);
   }
 
-  return { labels, createLabel, renameLabel, deleteLabel };
+  return { labels, reload, createLabel, renameLabel, deleteLabel };
 }

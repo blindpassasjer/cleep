@@ -88,13 +88,21 @@ export const mockApi = {
   adminListUsers: () => delay({ users: [{ ...DEMO_USER, createdAt: new Date().toISOString(), noteCount: state.notes.length }] as AdminUser[] }),
   adminCreateUser: () => delay({ user: null, error: 'Not available in the demo.' }),
   adminDeleteUser: () => delay({ ok: true as const }),
+  adminUpdateUser: () => delay({ user: null, error: 'Not available in the demo.' }),
+  adminResetUserPassword: () => delay({ ok: false, error: 'Not available in the demo.' }),
   adminGetSettings: () => delay({ registrationOpen: false }),
   adminSetRegistrationOpen: () => delay({ registrationOpen: false, error: 'Not available in the demo.' }),
 
   listNotes: (view: View, page?: { limit?: number; offset?: number }) => {
     let rows: Note[];
     if (view.kind === 'label') {
-      rows = state.notes.filter((n) => !n.trashedAt && !n.archived && n.labelIds.includes(view.id));
+      const ids = view.ids;
+      rows = state.notes.filter(
+        (n) =>
+          !n.trashedAt &&
+          !n.archived &&
+          (view.match === 'all' ? ids.every((id) => n.labelIds.includes(id)) : ids.some((id) => n.labelIds.includes(id))),
+      );
     } else if (view.kind === 'trash') {
       rows = state.notes.filter((n) => n.trashedAt);
     } else if (view.kind === 'recordings') {
@@ -233,4 +241,8 @@ export const mockApi = {
     }
     return delay({ ok: true as const });
   },
+
+  exportUrl: () => '/api/export',
+  importGoogleKeep: () =>
+    delay({ imported: 0, skippedTrashed: 0, errors: ['Import is not available in the demo.'] }),
 };
