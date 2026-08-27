@@ -235,30 +235,6 @@ export function NoteCard({
           )}
         </div>
 
-        {showColors && editable && (
-          <div className="note-inline-picker" onClick={(e) => e.stopPropagation()}>
-            <ColorPicker
-              value={note.color as NoteColor}
-              onChange={(color) => {
-                onUpdate(note.id, { color });
-                setShowColors(false);
-              }}
-            />
-          </div>
-        )}
-
-        {showLabels && editable && (
-          <div className="note-labels-editor" onClick={(e) => e.stopPropagation()}>
-            {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}
-            {labels.map((label) => (
-              <label key={label.id} className="note-label-toggle">
-                <input type="checkbox" checked={labelIds.includes(label.id)} onChange={() => toggleLabel(label.id)} />
-                {label.name}
-              </label>
-            ))}
-          </div>
-        )}
-
         {firstAudio && (
           <div className="note-audio-preview">
             <IconMic width={14} height={14} />
@@ -334,6 +310,30 @@ export function NoteCard({
             </>
           )}
         </div>
+
+        {showColors && editable && (
+          <div className="note-inline-picker" onClick={(e) => e.stopPropagation()}>
+            <ColorPicker
+              value={note.color as NoteColor}
+              onChange={(color) => {
+                onUpdate(note.id, { color });
+                setShowColors(false);
+              }}
+            />
+          </div>
+        )}
+
+        {showLabels && editable && (
+          <div className="note-labels-editor" onClick={(e) => e.stopPropagation()}>
+            {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}
+            {labels.map((label) => (
+              <label key={label.id} className="note-label-toggle">
+                <input type="checkbox" checked={labelIds.includes(label.id)} onChange={() => toggleLabel(label.id)} />
+                {label.name}
+              </label>
+            ))}
+          </div>
+        )}
       </div>
 
       {editing && originRect && (

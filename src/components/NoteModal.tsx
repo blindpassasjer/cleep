@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react';
 import { FlipModal } from './FlipModal';
-import { ColorPickerButton } from './ColorPickerButton';
+import { ColorPicker } from './ColorPicker';
 import { ChecklistEditor } from './ChecklistEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
 import { RichTextEditor } from './RichTextEditor';
-import { IconArchive, IconClose, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
+import { IconArchive, IconClose, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
 import { useDateFormat } from '../hooks/useDateFormat';
 import { formatNoteDate } from '../lib/formatDate';
 import { insertEditorImage } from '../lib/insertEditorImage';
@@ -66,6 +66,7 @@ export function NoteModal({
 }: Props) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [showLabels, setShowLabels] = useState(false);
+  const [showColors, setShowColors] = useState(false);
   const { mode: dateMode } = useDateFormat();
 
   return (
@@ -124,21 +125,26 @@ export function NoteModal({
               })}
             </div>
           )}
-          {showLabels && (
-            <div className="note-labels-editor">
-              {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}
-              {labels.map((label) => (
-                <label key={label.id} className="note-label-toggle">
-                  <input type="checkbox" checked={labelIds.includes(label.id)} onChange={() => onToggleLabel(label.id)} />
-                  {label.name}
-                </label>
-              ))}
-            </div>
-          )}
           <div className="note-modal-timestamp">Edited {formatNoteDate(updatedAt, dateMode)}</div>
           <div className="note-modal-footer">
-            <ColorPickerButton value={color} onChange={onColorChange} />
-            <button type="button" title="Collections" onClick={() => setShowLabels((v) => !v)}>
+            <button
+              type="button"
+              title="Color"
+              onClick={() => {
+                setShowColors((v) => !v);
+                setShowLabels(false);
+              }}
+            >
+              <IconPalette />
+            </button>
+            <button
+              type="button"
+              title="Collections"
+              onClick={() => {
+                setShowLabels((v) => !v);
+                setShowColors(false);
+              }}
+            >
               <IconTag />
             </button>
             <button
@@ -165,6 +171,28 @@ export function NoteModal({
               Done
             </button>
           </div>
+          {showColors && (
+            <div className="note-inline-picker">
+              <ColorPicker
+                value={color}
+                onChange={(c) => {
+                  onColorChange(c);
+                  setShowColors(false);
+                }}
+              />
+            </div>
+          )}
+          {showLabels && (
+            <div className="note-labels-editor">
+              {labels.length === 0 && <span className="note-labels-empty">No collections yet.</span>}
+              {labels.map((label) => (
+                <label key={label.id} className="note-label-toggle">
+                  <input type="checkbox" checked={labelIds.includes(label.id)} onChange={() => onToggleLabel(label.id)} />
+                  {label.name}
+                </label>
+              ))}
+            </div>
+          )}
         </>
       )}
     </FlipModal>

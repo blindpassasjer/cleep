@@ -1632,6 +1632,7 @@ button.sidebar-add-label-btn {
 
 .color-picker-button-wrap {
   display: flex;
+  position: relative;
 }
 
 /* .color-picker-toggle joins the shared footer-icon rules below (".note-modal-footer >
@@ -1642,10 +1643,10 @@ button.sidebar-add-label-btn {
 
 .color-picker-popover {
   position: absolute;
-  bottom: 100%;
+  top: 100%;
   left: 0;
   z-index: 5;
-  margin-bottom: 0.4rem;
+  margin-top: 0.4rem;
   padding: 0.6rem;
   max-width: min(240px, 80vw);
   border-radius: 12px;
