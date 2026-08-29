@@ -468,6 +468,37 @@ body {
   transform: translateY(-1px);
 }
 
+/* On a wide screen the settings cards pack into two uneven columns -- the same rounded-card look
+   as the notes grid, but done with plain CSS multi-column: no JS layout pass, DOM/tab order is
+   preserved, and a card growing (an inline error or success message) never shoves its neighbours
+   around. Below this width it stays a single comfortable column -- two ~260px columns would cramp
+   the form inputs. */
+@media (min-width: 900px) {
+  .settings-page {
+    max-width: 940px;
+    display: block;
+    columns: 2;
+    column-gap: 1rem;
+  }
+
+  .settings-page > .settings-card {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  /* The header isn't a card, and Sign out is deliberately kept apart from the navigation actions
+     above it (a mis-tapped session end is costly) -- both stay full width instead of being packed
+     into a column. */
+  .settings-page-header,
+  .settings-card-full {
+    column-span: all;
+  }
+
+  .settings-page > .settings-card-full {
+    margin-bottom: 0;
+  }
+}
+
 .settings-page-header {
   display: flex;
   flex-direction: column;

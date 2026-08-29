@@ -307,7 +307,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
 
       {/* Its own card at the very bottom, apart from everything else -- a session-ending action
           shouldn't sit next to a navigation one (Manage users) where a mis-tap is easy. */}
-      <div className="settings-form settings-card">
+      <div className="settings-form settings-card settings-card-full">
         <button type="button" className="settings-toggle settings-logout" onClick={onLogout}>
           Sign out
         </button>
