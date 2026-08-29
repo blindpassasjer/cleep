@@ -2247,7 +2247,7 @@ button.sidebar-add-label-btn {
 
 .mini-waveform {
   flex: 1;
-  height: 22px;
+  height: 32px;
   display: flex;
   align-items: center;
   gap: 1.5px;
@@ -2382,7 +2382,7 @@ button.sidebar-add-label-btn {
 .waveform-progress {
   flex: 1;
   min-width: 0;
-  height: 40px;
+  height: 64px;
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -2464,7 +2464,7 @@ button.sidebar-add-label-btn {
 .live-waveform {
   flex: 1;
   min-width: 0;
-  height: 28px;
+  height: 40px;
   display: flex;
   align-items: center;
   gap: 2px;
