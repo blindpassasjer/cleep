@@ -216,7 +216,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
       {onShowShortcuts && (
         <div className="settings-form settings-card">
           <h3 className="settings-section-title">Keyboard shortcuts</h3>
-          <button type="button" className="settings-toggle settings-toggle-accent" onClick={onShowShortcuts}>
+          <button type="button" className="settings-toggle settings-toggle-accent settings-toggle-inline" onClick={onShowShortcuts}>
             View shortcuts
           </button>
         </div>
@@ -242,7 +242,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
       {onOpenAdmin && (
         <div className="settings-form settings-card">
           <h3 className="settings-section-title">Account</h3>
-          <button type="button" className="settings-toggle settings-toggle-accent" onClick={onOpenAdmin}>
+          <button type="button" className="settings-toggle settings-toggle-accent settings-toggle-inline" onClick={onOpenAdmin}>
             Manage users
           </button>
         </div>

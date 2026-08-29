@@ -576,6 +576,13 @@ body {
   transition: background-color 0.12s ease, border-color 0.12s ease;
 }
 
+/* Navigation buttons (View shortcuts / Manage users) are actions, not full-width
+   toggles -- size them to their label so they don't read as a big primary control. */
+.settings-toggle-inline {
+  display: inline-flex;
+  align-self: flex-start;
+}
+
 .settings-toggle:hover {
   background: var(--bg);
 }
