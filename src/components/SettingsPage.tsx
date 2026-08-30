@@ -290,7 +290,7 @@ export function SettingsPage({ user, onUserUpdate, onClose, onLogout, theme, onT
         </div>
         <div className="coffee-popover-options">
           <a
-            href="https://qr.vipps.no/box/26128ed0-008f-4b5a-bd8d-9a936f58cf83/pay-in"
+            href="https://qr.vipps.no/box/ed3eba16-02d1-4fdd-8912-700acdb1442e/pay-in"
             target="_blank"
             rel="noopener noreferrer"
             className="coffee-option coffee-option-accent"
