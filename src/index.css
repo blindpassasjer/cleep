@@ -1645,7 +1645,11 @@ button.sidebar-add-label-btn {
 
 .note-modal-content {
   min-height: 200px;
-  flex: 1;
+  /* grow 1 to fill a short note out to the min-height floor, but shrink 0 + basis auto so a long
+     note keeps its full content height instead of being squeezed down to 200px (flex's default
+     shrink) -- at 200px the extra text just overflows visibly on top of the toolbar and footer
+     rather than pushing them down and letting .note-modal scroll, which is the desktop intent. */
+  flex: 1 0 auto;
   resize: none;
   font-size: 0.95rem;
 }
