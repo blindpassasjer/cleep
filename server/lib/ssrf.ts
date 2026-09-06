@@ -68,26 +68,31 @@ export async function assertPublicUrl(rawUrl: string): Promise<SafeTarget> {
   }
   if (host === 'localhost') throw new SsrfError('Private address: localhost');
 
-  let records: { address: string; family: number }[];
+  // Collect every address the host resolves to. `dns.lookup` follows the OS resolver (respects
+  // /etc/hosts, musl/glibc quirks and all); on some setups -- notably Synology's Docker bridge --
+  // it returns entries with no usable `address`, so fall back to querying A/AAAA records directly.
+  let addresses: string[] = [];
   try {
-    records = await dns.lookup(host, { all: true });
+    const looked = await dns.lookup(host, { all: true });
+    addresses = looked.map((r) => r.address).filter((a) => typeof a === 'string' && net.isIP(a) !== 0);
   } catch {
-    throw new SsrfError(`DNS lookup failed for ${host}`);
+    // fall through to resolve4/resolve6
   }
-  if (records.length === 0) throw new SsrfError(`No DNS records for ${host}`);
+  if (addresses.length === 0) {
+    const [v4, v6] = await Promise.all([
+      dns.resolve4(host).catch(() => [] as string[]),
+      dns.resolve6(host).catch(() => [] as string[]),
+    ]);
+    addresses = [...v4, ...v6].filter((a) => net.isIP(a) !== 0);
+  }
+  if (addresses.length === 0) throw new SsrfError(`DNS lookup failed for ${host}`);
 
   // Every resolved address must be public...
-  for (const { address } of records) {
+  for (const address of addresses) {
     if (isPrivateAddress(address)) throw new SsrfError(`Host ${host} resolves to a private address`);
   }
-  // ...and we pin the connection to a concrete one. Some resolvers (seen on Synology's Docker
-  // bridge) hand back an entry with no usable `address`, or only an AAAA record on a host with no
-  // IPv6 route -- prefer the first valid IPv4, else the first valid address of any family.
-  const usable =
-    records.find((r) => net.isIP(r.address) === 4) ?? records.find((r) => net.isIP(r.address) !== 0);
-  if (!usable) {
-    console.warn(`Link preview: no usable IP for ${host} -- resolver returned ${JSON.stringify(records)}`);
-    throw new SsrfError(`No usable IP address for ${host}`);
-  }
-  return { url, address: usable.address };
+  // ...and we pin the connection to one of them -- prefer IPv4 (an AAAA-only pin fails on a host
+  // with no IPv6 route).
+  const pinned = addresses.find((a) => net.isIP(a) === 4) ?? addresses[0];
+  return { url, address: pinned };
 }
