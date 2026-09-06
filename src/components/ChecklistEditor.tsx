@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { IconClose } from './Icons';
+import { useFlipReorder } from '../hooks/useFlipReorder';
+import { orderChecklistItems } from '../lib/orderChecklistItems';
 import { uuid } from '../lib/uuid';
 import type { ChecklistItem } from '../types';
 
@@ -11,15 +13,20 @@ interface Props {
 
 export function ChecklistEditor({ items, onChange, autoFocusLast }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const prevLength = useRef(items.length);
+  const lastAddedId = useRef<string | null>(null);
+
+  // Stored order is left untouched; only the render order partitions checked items to the bottom.
+  const orderedItems = useMemo(() => orderChecklistItems(items), [items]);
+  useFlipReorder(containerRef, orderedItems.map((item) => item.id));
 
   useEffect(() => {
-    if (autoFocusLast && items.length > prevLength.current) {
-      const inputs = containerRef.current?.querySelectorAll<HTMLInputElement>('.checklist-text');
-      inputs?.[inputs.length - 1]?.focus();
+    if (autoFocusLast && lastAddedId.current) {
+      containerRef.current
+        ?.querySelector<HTMLInputElement>(`[data-flip-id="${CSS.escape(lastAddedId.current)}"] .checklist-text`)
+        ?.focus();
+      lastAddedId.current = null;
     }
-    prevLength.current = items.length;
-  }, [items.length, autoFocusLast]);
+  }, [items, autoFocusLast]);
 
   function updateItem(id: string, patch: Partial<ChecklistItem>) {
     onChange(items.map((item) => (item.id === id ? { ...item, ...patch } : item)));
@@ -30,13 +37,15 @@ export function ChecklistEditor({ items, onChange, autoFocusLast }: Props) {
   }
 
   function addItem() {
-    onChange([...items, { id: uuid(), text: '', checked: false }]);
+    const id = uuid();
+    lastAddedId.current = id;
+    onChange([...items, { id, text: '', checked: false }]);
   }
 
   return (
     <div className="checklist-editor" ref={containerRef}>
-      {items.map((item) => (
-        <div key={item.id} className={`checklist-row ${item.checked ? 'checked' : ''}`}>
+      {orderedItems.map((item) => (
+        <div key={item.id} data-flip-id={item.id} className={`checklist-row ${item.checked ? 'checked' : ''}`}>
           <input type="checkbox" checked={item.checked} onChange={(e) => updateItem(item.id, { checked: e.target.checked })} />
           <input
             type="text"
