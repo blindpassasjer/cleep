@@ -1,5 +1,6 @@
-import type { AdminUser, Attachment, ChecklistItem, Label, Note, NoteColor, PublicUser, View } from '../types';
+import type { AdminUser, Attachment, ChecklistItem, Label, LinkPreview, Note, NoteColor, PublicUser, View } from '../types';
 import { buildDemoNotes, DEMO_LABELS } from './demoSeed';
+import { uuid } from '../lib/uuid';
 
 // Everything here runs client-side against localStorage, standing in for the real Express API
 // (src/api/client.ts) when the app is built in demo mode (VITE_DEMO=true) for GitHub Pages, which
@@ -123,7 +124,7 @@ export const mockApi = {
   ) => {
     const nowIso = new Date().toISOString();
     const note: Note = {
-      id: crypto.randomUUID(),
+      id: uuid(),
       userId: DEMO_USER.id,
       title,
       content,
@@ -182,7 +183,7 @@ export const mockApi = {
     if (state.labels.some((l) => l.name.toLowerCase() === name.toLowerCase())) {
       return delay({ label: null, error: 'A label with that name already exists.' });
     }
-    const label: Label = { id: crypto.randomUUID(), userId: DEMO_USER.id, name, color };
+    const label: Label = { id: uuid(), userId: DEMO_USER.id, name, color };
     state.labels.push(label);
     save();
     return delay({ label, error: null });
@@ -240,6 +241,33 @@ export const mockApi = {
       attachmentBlobs.delete(attachmentId);
     }
     return delay({ ok: true as const });
+  },
+
+  // No server in the demo build -- return a favicon-only preview (domain + Google's favicon
+  // service) so links still render a card. A few well-known domains get a nicer title.
+  linkPreview: (url: string): Promise<{ preview: LinkPreview | null }> => {
+    let host: string;
+    try {
+      host = new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+      return delay({ preview: null });
+    }
+    const known: Record<string, string> = {
+      'github.com': 'GitHub',
+      'wikipedia.org': 'Wikipedia',
+      'en.wikipedia.org': 'Wikipedia',
+      'youtube.com': 'YouTube',
+      'nrk.no': 'NRK',
+    };
+    return delay({
+      preview: {
+        url,
+        title: known[host] ?? host,
+        image: null,
+        siteName: host,
+        favicon: `https://www.google.com/s2/favicons?domain=${host}&sz=64`,
+      },
+    });
   },
 
   exportUrl: () => '/api/export',

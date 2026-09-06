@@ -9,6 +9,7 @@ import { api } from '../api/client';
 import { insertEditorImage } from '../lib/insertEditorImage';
 import { isRichContentEmpty } from '../lib/isRichContentEmpty';
 import { toggleNoteLabel } from '../lib/toggleNoteLabel';
+import { uuid } from '../lib/uuid';
 import { IconArchive, IconChecklist, IconImage, IconMic, IconPlus, IconTag, IconTrash } from './Icons';
 import type { Attachment, ChecklistItem, Label, Note, NoteColor } from '../types';
 
@@ -70,7 +71,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
 
   function startChecklist() {
     setIsChecklist(true);
-    setItems([{ id: crypto.randomUUID(), text: '', checked: false }]);
+    setItems([{ id: uuid(), text: '', checked: false }]);
     open();
   }
 
