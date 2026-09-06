@@ -141,19 +141,26 @@ async function fetchHtml(start: SafeTarget): Promise<{ html: string; finalUrl: s
         continue;
       }
 
-      if (res.status < 200 || res.status >= 300) return null;
+      if (res.status < 200 || res.status >= 300) {
+        res.body.destroy();
+        console.warn(`Link preview: ${target.url.href} returned HTTP ${res.status}`);
+        return null;
+      }
       if (!res.contentType.includes('text/html')) {
         res.body.destroy();
+        console.warn(`Link preview: ${target.url.href} is not HTML (content-type: ${res.contentType || 'none'})`);
         return null;
       }
       if (res.contentLength !== null && res.contentLength > MAX_BODY_BYTES * 4) {
         res.body.destroy();
+        console.warn(`Link preview: ${target.url.href} body too large (${res.contentLength} bytes)`);
         return null;
       }
 
       const html = await readCapped(res.body, MAX_BODY_BYTES);
       return { html, finalUrl: target.url.toString() };
-    } catch {
+    } catch (err) {
+      console.warn(`Link preview: fetch of ${target.url.href} failed -- ${(err as Error).message}`);
       return null;
     } finally {
       clearTimeout(timer);
@@ -288,6 +295,9 @@ linkPreviewRouter.get('/', async (req, res) => {
       if (fetched) {
         const meta = extractMetadata(fetched.html, fetched.finalUrl);
         preview = { url, ...meta };
+        if (!meta.title && !meta.image) {
+          console.warn(`Link preview: fetched ${url} but found no <title>, og:title, or og:image`);
+        }
       }
     } catch (err) {
       if (!(err instanceof SsrfError)) throw err;
