@@ -1863,12 +1863,13 @@ button.sidebar-add-label-btn {
 }
 
 .checklist-row.preview {
-  cursor: pointer;
   font-size: 0.9rem;
 }
 
+/* The grid preview is read-only -- let clicks fall through to the card so it opens the note
+   instead of being swallowed by the checkbox. */
 .checklist-row.preview input {
-  cursor: pointer;
+  pointer-events: none;
 }
 
 .checklist-more {
@@ -2227,6 +2228,82 @@ button.sidebar-add-label-btn {
 .toast-close {
   font-size: 1.1rem;
   padding: 0.2rem 0.5rem !important;
+}
+
+/* Link preview cards (URLs detected in note title/content) -- shown in the grid card and the
+   open note modal. All colors come from existing theme tokens, so no dark-mode override needed. */
+.note-link-previews {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.link-preview-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  background: var(--surface);
+}
+
+.link-preview-card:hover {
+  border-color: var(--muted);
+}
+
+.link-preview-card.compact {
+  flex-direction: row;
+  align-items: center;
+}
+
+.link-preview-thumb {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+}
+
+.link-preview-card.compact .link-preview-thumb {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.link-preview-favicon {
+  width: 16px;
+  height: 16px;
+  margin: 0.55rem 0 0 0.6rem;
+}
+
+.link-preview-card.compact .link-preview-favicon {
+  margin: 0 0 0 0.6rem;
+}
+
+.link-preview-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.65rem;
+  min-width: 0;
+}
+
+.link-preview-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link-preview-domain {
+  font-size: 0.72rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Grid preview: cover image + media badges */

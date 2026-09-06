@@ -2,8 +2,13 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ColorPicker } from './ColorPicker';
 import { NoteModal } from './NoteModal';
 import { MiniWaveform } from './MiniWaveform';
+import { LinkPreviewCard } from './LinkPreviewCard';
 import { api } from '../api/client';
 import { sanitizeHtml } from '../lib/sanitizeHtml';
+import { extractLinks } from '../lib/extractLinks';
+import { useLinkPreviews } from '../hooks/useLinkPreviews';
+import { useFlipReorder } from '../hooks/useFlipReorder';
+import { orderChecklistItems } from '../lib/orderChecklistItems';
 import { toggleNoteLabel } from '../lib/toggleNoteLabel';
 import { IconArchive, IconDragHandle, IconMic, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash, IconVideo } from './Icons';
 import type { Attachment, ChecklistItem, Label, Note, NoteColor, View } from '../types';
@@ -53,6 +58,7 @@ export function NoteCard({
 }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const checklistPreviewRef = useRef<HTMLDivElement>(null);
   const [bodyTruncated, setBodyTruncated] = useState(false);
   const [editing, setEditing] = useState(false);
   const [sourceHidden, setSourceHidden] = useState(false);
@@ -128,18 +134,17 @@ export function NoteCard({
     }
   }
 
-  function toggleChecklistItem(itemId: string) {
-    const updated = note.items.map((item) => (item.id === itemId ? { ...item, checked: !item.checked } : item));
-    onUpdate(note.id, { items: updated });
-  }
-
-  const previewItems = note.items.slice(0, CHECKLIST_PREVIEW_LIMIT);
-  const hiddenItemCount = note.items.length - previewItems.length;
+  const orderedItems = useMemo(() => orderChecklistItems(note.items), [note.items]);
+  const previewItems = orderedItems.slice(0, CHECKLIST_PREVIEW_LIMIT);
+  const hiddenItemCount = orderedItems.length - previewItems.length;
+  useFlipReorder(checklistPreviewRef, previewItems.map((item) => item.id));
   const coverImage = note.attachments.find((a) => a.kind === 'image');
   const videoCount = note.attachments.filter((a) => a.kind === 'video').length;
   const firstAudio = note.attachments.find((a) => a.kind === 'audio');
   const audioCount = note.attachments.filter((a) => a.kind === 'audio').length;
   const sanitizedContent = useMemo(() => sanitizeHtml(note.content), [note.content]);
+  const links = useMemo(() => extractLinks({ title: note.title, content: note.content }), [note.title, note.content]);
+  const linkPreviews = useLinkPreviews(links);
 
   // The fade at the bottom of .note-body should only show up when content is actually clipped by
   // its max-height -- otherwise a normal, short note would have its last couple of lines needlessly
@@ -155,7 +160,7 @@ export function NoteCard({
     measure();
     el.addEventListener('load', measure, true);
     return () => el.removeEventListener('load', measure, true);
-  }, [note.title, note.content, note.items, note.isChecklist, note.attachments, labelIds]);
+  }, [note.title, note.content, note.items, note.isChecklist, note.attachments, labelIds, links]);
 
   return (
     <>
@@ -201,16 +206,13 @@ export function NoteCard({
             )}
             {note.title && <div className="note-title">{note.title}</div>}
             {note.isChecklist ? (
-              <div className="note-checklist-preview">
+              <div className="note-checklist-preview" ref={checklistPreviewRef}>
                 {previewItems.map((item) => (
-                  <label
-                    key={item.id}
-                    className={`checklist-row preview ${item.checked ? 'checked' : ''}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <input type="checkbox" checked={item.checked} onChange={() => toggleChecklistItem(item.id)} />
+                  // Read-only preview -- ticking items happens in the open note, not the grid card.
+                  <div key={item.id} data-flip-id={item.id} className={`checklist-row preview ${item.checked ? 'checked' : ''}`}>
+                    <input type="checkbox" checked={item.checked} readOnly tabIndex={-1} aria-hidden="true" />
                     <span>{item.text}</span>
-                  </label>
+                  </div>
                 ))}
                 {hiddenItemCount > 0 && <div className="checklist-more">+{hiddenItemCount} more</div>}
               </div>
@@ -218,6 +220,14 @@ export function NoteCard({
               note.content && <div className="note-content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
             )}
           </div>
+          {links.length > 0 && (
+            <div className="note-link-previews">
+              {links.map((url) => {
+                const preview = linkPreviews.get(url);
+                return preview ? <LinkPreviewCard key={url} preview={preview} compact /> : null;
+              })}
+            </div>
+          )}
           {/* Outside .note-body (not its last child) -- that box clips to a fixed max-height (see
               .note-body in index.css) for long notes, which was cutting labels off along with the
               overflowing text instead of leaving them visible below the fade. */}

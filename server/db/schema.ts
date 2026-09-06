@@ -85,6 +85,20 @@ export const noteLabels = pgTable(
   }),
 );
 
+// Global per-URL cache of link-preview metadata (OpenGraph title/image, favicon). Not scoped to a
+// note or user -- the metadata is public and identical for everyone, so one row per URL is reused
+// across every note that mentions it. `status` is 'ok' when a fetch produced usable metadata and
+// 'error' otherwise; `fetchedAt` drives staleness (see server/routes/linkPreview.ts).
+export const linkPreviews = pgTable('link_previews', {
+  url: text('url').primaryKey(),
+  title: text('title'),
+  imageUrl: text('image_url'),
+  siteName: text('site_name'),
+  faviconUrl: text('favicon_url'),
+  status: text('status').notNull().default('ok'), // 'ok' | 'error'
+  fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const attachments = pgTable('attachments', {
   id: text('id').primaryKey(),
   noteId: text('note_id')

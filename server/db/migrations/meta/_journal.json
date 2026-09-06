@@ -57,6 +57,13 @@
       "when": 1787636594986,
       "tag": "0007_marvelous_vin_gonzales",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788685260421,
+      "tag": "0008_deep_the_twelve",
+      "breakpoints": true
     }
   ]
 }

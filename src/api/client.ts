@@ -1,4 +1,4 @@
-import type { AdminUser, Attachment, ChecklistItem, Note, NoteColor, Label, PublicUser, View } from '../types';
+import type { AdminUser, Attachment, ChecklistItem, LinkPreview, Note, NoteColor, Label, PublicUser, View } from '../types';
 import { mockApi } from './mockClient';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -110,6 +110,9 @@ const realApi = {
   },
   deleteAttachment: (noteId: string, attachmentId: string) =>
     request<{ ok: true }>(`/notes/${noteId}/attachments/${attachmentId}`, { method: 'DELETE' }),
+
+  linkPreview: (url: string) =>
+    request<{ preview: LinkPreview | null }>(`/link-preview?url=${encodeURIComponent(url)}`),
 
   exportUrl: () => '/api/export',
   importGoogleKeep: (file: File) => {

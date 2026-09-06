@@ -50,6 +50,14 @@ export interface Note {
   attachments: Attachment[];
 }
 
+export interface LinkPreview {
+  url: string;
+  title: string | null;
+  image: string | null;
+  siteName: string | null;
+  favicon: string | null;
+}
+
 export interface Label {
   id: string;
   userId: string;

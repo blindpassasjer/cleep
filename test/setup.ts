@@ -5,7 +5,7 @@ import { sql } from 'drizzle-orm';
 
 // Wiped between every test so cases stay independent. `app_settings` is truncated too so the
 // registration-open flag never leaks across tests.
-const TABLES = ['sessions', 'note_labels', 'attachments', 'notes', 'labels', 'app_settings', 'users'];
+const TABLES = ['sessions', 'note_labels', 'attachments', 'notes', 'labels', 'link_previews', 'app_settings', 'users'];
 
 afterEach(async () => {
   await db.execute(sql.raw(`TRUNCATE ${TABLES.join(', ')} RESTART IDENTITY CASCADE`));

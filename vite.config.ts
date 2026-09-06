@@ -67,6 +67,10 @@ export default defineConfig(({ mode }) => {
         }),
     ],
     server: {
+      // Set VITE_ALLOWED_HOSTS (comma-separated) when reaching the dev server through a tunnel or
+      // reverse proxy on some other hostname (e.g. a remote VS Code / Codespaces forwarded URL).
+      // Unset in normal local use, which keeps Vite's default host checking.
+      allowedHosts: env.VITE_ALLOWED_HOSTS ? env.VITE_ALLOWED_HOSTS.split(',').map((h) => h.trim()) : undefined,
       proxy: {
         '/api': 'http://localhost:6169',
       },

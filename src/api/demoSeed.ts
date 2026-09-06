@@ -105,6 +105,15 @@ export function buildDemoNotes(): Note[] {
       updatedAt: ago(7),
     }),
     note({
+      id: 'note-read-later',
+      title: 'Read later',
+      content: '<p>Bookmarking this to go through properly: https://en.wikipedia.org/wiki/Zettelkasten</p>',
+      color: 'teal',
+      position: 45,
+      createdAt: ago(3),
+      updatedAt: ago(3),
+    }),
+    note({
       id: 'note-archived-idea',
       title: 'Old side project idea',
       content: '<p>A browser extension that mutes autoplaying videos. Someone probably already built this.</p>',

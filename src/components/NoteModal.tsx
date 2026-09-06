@@ -1,10 +1,14 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { FlipModal } from './FlipModal';
 import { ColorPicker } from './ColorPicker';
 import { ChecklistEditor } from './ChecklistEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
 import { RichTextEditor } from './RichTextEditor';
+import { LinkPreviewCard } from './LinkPreviewCard';
+import { useLinkPreviews } from '../hooks/useLinkPreviews';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { extractLinks } from '../lib/extractLinks';
 import { IconArchive, IconClose, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
 import { useDateFormat } from '../hooks/useDateFormat';
 import { formatNoteDate } from '../lib/formatDate';
@@ -68,6 +72,15 @@ export function NoteModal({
   const [showLabels, setShowLabels] = useState(false);
   const [showColors, setShowColors] = useState(false);
   const { mode: dateMode } = useDateFormat();
+  // Debounced so typing a URL character-by-character doesn't fire an unfurl request (and a
+  // server-side DNS lookup + fetch) for every incomplete prefix along the way.
+  const debouncedTitle = useDebouncedValue(title, 700);
+  const debouncedContent = useDebouncedValue(content, 700);
+  const links = useMemo(
+    () => extractLinks({ title: debouncedTitle, content: isChecklist ? '' : debouncedContent }),
+    [debouncedTitle, debouncedContent, isChecklist],
+  );
+  const linkPreviews = useLinkPreviews(links);
 
   return (
     <FlipModal
@@ -104,6 +117,14 @@ export function NoteModal({
               value={content}
               onChange={onContentChange}
             />
+          )}
+          {links.length > 0 && (
+            <div className="note-link-previews">
+              {links.map((url) => {
+                const preview = linkPreviews.get(url);
+                return preview ? <LinkPreviewCard key={url} preview={preview} /> : null;
+              })}
+            </div>
           )}
           <AttachmentsPanel
             attachments={attachments}

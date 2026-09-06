@@ -26,6 +26,7 @@ No subscriptions, no ads, no third party reading your notes — just your data, 
 
 - 📝 **Notes & checklists** — pin, color, archive, trash (with undo everywhere it matters)
 - 🖼️ **Attachments** — photos, videos, and audio recorded straight from the browser
+- 🔗 **Link previews** — any URL in a note gets a thumbnail card (OpenGraph image, title, domain) in both the grid and the open note
 - 🏷️ **Labels** for organizing notes into collections, plus multi-select bulk actions
 - 🔍 **Search** across your whole library, plus filter by one or several collections at once (Any/All)
 - ⌨️ **Keyboard shortcuts** — `/` to search, `c` new note, `l` new checklist, `g n/a/t` to jump around, `?` for the full list
