@@ -1,4 +1,4 @@
-import type { AdminUser, Attachment, ChecklistItem, Label, LinkPreview, Note, NoteColor, PublicUser, View } from '../types';
+import type { AdminUser, Attachment, ChecklistItem, Label, Note, NoteColor, PublicUser, View } from '../types';
 import { buildDemoNotes, DEMO_LABELS } from './demoSeed';
 import { uuid } from '../lib/uuid';
 
@@ -241,33 +241,6 @@ export const mockApi = {
       attachmentBlobs.delete(attachmentId);
     }
     return delay({ ok: true as const });
-  },
-
-  // No server in the demo build -- return a favicon-only preview (domain + Google's favicon
-  // service) so links still render a card. A few well-known domains get a nicer title.
-  linkPreview: (url: string): Promise<{ preview: LinkPreview | null }> => {
-    let host: string;
-    try {
-      host = new URL(url).hostname.replace(/^www\./, '');
-    } catch {
-      return delay({ preview: null });
-    }
-    const known: Record<string, string> = {
-      'github.com': 'GitHub',
-      'wikipedia.org': 'Wikipedia',
-      'en.wikipedia.org': 'Wikipedia',
-      'youtube.com': 'YouTube',
-      'nrk.no': 'NRK',
-    };
-    return delay({
-      preview: {
-        url,
-        title: known[host] ?? host,
-        image: null,
-        siteName: host,
-        favicon: `https://www.google.com/s2/favicons?domain=${host}&sz=64`,
-      },
-    });
   },
 
   exportUrl: () => '/api/export',
