@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { once } from 'node:events';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { linkPreviews } from '../db/schema.js';
@@ -15,6 +16,23 @@ const MAX_BODY_BYTES = 512 * 1024;
 const MAX_REDIRECTS = 3;
 const OK_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const ERROR_TTL_MS = 24 * 60 * 60 * 1000;
+
+const IMAGE_TIMEOUT_MS = 10000;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const IMAGE_CACHE_SECONDS = 7 * 24 * 60 * 60;
+// Types we're willing to re-serve from our own origin. Kept to the formats a browser renders in
+// an <img>; anything else from a page's og:image/favicon is treated as "no image".
+const IMAGE_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'image/avif',
+  'image/svg+xml',
+  'image/bmp',
+  'image/x-icon',
+  'image/vnd.microsoft.icon',
+]);
 
 interface PreviewApi {
   url: string;
@@ -149,6 +167,97 @@ function toApi(row: typeof linkPreviews.$inferSelect): PreviewApi | null {
   return { url: row.url, title: row.title, image: row.imageUrl, siteName: row.siteName, favicon: row.faviconUrl };
 }
 
+/**
+ * Rewrites a remote image/favicon URL to one served from this origin (`/api/link-preview/image`).
+ * The browser then only ever loads preview assets from `'self'`, so a card still renders its
+ * thumbnail when the deployment sits behind a reverse proxy that forces a strict
+ * `img-src`/`default-src 'self'` CSP -- and off-site hosts never see the reader's IP. Relative
+ * or already-same-origin URLs are left untouched.
+ */
+function proxyAsset(assetUrl: string | null): string | null {
+  if (!assetUrl || !/^https?:\/\//i.test(assetUrl)) return assetUrl;
+  return `/api/link-preview/image?url=${encodeURIComponent(assetUrl)}`;
+}
+
+function toClient(preview: PreviewApi | null): PreviewApi | null {
+  if (!preview) return null;
+  return { ...preview, image: proxyAsset(preview.image), favicon: proxyAsset(preview.favicon) };
+}
+
+/** Follows redirects (re-validating each hop) and returns the image body + type, or null. */
+async function fetchImage(start: SafeTarget, signal: AbortSignal): Promise<{ body: Readable; type: string } | null> {
+  let target = start;
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+    const res = await httpGet(target.url, target.address, signal);
+
+    if (res.status >= 300 && res.status < 400) {
+      res.body.resume();
+      if (!res.location) return null;
+      target = await assertPublicUrl(new URL(res.location, target.url).toString());
+      continue;
+    }
+    if (res.status < 200 || res.status >= 300) {
+      res.body.destroy();
+      return null;
+    }
+
+    const type = res.contentType.split(';')[0].trim().toLowerCase();
+    if (!IMAGE_TYPES.has(type)) {
+      res.body.destroy();
+      return null;
+    }
+    if (res.contentLength !== null && res.contentLength > MAX_IMAGE_BYTES) {
+      res.body.destroy();
+      return null;
+    }
+    return { body: res.body, type };
+  }
+  return null;
+}
+
+// Proxies a preview's image/favicon through this origin (see proxyAsset). Auth-gated by the
+// router, SSRF-checked like the metadata fetch, size- and type-capped, and streamed so a large
+// image can't buffer into memory.
+linkPreviewRouter.get('/image', async (req, res) => {
+  const raw = req.query.url;
+  if (typeof raw !== 'string' || raw.length === 0 || raw.length > 2048) {
+    res.status(400).end();
+    return;
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), IMAGE_TIMEOUT_MS);
+  try {
+    const target = await assertPublicUrl(raw);
+    const img = await fetchImage(target, controller.signal);
+    if (!img) {
+      res.status(502).end();
+      return;
+    }
+
+    res.setHeader('Content-Type', img.type);
+    res.setHeader('Cache-Control', `public, max-age=${IMAGE_CACHE_SECONDS}, immutable`);
+    res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+
+    let sent = 0;
+    for await (const chunk of img.body) {
+      sent += (chunk as Buffer).length;
+      if (sent > MAX_IMAGE_BYTES) {
+        img.body.destroy();
+        break;
+      }
+      if (!res.write(chunk)) await once(res, 'drain');
+    }
+    res.end();
+  } catch (err) {
+    if (!res.headersSent) res.status(err instanceof SsrfError ? 400 : 502).end();
+    else res.destroy();
+  } finally {
+    clearTimeout(timer);
+  }
+});
+
 linkPreviewRouter.get('/', async (req, res) => {
   const raw = req.query.url;
   if (typeof raw !== 'string' || raw.length === 0 || raw.length > 2048) {
@@ -167,7 +276,7 @@ linkPreviewRouter.get('/', async (req, res) => {
       const age = Date.now() - cached.fetchedAt.getTime();
       const ttl = cached.status === 'ok' ? OK_TTL_MS : ERROR_TTL_MS;
       if (age < ttl) {
-        res.json({ preview: toApi(cached) });
+        res.json({ preview: toClient(toApi(cached)) });
         return;
       }
     }
@@ -199,7 +308,7 @@ linkPreviewRouter.get('/', async (req, res) => {
       .values(row)
       .onConflictDoUpdate({ target: linkPreviews.url, set: row });
 
-    res.json({ preview: row.status === 'ok' ? preview : null });
+    res.json({ preview: row.status === 'ok' ? toClient(preview) : null });
   } catch (err) {
     console.error('Link preview failed:', err);
     res.status(500).json({ error: 'Something went wrong. Please try again.' });

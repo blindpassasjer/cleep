@@ -71,3 +71,13 @@ export const uploadRateLimit = createRateLimit({
   windowMs: readIntEnv('UPLOAD_RATE_LIMIT_WINDOW_MS', DEFAULT_AUTH_WINDOW_MS),
   max: readIntEnv('UPLOAD_RATE_LIMIT_MAX', DEFAULT_UPLOAD_MAX),
 });
+
+/**
+ * Limiter for the link-preview endpoints. Opening a view full of linked notes fans out into one
+ * metadata request plus an image/favicon proxy request per card, so this ceiling is higher than
+ * the upload one. Tunable via LINK_PREVIEW_RATE_LIMIT_MAX / LINK_PREVIEW_RATE_LIMIT_WINDOW_MS.
+ */
+export const linkPreviewRateLimit = createRateLimit({
+  windowMs: readIntEnv('LINK_PREVIEW_RATE_LIMIT_WINDOW_MS', DEFAULT_AUTH_WINDOW_MS),
+  max: readIntEnv('LINK_PREVIEW_RATE_LIMIT_MAX', 300),
+});

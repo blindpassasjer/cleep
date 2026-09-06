@@ -62,7 +62,9 @@ describe('GET /api/link-preview', () => {
     expect(res.status).toBe(200);
     expect(res.body.preview).toMatchObject({
       title: 'Example & Co',
-      image: 'http://93.184.216.34/img/cover.png',
+      // The remote image is rewritten to a same-origin proxy URL so it loads under a strict
+      // `img-src 'self'` CSP (see proxyAsset in the route).
+      image: `/api/link-preview/image?url=${encodeURIComponent('http://93.184.216.34/img/cover.png')}`,
       siteName: 'Example',
     });
   });
@@ -99,6 +101,22 @@ describe('GET /api/link-preview', () => {
     expect(mockHttpGet).toHaveBeenCalledTimes(1); // stopped at the redirect, never fetched the target
   });
 
+  it('resolves the favicon through the same-origin proxy too', async () => {
+    const { agent } = await createUserAndLogin();
+    mockHttpGet.mockResolvedValue(
+      htmlResult(
+        `<html><head><title>Docs</title>
+          <link rel="icon" href="https://cdn.example.com/favicon.ico">
+        </head></html>`,
+      ),
+    );
+
+    const res = await agent.get('/api/link-preview?url=http://93.184.216.34/docs');
+    expect(res.body.preview.favicon).toBe(
+      `/api/link-preview/image?url=${encodeURIComponent('https://cdn.example.com/favicon.ico')}`,
+    );
+  });
+
   it('caps an oversized body instead of buffering all of it', async () => {
     const { agent } = await createUserAndLogin();
     let pushed = 0;
@@ -117,5 +135,54 @@ describe('GET /api/link-preview', () => {
     // at all (didn't OOM/hang) and stopped reading well before 8 MB.
     expect(res.body.preview).toBeNull();
     expect(pushed).toBeLessThan(2 * 1024 * 1024);
+  });
+});
+
+describe('GET /api/link-preview/image', () => {
+  afterEach(() => {
+    mockHttpGet.mockReset();
+  });
+
+  function imageResult(type: string, bytes: Buffer, overrides: Partial<HttpGetResult> = {}): HttpGetResult {
+    return {
+      status: 200,
+      location: null,
+      contentType: type,
+      contentLength: bytes.length,
+      body: Readable.from([bytes]),
+      ...overrides,
+    };
+  }
+
+  it('requires authentication', async () => {
+    const res = await request(app).get('/api/link-preview/image?url=http://93.184.216.34/a.png');
+    expect(res.status).toBe(401);
+  });
+
+  it('streams a remote image back with its content-type', async () => {
+    const { agent } = await createUserAndLogin();
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    mockHttpGet.mockResolvedValue(imageResult('image/png', png));
+
+    const res = await agent.get('/api/link-preview/image?url=http://93.184.216.34/a.png');
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toBe('image/png');
+    expect(res.headers['x-content-type-options']).toBe('nosniff');
+    expect(Buffer.from(res.body)).toEqual(png);
+  });
+
+  it('502s when the upstream is not an image', async () => {
+    const { agent } = await createUserAndLogin();
+    mockHttpGet.mockResolvedValue(imageResult('text/html', Buffer.from('<html></html>')));
+
+    const res = await agent.get('/api/link-preview/image?url=http://93.184.216.34/nope');
+    expect(res.status).toBe(502);
+  });
+
+  it('refuses a private/loopback target', async () => {
+    const { agent } = await createUserAndLogin();
+    const res = await agent.get(`/api/link-preview/image?url=${encodeURIComponent('http://169.254.169.254/img')}`);
+    expect(res.status).toBe(400);
+    expect(mockHttpGet).not.toHaveBeenCalled();
   });
 });

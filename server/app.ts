@@ -4,7 +4,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import { attachSession } from './middleware/session.js';
 import { securityHeaders } from './middleware/securityHeaders.js';
-import { authRateLimit, uploadRateLimit } from './middleware/rateLimit.js';
+import { authRateLimit, linkPreviewRateLimit } from './middleware/rateLimit.js';
 import { authRouter } from './routes/auth.js';
 import { adminRouter } from './routes/admin.js';
 import { notesRouter } from './routes/notes.js';
@@ -54,7 +54,7 @@ export function createApp(): express.Express {
   app.use('/api/admin', adminRouter);
   app.use('/api/notes/:noteId/attachments', noteAttachmentsRouter);
   app.use('/api/notes', notesRouter);
-  app.use('/api/link-preview', uploadRateLimit, linkPreviewRouter);
+  app.use('/api/link-preview', linkPreviewRateLimit, linkPreviewRouter);
   app.use('/api/labels', labelsRouter);
   app.use('/api/attachments', attachmentFilesRouter);
   // /api/export and /api/import/keep
