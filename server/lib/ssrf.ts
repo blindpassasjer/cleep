@@ -68,15 +68,26 @@ export async function assertPublicUrl(rawUrl: string): Promise<SafeTarget> {
   }
   if (host === 'localhost') throw new SsrfError('Private address: localhost');
 
-  let records: { address: string }[];
+  let records: { address: string; family: number }[];
   try {
     records = await dns.lookup(host, { all: true });
   } catch {
     throw new SsrfError(`DNS lookup failed for ${host}`);
   }
   if (records.length === 0) throw new SsrfError(`No DNS records for ${host}`);
+
+  // Every resolved address must be public...
   for (const { address } of records) {
     if (isPrivateAddress(address)) throw new SsrfError(`Host ${host} resolves to a private address`);
   }
-  return { url, address: records[0].address };
+  // ...and we pin the connection to a concrete one. Some resolvers (seen on Synology's Docker
+  // bridge) hand back an entry with no usable `address`, or only an AAAA record on a host with no
+  // IPv6 route -- prefer the first valid IPv4, else the first valid address of any family.
+  const usable =
+    records.find((r) => net.isIP(r.address) === 4) ?? records.find((r) => net.isIP(r.address) !== 0);
+  if (!usable) {
+    console.warn(`Link preview: no usable IP for ${host} -- resolver returned ${JSON.stringify(records)}`);
+    throw new SsrfError(`No usable IP address for ${host}`);
+  }
+  return { url, address: usable.address };
 }
