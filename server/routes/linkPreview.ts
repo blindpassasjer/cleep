@@ -53,15 +53,35 @@ function normalizeUrl(raw: string): string | null {
   }
 }
 
+const NAMED_ENTITIES: Record<string, string> = {
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: ' ',
+  mdash: '—',
+  ndash: '–',
+  hellip: '…',
+  rsquo: '’',
+  lsquo: '‘',
+  rdquo: '”',
+  ldquo: '“',
+};
+
 function decodeEntities(s: string): string {
   return s
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x27;/gi, "'")
-    .replace(/&nbsp;/g, ' ');
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => codePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => codePoint(parseInt(dec, 10)))
+    .replace(/&([a-z0-9]+);/gi, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m)
+    .replace(/&amp;/g, '&'); // last, so "&amp;#39;" style double-encoding doesn't re-trigger a pass
+}
+
+function codePoint(n: number): string {
+  try {
+    return n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : '';
+  } catch {
+    return '';
+  }
 }
 
 function metaContent(html: string, attr: 'property' | 'name', value: string): string | null {
@@ -77,18 +97,22 @@ function metaContent(html: string, attr: 'property' | 'name', value: string): st
   return null;
 }
 
-function extractMetadata(html: string, finalUrl: string): Omit<PreviewApi, 'url'> {
+function extractMetadata(html: string, finalUrl: string): Omit<PreviewApi, 'url'> & { faviconDeclared: boolean } {
   const head = html.slice(0, 100_000); // metadata lives in <head>; cap the regex work
   const ogTitle = metaContent(head, 'property', 'og:title');
   const titleTag = head.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
   const title = ogTitle ?? (titleTag ? decodeEntities(titleTag[1]).replace(/\s+/g, ' ').trim() : null);
 
   const ogImage = metaContent(head, 'property', 'og:image') ?? metaContent(head, 'name', 'twitter:image');
-  const siteName = metaContent(head, 'property', 'og:site_name') ?? new URL(finalUrl).hostname;
+  const siteName =
+    metaContent(head, 'property', 'og:site_name') ?? new URL(finalUrl).hostname.replace(/^www\./, '');
 
   const iconMatch =
     head.match(/<link[^>]+rel=["'][^"']*icon[^"']*["'][^>]*href=["']([^"']+)["']/i) ??
     head.match(/<link[^>]+href=["']([^"']+)["'][^>]*rel=["'][^"']*icon[^"']*["']/i);
+  // `/favicon.ico` is only a guess -- it 404s on plenty of sites -- so it doesn't count as a
+  // "usable" preview on its own, but a favicon the page actually declared does.
+  const faviconDeclared = Boolean(iconMatch);
 
   const resolve = (v: string | null): string | null => {
     if (!v) return null;
@@ -104,6 +128,7 @@ function extractMetadata(html: string, finalUrl: string): Omit<PreviewApi, 'url'
     image: resolve(ogImage),
     siteName,
     favicon: resolve(iconMatch ? iconMatch[1] : '/favicon.ico'),
+    faviconDeclared,
   };
 }
 
@@ -289,11 +314,15 @@ linkPreviewRouter.get('/', async (req, res) => {
     }
 
     let preview: PreviewApi | null = null;
+    let retrieved = false;
+    let faviconDeclared = false;
     try {
       const target = await assertPublicUrl(url);
       const fetched = await fetchHtml(target);
       if (fetched) {
-        const meta = extractMetadata(fetched.html, fetched.finalUrl);
+        retrieved = true;
+        const { faviconDeclared: declared, ...meta } = extractMetadata(fetched.html, fetched.finalUrl);
+        faviconDeclared = declared;
         preview = { url, ...meta };
         if (!meta.title && !meta.image) {
           console.warn(`Link preview: fetched ${url} but found no <title>, og:title, or og:image`);
@@ -301,7 +330,16 @@ linkPreviewRouter.get('/', async (req, res) => {
       }
     } catch (err) {
       if (!(err instanceof SsrfError)) throw err;
+      retrieved = true; // a rejected target is a permanent verdict, not a transient miss
       console.warn('Link preview rejected:', (err as Error).message);
+    }
+
+    // Couldn't reach or parse the page this time. If we still have a good preview cached, keep
+    // serving it rather than replacing it with an empty "error" row over a transient blip -- the
+    // stale row's TTL will bring us back here to retry.
+    if (!retrieved && cached?.status === 'ok') {
+      res.json({ preview: toClient(toApi(cached)) });
+      return;
     }
 
     const row = {
@@ -310,7 +348,9 @@ linkPreviewRouter.get('/', async (req, res) => {
       imageUrl: preview?.image ?? null,
       siteName: preview?.siteName ?? null,
       faviconUrl: preview?.favicon ?? null,
-      status: preview && (preview.title || preview.image) ? 'ok' : 'error',
+      // A page is worth a card if it gave us a title, an image, or a favicon it actually declared
+      // (a bare `/favicon.ico` guess doesn't count -- it's frequently a 404).
+      status: preview && (preview.title || preview.image || (preview.favicon && faviconDeclared)) ? 'ok' : 'error',
       fetchedAt: new Date(),
     };
     await db

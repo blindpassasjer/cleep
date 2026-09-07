@@ -36,6 +36,23 @@ export function ChecklistEditor({ items, onChange, autoFocusLast }: Props) {
     onChange(items.filter((item) => item.id !== id));
   }
 
+  /** Removes `id` and moves the caret to the end of the previous row's text -- so holding Backspace
+   *  walks back up the list the way it would in a single multi-line field. */
+  function removeItemFocusingPrev(id: string) {
+    const idx = orderedItems.findIndex((item) => item.id === id);
+    const prev = idx > 0 ? orderedItems[idx - 1] : null;
+    removeItem(id);
+    if (prev) {
+      const input = containerRef.current?.querySelector<HTMLInputElement>(
+        `[data-flip-id="${CSS.escape(prev.id)}"] .checklist-text`,
+      );
+      if (input) {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+    }
+  }
+
   function addItem() {
     const id = uuid();
     lastAddedId.current = id;
@@ -46,7 +63,12 @@ export function ChecklistEditor({ items, onChange, autoFocusLast }: Props) {
     <div className="checklist-editor" ref={containerRef}>
       {orderedItems.map((item) => (
         <div key={item.id} data-flip-id={item.id} className={`checklist-row ${item.checked ? 'checked' : ''}`}>
-          <input type="checkbox" checked={item.checked} onChange={(e) => updateItem(item.id, { checked: e.target.checked })} />
+          <input
+            type="checkbox"
+            checked={item.checked}
+            aria-label={item.text.trim() || 'List item'}
+            onChange={(e) => updateItem(item.id, { checked: e.target.checked })}
+          />
           <input
             type="text"
             className="checklist-text"
@@ -59,7 +81,7 @@ export function ChecklistEditor({ items, onChange, autoFocusLast }: Props) {
                 addItem();
               } else if (e.key === 'Backspace' && item.text === '') {
                 e.preventDefault();
-                removeItem(item.id);
+                removeItemFocusingPrev(item.id);
               }
             }}
           />

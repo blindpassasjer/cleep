@@ -143,7 +143,10 @@ export function NoteCard({
   const firstAudio = note.attachments.find((a) => a.kind === 'audio');
   const audioCount = note.attachments.filter((a) => a.kind === 'audio').length;
   const sanitizedContent = useMemo(() => sanitizeHtml(note.content), [note.content]);
-  const links = useMemo(() => extractLinks({ title: note.title, content: note.content }), [note.title, note.content]);
+  const links = useMemo(
+    () => extractLinks({ title: note.title, content: note.isChecklist ? '' : note.content }),
+    [note.title, note.content, note.isChecklist],
+  );
   const linkPreviews = useLinkPreviews(links);
 
   // The fade at the bottom of .note-body should only show up when content is actually clipped by

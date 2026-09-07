@@ -16,8 +16,10 @@ function hostOf(url: string): string {
 
 export function LinkPreviewCard({ preview, compact }: Props) {
   const [imageBroken, setImageBroken] = useState(false);
+  const [faviconBroken, setFaviconBroken] = useState(false);
   const host = preview.siteName || hostOf(preview.url);
   const showThumb = preview.image && !imageBroken;
+  const showFavicon = preview.favicon && !faviconBroken;
 
   return (
     <a
@@ -29,8 +31,14 @@ export function LinkPreviewCard({ preview, compact }: Props) {
     >
       {showThumb ? (
         <img className="link-preview-thumb" src={preview.image!} alt="" loading="lazy" onError={() => setImageBroken(true)} />
-      ) : preview.favicon ? (
-        <img className="link-preview-favicon" src={preview.favicon} alt="" loading="lazy" />
+      ) : showFavicon ? (
+        <img
+          className="link-preview-favicon"
+          src={preview.favicon!}
+          alt=""
+          loading="lazy"
+          onError={() => setFaviconBroken(true)}
+        />
       ) : null}
       <span className="link-preview-text">
         <span className="link-preview-title">{preview.title || host}</span>

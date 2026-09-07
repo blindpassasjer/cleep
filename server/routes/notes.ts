@@ -11,10 +11,13 @@ const MAX_ITEMS = 300;
 function parseChecklistItems(value: unknown): ChecklistItem[] | undefined {
   if (!Array.isArray(value)) return undefined;
   const items: ChecklistItem[] = [];
+  const seenIds = new Set<string>();
   for (const raw of value.slice(0, MAX_ITEMS)) {
     if (typeof raw !== 'object' || raw === null) continue;
     const { id, text, checked } = raw as Record<string, unknown>;
     if (typeof id !== 'string' || typeof text !== 'string') continue;
+    if (id.length === 0 || id.length > 100 || seenIds.has(id)) continue;
+    seenIds.add(id);
     items.push({ id, text: text.slice(0, 500), checked: Boolean(checked) });
   }
   return items;
