@@ -2282,6 +2282,26 @@ button.sidebar-add-label-btn {
   margin: 0 0 0 0.6rem;
 }
 
+.link-preview-letter {
+  width: 16px;
+  height: 16px;
+  margin: 0.55rem 0 0 0.6rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--surface);
+  background: var(--muted);
+}
+
+.link-preview-card.compact .link-preview-letter {
+  margin: 0 0 0 0.6rem;
+}
+
 .link-preview-text {
   display: flex;
   flex-direction: column;

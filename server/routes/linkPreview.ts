@@ -209,7 +209,7 @@ function metaContent(html: string, attr: 'property' | 'name', value: string): st
   return null;
 }
 
-function extractMetadata(html: string, finalUrl: string): Omit<PreviewApi, 'url'> & { faviconDeclared: boolean } {
+function extractMetadata(html: string, finalUrl: string): Omit<PreviewApi, 'url'> {
   const head = html.slice(0, 100_000); // metadata lives in <head>; cap the regex work
   const ogTitle = metaContent(head, 'property', 'og:title');
   const titleTag = head.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
@@ -222,9 +222,6 @@ function extractMetadata(html: string, finalUrl: string): Omit<PreviewApi, 'url'
   const iconMatch =
     head.match(/<link[^>]+rel=["'][^"']*icon[^"']*["'][^>]*href=["']([^"']+)["']/i) ??
     head.match(/<link[^>]+href=["']([^"']+)["'][^>]*rel=["'][^"']*icon[^"']*["']/i);
-  // `/favicon.ico` is only a guess -- it 404s on plenty of sites -- so it doesn't count as a
-  // "usable" preview on its own, but a favicon the page actually declared does.
-  const faviconDeclared = Boolean(iconMatch);
 
   const resolve = (v: string | null): string | null => {
     if (!v) return null;
@@ -239,9 +236,25 @@ function extractMetadata(html: string, finalUrl: string): Omit<PreviewApi, 'url'
     title: title || null,
     image: resolve(ogImage) ?? pickBodyImage(html, finalUrl),
     siteName,
+    // A declared icon when the page has one, otherwise the `/favicon.ico` guess -- which most sites
+    // do serve. If it 404s the client falls back to a letter tile, so the guess is safe to keep.
     favicon: resolve(iconMatch ? iconMatch[1] : '/favicon.ico'),
-    faviconDeclared,
   };
+}
+
+/** A last-resort card for a URL we couldn't fetch (or that was rejected): just the domain, plus a
+ *  `/favicon.ico` guess the client will quietly drop for a letter tile if it doesn't load. */
+function minimalPreview(url: string): PreviewApi {
+  let host = url;
+  let favicon: string | null = null;
+  try {
+    const u = new URL(url);
+    host = u.hostname.replace(/^www\./, '');
+    favicon = new URL('/favicon.ico', u).toString();
+  } catch {
+    /* keep the raw string as the "host" */
+  }
+  return { url, title: null, image: null, siteName: host, favicon };
 }
 
 /** Reads at most `max` bytes off the response stream, then stops -- so a multi-megabyte (or
@@ -306,8 +319,9 @@ async function fetchHtml(start: SafeTarget): Promise<{ html: string; finalUrl: s
   return null;
 }
 
-function toApi(row: typeof linkPreviews.$inferSelect): PreviewApi | null {
-  if (row.status !== 'ok') return null;
+function toApi(row: typeof linkPreviews.$inferSelect): PreviewApi {
+  // `status` only controls cache lifetime now -- even an "error" row carries a domain + favicon
+  // guess so the client always has a card to render.
   return { url: row.url, title: row.title, image: row.imageUrl, siteName: row.siteName, favicon: row.faviconUrl };
 }
 
@@ -427,16 +441,13 @@ linkPreviewRouter.get('/', async (req, res) => {
 
     let preview: PreviewApi | null = null;
     let retrieved = false;
-    let faviconDeclared = false;
     try {
       const target = await assertPublicUrl(url);
       const fetched = await fetchHtml(target);
       if (fetched) {
         retrieved = true;
-        const { faviconDeclared: declared, ...meta } = extractMetadata(fetched.html, fetched.finalUrl);
-        faviconDeclared = declared;
-        preview = { url, ...meta };
-        if (!meta.title && !meta.image) {
+        preview = { url, ...extractMetadata(fetched.html, fetched.finalUrl) };
+        if (!preview.title && !preview.image) {
           console.warn(`Link preview: fetched ${url} but found no <title>, og:title, or og:image`);
         }
       }
@@ -447,22 +458,24 @@ linkPreviewRouter.get('/', async (req, res) => {
     }
 
     // Couldn't reach or parse the page this time. If we still have a good preview cached, keep
-    // serving it rather than replacing it with an empty "error" row over a transient blip -- the
+    // serving it rather than replacing it with a thinner fallback over a transient blip -- the
     // stale row's TTL will bring us back here to retry.
     if (!retrieved && cached?.status === 'ok') {
       res.json({ preview: toClient(toApi(cached)) });
       return;
     }
 
+    // Always hand back a card: real metadata when we reached the page, otherwise a bare
+    // domain + favicon-guess card. `status` only sets the cache lifetime from here -- a page we
+    // actually fetched is kept for weeks; a synthesized fallback for a day, so it retries.
+    const resolved = preview ?? minimalPreview(url);
     const row = {
       url,
-      title: preview?.title ?? null,
-      imageUrl: preview?.image ?? null,
-      siteName: preview?.siteName ?? null,
-      faviconUrl: preview?.favicon ?? null,
-      // A page is worth a card if it gave us a title, an image, or a favicon it actually declared
-      // (a bare `/favicon.ico` guess doesn't count -- it's frequently a 404).
-      status: preview && (preview.title || preview.image || (preview.favicon && faviconDeclared)) ? 'ok' : 'error',
+      title: resolved.title,
+      imageUrl: resolved.image,
+      siteName: resolved.siteName,
+      faviconUrl: resolved.favicon,
+      status: retrieved ? 'ok' : 'error',
       fetchedAt: new Date(),
     };
     await db
@@ -470,7 +483,7 @@ linkPreviewRouter.get('/', async (req, res) => {
       .values(row)
       .onConflictDoUpdate({ target: linkPreviews.url, set: row });
 
-    res.json({ preview: row.status === 'ok' ? toClient(preview) : null });
+    res.json({ preview: toClient(resolved) });
   } catch (err) {
     console.error('Link preview failed:', err);
     res.status(500).json({ error: 'Something went wrong. Please try again.' });

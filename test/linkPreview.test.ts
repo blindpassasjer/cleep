@@ -41,7 +41,9 @@ describe('GET /api/link-preview', () => {
     for (const url of ['http://127.0.0.1/', 'http://localhost/', 'http://169.254.169.254/latest/meta-data/', 'http://[::1]/']) {
       const res = await agent.get(`/api/link-preview?url=${encodeURIComponent(url)}`);
       expect(res.status).toBe(200);
-      expect(res.body.preview).toBeNull();
+      // A rejected target still yields a bare domain card (no image), never a page fetch.
+      expect(res.body.preview.image).toBeNull();
+      expect(res.body.preview.title).toBeNull();
     }
     expect(mockHttpGet).not.toHaveBeenCalled();
   });
@@ -150,13 +152,14 @@ describe('GET /api/link-preview', () => {
     expect(mockHttpGet).toHaveBeenCalledTimes(1);
   });
 
-  it('returns null for a non-HTML response', async () => {
+  it('falls back to a bare domain card for a non-HTML response', async () => {
     const { agent } = await createUserAndLogin();
     mockHttpGet.mockResolvedValue(htmlResult('%PDF-1.4', { contentType: 'application/pdf' }));
 
     const res = await agent.get('/api/link-preview?url=http://93.184.216.34/doc.pdf');
     expect(res.status).toBe(200);
-    expect(res.body.preview).toBeNull();
+    expect(res.body.preview.image).toBeNull();
+    expect(res.body.preview.siteName).toBe('93.184.216.34');
   });
 
   it('does not follow a redirect to a private address', async () => {
@@ -167,7 +170,7 @@ describe('GET /api/link-preview', () => {
 
     const res = await agent.get('/api/link-preview?url=http://93.184.216.34/redir');
     expect(res.status).toBe(200);
-    expect(res.body.preview).toBeNull();
+    expect(res.body.preview.image).toBeNull(); // bare fallback card, no metadata leaked
     expect(mockHttpGet).toHaveBeenCalledTimes(1); // stopped at the redirect, never fetched the target
   });
 
@@ -187,6 +190,17 @@ describe('GET /api/link-preview', () => {
     );
   });
 
+  it('falls back to a /favicon.ico guess when the page declares no icon', async () => {
+    const { agent } = await createUserAndLogin();
+    mockHttpGet.mockResolvedValue(htmlResult('<html><head><title>Plain</title></head><body>hi</body></html>'));
+
+    const res = await agent.get('/api/link-preview?url=http://93.184.216.34/plain');
+    expect(res.body.preview.title).toBe('Plain');
+    expect(res.body.preview.favicon).toBe(
+      `/api/link-preview/image?url=${encodeURIComponent('http://93.184.216.34/favicon.ico')}`,
+    );
+  });
+
   it('caps an oversized body instead of buffering all of it', async () => {
     const { agent } = await createUserAndLogin();
     let pushed = 0;
@@ -201,9 +215,10 @@ describe('GET /api/link-preview', () => {
 
     const res = await agent.get('/api/link-preview?url=http://93.184.216.34/huge');
     expect(res.status).toBe(200);
-    // No <title>/og:* in a wall of 'x', so it resolves to no preview -- the point is it returned
-    // at all (didn't OOM/hang) and stopped reading well before 8 MB.
-    expect(res.body.preview).toBeNull();
+    // No <title>/og:* in a wall of 'x' -- the card is just the domain. The point is it returned at
+    // all (didn't OOM/hang) and stopped reading well before 8 MB.
+    expect(res.body.preview.title).toBeNull();
+    expect(res.body.preview.image).toBeNull();
     expect(pushed).toBeLessThan(2 * 1024 * 1024);
   });
 });

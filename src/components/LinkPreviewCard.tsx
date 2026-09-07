@@ -19,7 +19,9 @@ export function LinkPreviewCard({ preview, compact }: Props) {
   const [faviconBroken, setFaviconBroken] = useState(false);
   const host = preview.siteName || hostOf(preview.url);
   const showThumb = preview.image && !imageBroken;
-  const showFavicon = preview.favicon && !faviconBroken;
+  const showFavicon = !showThumb && preview.favicon && !faviconBroken;
+  // Nothing loaded (or everything 404'd): still show a card, with a letter tile for the icon.
+  const letter = host.charAt(0).toUpperCase() || '?';
 
   return (
     <a
@@ -39,7 +41,11 @@ export function LinkPreviewCard({ preview, compact }: Props) {
           loading="lazy"
           onError={() => setFaviconBroken(true)}
         />
-      ) : null}
+      ) : (
+        <span className="link-preview-letter" aria-hidden="true">
+          {letter}
+        </span>
+      )}
       <span className="link-preview-text">
         <span className="link-preview-title">{preview.title || host}</span>
         <span className="link-preview-domain">{host}</span>
