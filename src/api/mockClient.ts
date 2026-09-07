@@ -1,5 +1,5 @@
 import type { AdminUser, Attachment, ChecklistItem, Label, LinkPreview, Note, NoteColor, PublicUser, View } from '../types';
-import { buildDemoNotes, DEMO_LABELS } from './demoSeed';
+import { buildDemoNotes, DEMO_LABELS, DEMO_LINK_PREVIEWS } from './demoSeed';
 import { uuid } from '../lib/uuid';
 
 // Everything here runs client-side against localStorage, standing in for the real Express API
@@ -243,8 +243,10 @@ export const mockApi = {
     return delay({ ok: true as const });
   },
 
-  // No server in the demo build -- return a favicon-only preview (domain + Google's favicon
-  // service) so links still render a card. A few well-known domains get a nicer title.
+  // No server in the demo build -- there's no real fetch/unfurl, so previews are canned. The
+  // seeded "Read later" note gets a full card (title + thumbnail) to show the feature off; any
+  // other link the visitor pastes falls back to a favicon-only card (domain + Google's favicon
+  // service), which is what a real favicon-only site looks like anyway.
   linkPreview: (url: string): Promise<{ preview: LinkPreview | null }> => {
     let host: string;
     try {
@@ -252,6 +254,9 @@ export const mockApi = {
     } catch {
       return delay({ preview: null });
     }
+    const curated = DEMO_LINK_PREVIEWS[url];
+    if (curated) return delay({ preview: { url, ...curated } });
+
     const known: Record<string, string> = {
       'github.com': 'GitHub',
       'wikipedia.org': 'Wikipedia',

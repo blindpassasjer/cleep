@@ -1,9 +1,40 @@
-import type { Label, Note } from '../types';
+import type { Label, LinkPreview, Note } from '../types';
 
 // Fixed ids/timestamps so the seed is deterministic across resets instead of drifting each load.
 const DAY = 24 * 60 * 60 * 1000;
 const now = Date.now();
 const ago = (days: number, hours = 0) => new Date(now - days * DAY - hours * 60 * 60 * 1000).toISOString();
+
+// The URL seeded into the "Read later" note below. Kept as a constant so the note text and the
+// canned preview in mockClient can't drift apart.
+export const DEMO_LINK_URL = 'https://en.wikipedia.org/wiki/Zettelkasten';
+
+// A small inline thumbnail so the demo's link-preview card shows a full image card, not just a
+// favicon -- the mock API can't actually fetch og:image tags.
+const DEMO_LINK_IMAGE =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="315" viewBox="0 0 600 315">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/>
+      </linearGradient></defs>
+      <rect width="600" height="315" fill="url(#g)"/>
+      <rect x="210" y="70" width="180" height="175" rx="10" fill="#ffffff" opacity="0.95"/>
+      <g fill="#6366f1"><rect x="232" y="98" width="136" height="12" rx="6"/>
+        <rect x="232" y="126" width="136" height="8" rx="4" opacity="0.5"/>
+        <rect x="232" y="146" width="136" height="8" rx="4" opacity="0.5"/>
+        <rect x="232" y="166" width="96" height="8" rx="4" opacity="0.5"/></g>
+    </svg>`,
+  );
+
+export const DEMO_LINK_PREVIEWS: Record<string, Omit<LinkPreview, 'url'>> = {
+  [DEMO_LINK_URL]: {
+    title: 'Zettelkasten',
+    siteName: 'Wikipedia',
+    image: DEMO_LINK_IMAGE,
+    favicon: 'https://www.google.com/s2/favicons?domain=en.wikipedia.org&sz=64',
+  },
+};
 
 export const DEMO_LABELS: Label[] = [
   { id: 'label-recipes', userId: 'demo-user', name: 'Recipes', color: 'orange' },
@@ -107,9 +138,10 @@ export function buildDemoNotes(): Note[] {
     note({
       id: 'note-read-later',
       title: 'Read later',
-      content: '<p>Bookmarking this to go through properly: https://en.wikipedia.org/wiki/Zettelkasten</p>',
+      content: `<p>Paste any link into a note and Cleep unfurls a preview card for it.</p><p>Bookmarking this one to read properly later: ${DEMO_LINK_URL}</p>`,
       color: 'teal',
-      position: 45,
+      pinned: true,
+      position: 250,
       createdAt: ago(3),
       updatedAt: ago(3),
     }),
