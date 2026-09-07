@@ -165,6 +165,10 @@ npm run dev           # Vite dev server on :5173, proxies /api to :6169
 Point `DATABASE_URL` at a local Postgres instance, set `SESSION_SECRET` and `ATTACHMENTS_DIR` (any
 local folder for uploaded files), then run `npm run db:migrate` before starting the server.
 
+To develop the frontend against a remote backend instead of running `npm run server:dev` locally,
+set `VITE_API_PROXY_TARGET` in `.env` (e.g. `VITE_API_PROXY_TARGET=https://test.manriquez.no`) and
+just run `npm run dev`.
+
 ### Tests
 
 ```sh

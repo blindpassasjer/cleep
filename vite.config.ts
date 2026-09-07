@@ -6,6 +6,16 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
   const isDemo = env.VITE_DEMO === 'true';
 
+  const apiProxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:6169';
+
+  // Hosts the dev server will answer to. Explicit list via VITE_ALLOWED_HOSTS, plus the
+  // remote API host when proxying to one (it's typically the same hostname the dev server
+  // is reached through via a reverse proxy).
+  const allowedHosts = [
+    ...(env.VITE_ALLOWED_HOSTS ? env.VITE_ALLOWED_HOSTS.split(',').map((h) => h.trim()) : []),
+    ...(env.VITE_API_PROXY_TARGET ? [new URL(apiProxyTarget).hostname] : []),
+  ].filter(Boolean);
+
   return {
     // The demo build deploys to GitHub Pages as a project site
     // (https://<user>.github.io/cleep/), which serves everything under a /cleep/ subpath instead
@@ -70,9 +80,18 @@ export default defineConfig(({ mode }) => {
       // Set VITE_ALLOWED_HOSTS (comma-separated) when reaching the dev server through a tunnel or
       // reverse proxy on some other hostname (e.g. a remote VS Code / Codespaces forwarded URL).
       // Unset in normal local use, which keeps Vite's default host checking.
-      allowedHosts: env.VITE_ALLOWED_HOSTS ? env.VITE_ALLOWED_HOSTS.split(',').map((h) => h.trim()) : undefined,
+      allowedHosts: allowedHosts.length ? allowedHosts : undefined,
       proxy: {
-        '/api': 'http://localhost:6169',
+        // Defaults to the local API server (`npm run server:dev`). Set VITE_API_PROXY_TARGET to
+        // develop the frontend against a remote backend instead, e.g.
+        // VITE_API_PROXY_TARGET=https://test.manriquez.no
+        '/api': {
+          target: apiProxyTarget,
+          changeOrigin: true,
+          // Rewrite the cookie domain so the browser keeps the session cookie on localhost
+          // (Secure cookies are still accepted there — localhost is a secure context).
+          cookieDomainRewrite: '',
+        },
       },
     },
   };
