@@ -69,6 +69,76 @@ describe('GET /api/link-preview', () => {
     });
   });
 
+  it('falls back to the first prominent body image when there is no og:image', async () => {
+    const { agent } = await createUserAndLogin();
+    mockHttpGet.mockResolvedValue(
+      htmlResult(
+        `<html><head><meta property="og:title" content="Midtstuen skole"></head><body>
+          <img src="/static/img/header/header-logo.svg" width="120">
+          <img src="/tracking/pixel.gif" width="1" height="1">
+          <img alt="skolen" src="/siteassets/forside/midtstuen.jpg?width=1624&quality=80">
+          <img src="/siteassets/other.jpg?width=1320">
+        </body></html>`,
+      ),
+    );
+
+    const res = await agent.get('/api/link-preview?url=http://93.184.216.34/');
+    expect(res.status).toBe(200);
+    expect(res.body.preview.image).toBe(
+      `/api/link-preview/image?url=${encodeURIComponent('http://93.184.216.34/siteassets/forside/midtstuen.jpg?width=1624&quality=80')}`,
+    );
+  });
+
+  it('ranks a large later image above a small earlier one', async () => {
+    const { agent } = await createUserAndLogin();
+    mockHttpGet.mockResolvedValue(
+      htmlResult(
+        `<html><head><title>News</title></head><body>
+          <img src="/thumbs/related-small.jpg?width=120" alt="related">
+          <img src="/media/story-hero.jpg?width=1600" alt="the story">
+        </body></html>`,
+      ),
+    );
+
+    const res = await agent.get('/api/link-preview?url=http://93.184.216.34/story');
+    expect(res.body.preview.image).toBe(
+      `/api/link-preview/image?url=${encodeURIComponent('http://93.184.216.34/media/story-hero.jpg?width=1600')}`,
+    );
+  });
+
+  it('ignores images inside nav/footer chrome', async () => {
+    const { agent } = await createUserAndLogin();
+    mockHttpGet.mockResolvedValue(
+      htmlResult(
+        `<html><head><title>Site</title></head><body>
+          <nav><img src="/promo/nav-banner.jpg?width=1900"></nav>
+          <main><img src="/content/real-photo.jpg?width=1000" alt="a photo"></main>
+          <footer><img src="/promo/footer-art.jpg?width=1900"></footer>
+        </body></html>`,
+      ),
+    );
+
+    const res = await agent.get('/api/link-preview?url=http://93.184.216.34/p');
+    expect(res.body.preview.image).toBe(
+      `/api/link-preview/image?url=${encodeURIComponent('http://93.184.216.34/content/real-photo.jpg?width=1000')}`,
+    );
+  });
+
+  it('does not use a body image when a real og:image is present', async () => {
+    const { agent } = await createUserAndLogin();
+    mockHttpGet.mockResolvedValue(
+      htmlResult(
+        `<html><head><meta property="og:image" content="/cover.png"></head>
+          <body><img src="/photo.jpg?width=800"></body></html>`,
+      ),
+    );
+
+    const res = await agent.get('/api/link-preview?url=http://93.184.216.34/article');
+    expect(res.body.preview.image).toBe(
+      `/api/link-preview/image?url=${encodeURIComponent('http://93.184.216.34/cover.png')}`,
+    );
+  });
+
   it('serves a repeated request from the cache table (one fetch only)', async () => {
     const { agent } = await createUserAndLogin();
     mockHttpGet.mockImplementation(async () => htmlResult('<html><head><title>Cached</title></head></html>'));
