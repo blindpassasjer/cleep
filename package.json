@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "dev:demo": "VITE_DEMO=true VITE_DEV_ORIGIN=https://test.manriquez.no vite --host 0.0.0.0",
     "build": "tsc && vite build",
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",

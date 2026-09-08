@@ -140,6 +140,15 @@ Build it yourself with:
 VITE_DEMO=true npm run build
 ```
 
+To run the demo as a live dev server instead — e.g. behind a reverse proxy on a test host —
+use `npm run dev:demo`. It starts Vite with the mock backend, serves from the domain root
+(not the `/cleep/` subpath the Pages build uses), trusts `test.manriquez.no`, and points HMR
+back through that host's TLS. It also binds Vite's port with `strictPort`, so if another
+project already has `dev:demo` running there this one exits with "Port 5173 is already in
+use" — stop the other one first, and whichever is running is what `test.manriquez.no` shows.
+Change the host by editing `VITE_DEV_ORIGIN` in [package.json](package.json), or the port
+with `PORT=… npm run dev:demo`.
+
 ## PWA and HTTPS
 
 Cleep is installable as a Progressive Web App — an "Install"/"Add to Home Screen" prompt, its own
