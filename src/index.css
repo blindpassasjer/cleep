@@ -1845,6 +1845,7 @@ button.sidebar-add-label-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
 }
 
 .checklist-row.checked .checklist-text,
@@ -1898,6 +1899,57 @@ button.sidebar-add-label-btn {
 
 .checklist-add:hover {
   color: var(--fg);
+}
+
+.checklist-suggestions {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 1.75rem;
+  right: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 0.2rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-hover);
+}
+
+.checklist-suggestion {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.9rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 6px;
+}
+
+.checklist-suggestion.active {
+  background: var(--surface);
+}
+
+.checklist-suggestion-label {
+  flex: none;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.checklist-suggestion-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .note-checklist-preview {
