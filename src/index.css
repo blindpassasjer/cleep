@@ -1467,16 +1467,23 @@ button.sidebar-add-label-btn {
   justify-content: center;
   border: none;
   background: transparent;
-  color: var(--muted);
+  /* var(--fg) at low opacity, not var(--muted): the muted grey (#86868b / #98989d) drops well
+     below 3:1 against the saturated card tints (a #ffe0b8 orange note, say), so the icons all
+     but vanish on colored notes. Tinting the foreground colour keeps the contrast ratio the
+     card background sets, in either theme. */
+  color: var(--fg);
+  opacity: 0.55;
   cursor: pointer;
   padding: 0.4rem;
   border-radius: 8px;
-  transition: background-color 0.12s ease, color 0.12s ease, transform 0.1s ease;
+  transition: background-color 0.12s ease, opacity 0.12s ease, transform 0.1s ease;
 }
 
 .note-footer button:hover {
-  background: var(--surface);
-  color: var(--fg);
+  /* Translucent, so it reads as a press target on top of any card tint -- var(--surface) is an
+     opaque grey that patches a hole in a coloured note. */
+  background: var(--border);
+  opacity: 1;
 }
 
 .note-footer button:active {
@@ -1489,10 +1496,48 @@ button.sidebar-add-label-btn {
   padding: 0.35rem 0.7rem;
   width: auto;
   color: var(--fg);
+  opacity: 1;
 }
 
 .note-footer .text-action:last-child {
   margin-left: auto;
+}
+
+/* Desktop only: the action row fades in on hover/focus instead of sitting on every card face
+   at all times, the way Google Keep does it -- the grid reads as notes, not rows of tool
+   icons. The row keeps its space at rest (opacity, not display), so revealing it never reflows
+   the masonry layout. Gated on a real hovering pointer AND a desktop-width viewport, so phones
+   and tablets (including large iPads in landscape, which report hover: none) always show it --
+   there's no reliable hover there to reveal it with. */
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .note-card .note-footer {
+    opacity: 0;
+    /* Critical: a hidden-but-still-clickable footer swallows clicks meant to open the note --
+       or worse, a click near the card's bottom edge lands on the invisible archive/trash button
+       and the note silently vanishes. pointer-events: none hands those clicks back to the card. */
+    pointer-events: none;
+    transition: opacity 0.13s ease;
+  }
+
+  .note-card:hover .note-footer,
+  .note-card:focus-within .note-footer {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Trash cards carry only "Restore" / "Delete forever" text buttons -- the sole way to act on
+     a trashed note -- so they stay visible rather than hiding behind a hover like the icon row. */
+  .note-card .note-footer:has(.text-action) {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-footer,
+  .note-card .note-footer {
+    transition: none;
+  }
 }
 
 /* Color palette (shared by composer + note cards) */
