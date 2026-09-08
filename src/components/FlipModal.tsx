@@ -133,15 +133,25 @@ export function FlipModal({ originRect, getOriginRect, panelClassName, onClose, 
   // the close was itself the result of a back navigation (that back already consumed the entry).
   useEffect(() => {
     let closedByPopState = false;
-    history.pushState({ cleepModal: true }, '');
+    let pushed = false;
     function onPopState() {
       closedByPopState = true;
       requestCloseRef.current();
     }
-    window.addEventListener('popstate', onPopState);
+    // Deferred a frame so React 18's StrictMode mount→unmount→mount cycle (dev only) doesn't run
+    // pushState → history.back() → pushState synchronously: the back() there fires a popstate that
+    // lands on the *second* mount's listener and slams the note shut the instant it opens. With the
+    // push deferred, StrictMode's throwaway first mount cancels its rAF before pushing anything, so
+    // only the surviving mount touches history.
+    const raf = requestAnimationFrame(() => {
+      history.pushState({ cleepModal: true }, '');
+      pushed = true;
+      window.addEventListener('popstate', onPopState);
+    });
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener('popstate', onPopState);
-      if (!closedByPopState) history.back();
+      if (pushed && !closedByPopState) history.back();
     };
   }, []);
 
