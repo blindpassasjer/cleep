@@ -9,7 +9,7 @@ import { LinkPreviewCard } from './LinkPreviewCard';
 import { useLinkPreviews } from '../hooks/useLinkPreviews';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { extractLinks } from '../lib/extractLinks';
-import { IconArchive, IconClose, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
+import { IconArchive, IconChecklist, IconClose, IconNotes, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash } from './Icons';
 import { useDateFormat } from '../hooks/useDateFormat';
 import { formatNoteDate } from '../lib/formatDate';
 import { insertEditorImage } from '../lib/insertEditorImage';
@@ -31,6 +31,7 @@ interface Props {
   onTitleChange: (value: string) => void;
   onContentChange: (value: string) => void;
   onItemsChange: (items: ChecklistItem[]) => void;
+  onConvert: (toChecklist: boolean) => void;
   onColorChange: (color: NoteColor) => void;
   onTogglePin: () => void;
   onToggleLabel: (labelId: string) => void;
@@ -58,6 +59,7 @@ export function NoteModal({
   onTitleChange,
   onContentChange,
   onItemsChange,
+  onConvert,
   onColorChange,
   onTogglePin,
   onToggleLabel,
@@ -148,6 +150,13 @@ export function NoteModal({
           )}
           <div className="note-modal-timestamp">Edited {formatNoteDate(updatedAt, dateMode)}</div>
           <div className="note-modal-footer">
+            <button
+              type="button"
+              title={isChecklist ? 'Hide checkboxes' : 'Show checkboxes'}
+              onClick={() => onConvert(!isChecklist)}
+            >
+              {isChecklist ? <IconNotes /> : <IconChecklist />}
+            </button>
             <button
               type="button"
               title="Color"

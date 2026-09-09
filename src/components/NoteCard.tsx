@@ -9,6 +9,7 @@ import { extractLinks } from '../lib/extractLinks';
 import { useLinkPreviews } from '../hooks/useLinkPreviews';
 import { useFlipReorder } from '../hooks/useFlipReorder';
 import { orderChecklistItems } from '../lib/orderChecklistItems';
+import { checklistItemsToHtml, htmlToChecklistItems } from '../lib/checklistConversion';
 import { toggleNoteLabel } from '../lib/toggleNoteLabel';
 import { IconArchive, IconDragHandle, IconMic, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash, IconVideo } from './Icons';
 import type { Attachment, ChecklistItem, Label, Note, NoteColor, View } from '../types';
@@ -107,6 +108,21 @@ export function NoteCard({
     if (Object.keys(patch).length > 0) onUpdate(note.id, patch);
     setEditing(false);
     setOriginRect(null);
+  }
+
+  // Flip an open note between rich text and a checklist without losing anything: text splits into
+  // one item per line, and a checklist joins back into one line per item (see checklistConversion).
+  // Persisted immediately so the card preview and a mid-edit close both reflect the new shape.
+  function convertNote(toChecklist: boolean) {
+    if (toChecklist) {
+      const nextItems = htmlToChecklistItems(content);
+      setItems(nextItems);
+      onUpdate(note.id, { isChecklist: true, items: nextItems, content: '' });
+    } else {
+      const nextContent = checklistItemsToHtml(items);
+      setContent(nextContent);
+      onUpdate(note.id, { isChecklist: false, content: nextContent, items: [] });
+    }
   }
 
   async function toggleLabel(labelId: string) {
@@ -366,6 +382,7 @@ export function NoteCard({
           onTitleChange={setTitle}
           onContentChange={setContent}
           onItemsChange={setItems}
+          onConvert={convertNote}
           onColorChange={(color) => onUpdate(note.id, { color })}
           onTogglePin={() => onUpdate(note.id, { pinned: !note.pinned })}
           onToggleLabel={toggleLabel}

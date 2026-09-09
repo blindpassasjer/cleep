@@ -3,6 +3,16 @@
 All notable changes to Cleep are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## v0.3.0 — 2026-09-09
+
+### Added
+
+- **Turn a note into a checklist (or back) from the open note.** The list-vs-text
+  choice is no longer fixed at creation — the open note has a "Show checkboxes" /
+  "Hide checkboxes" toggle, like Google Keep. Conversion is line-based and
+  lossless: every non-empty line becomes an item, hiding the checkboxes joins the
+  items back into text one per line, and ticked items keep their text.
+
 ## v0.2.0 — 2026-09-08
 
 First tagged release. Earlier `:latest` images already shipped the core feature
