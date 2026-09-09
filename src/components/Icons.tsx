@@ -170,8 +170,19 @@ export function IconNumberedList(props: SVGProps<SVGSVGElement>) {
 export function IconGif(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>
-      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
-      <path d="M8 9.2v5.6M13 14.8V9.2h2.8M13 12.2h2.2M19 9.2c-.5-.35-1.1-.55-1.75-.55-1.35 0-2.45 1.15-2.45 3.35s1.1 3.35 2.45 3.35c.65 0 1.2-.15 1.75-.45v-2.2h-1.6" />
+      <rect x="3" y="5" width="18" height="14" rx="2.5" />
+      <text
+        x="12"
+        y="15.4"
+        textAnchor="middle"
+        fontSize="8"
+        fontWeight="700"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fill="currentColor"
+        stroke="none"
+      >
+        GIF
+      </text>
     </Icon>
   );
 }

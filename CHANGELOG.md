@@ -3,6 +3,13 @@
 All notable changes to Cleep are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## v0.3.2 — 2026-09-09
+
+### Fixed
+
+- The GIF button on the formatting toolbar drew its letters as scrambled,
+  overlapping strokes. It's now a clean "GIF" label in a rounded frame.
+
 ## v0.3.1 — 2026-09-09
 
 ### Fixed
