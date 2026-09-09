@@ -152,7 +152,7 @@ export function IconBulletList(props: SVGProps<SVGSVGElement>) {
 export function IconHeading(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>
-      <path d="M5 5v14M13 5v14M5 12h8M17 8v10M15.5 8.5c.5-.4 1.2-.7 1.9-.7 1.2 0 2 .7 2 1.8 0 1.6-3.9 2.7-3.9 6.4h4" />
+      <path d="M6 5v14M18 5v14M6 12h12" />
     </Icon>
   );
 }

@@ -3,6 +3,13 @@
 All notable changes to Cleep are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## v0.3.1 — 2026-09-09
+
+### Fixed
+
+- The heading button on the formatting toolbar showed a cramped, malformed glyph
+  with a stray vertical stroke. It's now a clean "H".
+
 ## v0.3.0 — 2026-09-09
 
 ### Added
