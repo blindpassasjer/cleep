@@ -1,4 +1,4 @@
-import type { AdminUser, Attachment, ChecklistItem, Label, LinkPreview, Note, NoteColor, PublicUser, View } from '../types';
+import type { AdminUser, Attachment, Label, LinkPreview, Note, NoteBlock, NoteColor, PublicUser, View } from '../types';
 import { buildDemoNotes, DEMO_LABELS, DEMO_LINK_PREVIEWS } from './demoSeed';
 import { uuid } from '../lib/uuid';
 
@@ -13,16 +13,22 @@ interface State {
   notes: Note[];
   labels: Label[];
   loggedIn: boolean;
+  // Demo-mode stand-in for note locking: there's no real server to encrypt against, so a "locked"
+  // note's plaintext blocks and password are just held here instead of in `note.blocks`, and the
+  // note-lock endpoints below do a plain string comparison instead of scrypt/AES-GCM. This is
+  // explicitly not real security -- it only exists so the lock UI has something to demo.
+  lockedBlocks: Record<string, NoteBlock[]>;
+  lockedPasswords: Record<string, string>;
 }
 
 function loadState(): State {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as State;
+    if (raw) return { lockedBlocks: {}, lockedPasswords: {}, ...(JSON.parse(raw) as Partial<State>) } as State;
   } catch {
     // ignore corrupt storage, fall through to a fresh seed
   }
-  return { notes: buildDemoNotes(), labels: [...DEMO_LABELS], loggedIn: true };
+  return { notes: buildDemoNotes(), labels: [...DEMO_LABELS], loggedIn: true, lockedBlocks: {}, lockedPasswords: {} };
 }
 
 let state = loadState();
@@ -36,7 +42,7 @@ function save() {
 }
 
 export function resetDemoData() {
-  state = { notes: buildDemoNotes(), labels: [...DEMO_LABELS], loggedIn: true };
+  state = { notes: buildDemoNotes(), labels: [...DEMO_LABELS], loggedIn: true, lockedBlocks: {}, lockedPasswords: {} };
   save();
   location.reload();
 }
@@ -116,24 +122,21 @@ export const mockApi = {
     const sliced = page?.limit !== undefined ? rows.slice(offset, offset + page.limit) : offset > 0 ? rows.slice(offset) : rows;
     return delay({ notes: sliced });
   },
-  createNote: (
-    title: string,
-    content: string,
-    color: string,
-    extra?: { isChecklist?: boolean; items?: ChecklistItem[]; isRecording?: boolean },
-  ) => {
+  createNote: (title: string, blocks: NoteBlock[], color: string, extra?: { isRecording?: boolean }) => {
     const nowIso = new Date().toISOString();
     const note: Note = {
       id: uuid(),
       userId: DEMO_USER.id,
       title,
-      content,
-      isChecklist: Boolean(extra?.isChecklist),
-      items: extra?.items ?? [],
+      content: '',
+      isChecklist: false,
+      items: [],
+      blocks,
       color: color as NoteColor,
       pinned: false,
       archived: false,
       isRecording: Boolean(extra?.isRecording),
+      locked: false,
       trashedAt: null,
       position: Date.now(),
       createdAt: nowIso,
@@ -145,10 +148,7 @@ export const mockApi = {
     save();
     return delay({ note });
   },
-  updateNote: (
-    id: string,
-    patch: Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived' | 'isChecklist' | 'items' | 'position'>>,
-  ) => {
+  updateNote: (id: string, patch: Partial<Pick<Note, 'title' | 'blocks' | 'color' | 'pinned' | 'archived' | 'position'>>) => {
     const note = findNote(id);
     Object.assign(note, patch, { updatedAt: new Date().toISOString() });
     save();
@@ -174,8 +174,51 @@ export const mockApi = {
         attachmentBlobs.delete(attId);
       }
     }
+    delete state.lockedBlocks[id];
+    delete state.lockedPasswords[id];
     save();
     return delay({ ok: true as const });
+  },
+
+  lockNote: (id: string, password: string, extra?: { blocks?: NoteBlock[]; title?: string }) => {
+    const note = findNote(id);
+    if (note.locked) throw new Error('This note is already locked.');
+    if (password.length < 4) throw new Error('Choose a password with at least 4 characters.');
+    if (extra?.title !== undefined) note.title = extra.title;
+    state.lockedBlocks[id] = extra?.blocks ?? note.blocks;
+    state.lockedPasswords[id] = password;
+    note.blocks = [];
+    note.attachments = [];
+    note.locked = true;
+    note.updatedAt = new Date().toISOString();
+    save();
+    return delay({ note });
+  },
+  unlockNote: (id: string, password: string) => {
+    const note = findNote(id);
+    if (!note.locked) throw new Error('This note is not locked.');
+    if (state.lockedPasswords[id] !== password) throw new Error('Incorrect password.');
+    const attachmentsForNote = [...attachmentBlobs.values()].map((v) => v.attachment).filter((a) => a.noteId === id);
+    return delay({ blocks: state.lockedBlocks[id] ?? [], attachments: attachmentsForNote });
+  },
+  removeNoteLock: (id: string, password: string) => {
+    const note = findNote(id);
+    if (!note.locked) throw new Error('This note is not locked.');
+    if (state.lockedPasswords[id] !== password) throw new Error('Incorrect password.');
+    note.blocks = state.lockedBlocks[id] ?? [];
+    note.attachments = [...attachmentBlobs.values()].map((v) => v.attachment).filter((a) => a.noteId === id);
+    note.locked = false;
+    note.updatedAt = new Date().toISOString();
+    delete state.lockedBlocks[id];
+    delete state.lockedPasswords[id];
+    save();
+    return delay({ note });
+  },
+  unlockAttachment: (_noteId: string, attachmentId: string, password: string) => {
+    const entry = attachmentBlobs.get(attachmentId);
+    if (!entry) throw new Error('Attachment not found.');
+    if (state.lockedPasswords[entry.attachment.noteId] !== password) throw new Error('Incorrect password.');
+    return Promise.resolve(entry.blob);
   },
 
   listLabels: () => delay({ labels: [...state.labels].sort((a, b) => a.name.localeCompare(b.name)) }),

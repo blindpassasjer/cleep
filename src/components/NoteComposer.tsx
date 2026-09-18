@@ -1,26 +1,20 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { FlipModal, type CloseFn } from './FlipModal';
 import { ColorPickerButton } from './ColorPickerButton';
-import { ChecklistEditor } from './ChecklistEditor';
+import { BlockEditor } from './BlockEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
-import { RichTextEditor } from './RichTextEditor';
 import { api } from '../api/client';
 import { insertEditorImage } from '../lib/insertEditorImage';
-import { isRichContentEmpty } from '../lib/isRichContentEmpty';
+import { isBlocksEmpty } from '../lib/isRichContentEmpty';
 import { toggleNoteLabel } from '../lib/toggleNoteLabel';
 import { uuid } from '../lib/uuid';
 import { IconArchive, IconChecklist, IconImage, IconMic, IconPlus, IconTag, IconTrash } from './Icons';
-import type { Attachment, ChecklistItem, Label, Note, NoteColor } from '../types';
+import type { Attachment, Label, Note, NoteBlock, NoteColor } from '../types';
 
 interface Props {
-  onCreate: (
-    title: string,
-    content: string,
-    color: NoteColor,
-    extra?: { isChecklist?: boolean; items?: ChecklistItem[] },
-  ) => Promise<Note>;
-  onUpdateDraft: (id: string, patch: Partial<Pick<Note, 'title' | 'content' | 'isChecklist' | 'items'>>) => void;
+  onCreate: (title: string, blocks: NoteBlock[], color: NoteColor) => Promise<Note>;
+  onUpdateDraft: (id: string, patch: Partial<Pick<Note, 'title' | 'blocks'>>) => void;
   onDiscardDraft: (id: string) => void;
   labels: Label[];
   onArchive: (id: string) => void;
@@ -32,19 +26,25 @@ export interface NoteComposerHandle {
   openChecklist: () => void;
 }
 
+function emptyTextBlock(): NoteBlock {
+  return { id: uuid(), type: 'text', html: '' };
+}
+
+function emptyChecklistBlock(): NoteBlock {
+  return { id: uuid(), type: 'checklist', items: [] };
+}
+
 export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteComposer(
   { onCreate, onUpdateDraft, onDiscardDraft, labels, onArchive, onTrash },
   handleRef,
 ) {
   const collapsedRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const activeTextBlockRef = useRef<HTMLDivElement | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
-  const [isChecklist, setIsChecklist] = useState(false);
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [items, setItems] = useState<ChecklistItem[]>([]);
+  const [blocks, setBlocks] = useState<NoteBlock[]>([emptyTextBlock()]);
   const [color, setColor] = useState<NoteColor>('default');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [labelIds, setLabelIds] = useState<string[]>([]);
@@ -70,8 +70,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   useImperativeHandle(handleRef, () => ({ open: () => open(), openChecklist: () => startChecklist() }));
 
   function startChecklist() {
-    setIsChecklist(true);
-    setItems([{ id: uuid(), text: '', checked: false }]);
+    setBlocks([emptyChecklistBlock()]);
     open();
   }
 
@@ -79,10 +78,8 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   // nothing is still visible mid-flight.
   function finalize() {
     setTitle('');
-    setContent('');
-    setItems([]);
+    setBlocks([emptyTextBlock()]);
     setColor('default');
-    setIsChecklist(false);
     setAttachments([]);
     setLabelIds([]);
     setShowLabels(false);
@@ -93,13 +90,16 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
     setOriginRect(null);
   }
 
+  function trimmedBlocks(): NoteBlock[] {
+    return blocks.map((b) => (b.type === 'checklist' ? { ...b, items: b.items.filter((i) => i.text.trim().length > 0) } : b));
+  }
+
   // Attachments belong to a note, so the first one made while composing forces the note into
-  // existence early (with whatever title/content/checklist state exists at that moment) — the rest
-  // of the composer keeps editing that same note instead of building up a separate draft.
+  // existence early (with whatever title/blocks state exists at that moment) — the rest of the
+  // composer keeps editing that same note instead of building up a separate draft.
   async function ensureDraftNote(): Promise<string> {
     if (draftNoteIdRef.current) return draftNoteIdRef.current;
-    const cleanedItems = items.filter((item) => item.text.trim().length > 0);
-    const note = await onCreate(title.trim(), content.trim(), color, isChecklist ? { isChecklist: true, items: cleanedItems } : undefined);
+    const note = await onCreate(title.trim(), trimmedBlocks(), color);
     draftNoteIdRef.current = note.id;
     return note.id;
   }
@@ -124,8 +124,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   // there's nothing on the server to archive/trash -- ensureDraftNote() would otherwise create a
   // note just to immediately archive/discard it, two round trips for a no-op.
   async function finishDraftNote(close: CloseFn, action: (id: string) => void) {
-    const cleanedItems = items.filter((item) => item.text.trim().length > 0);
-    const isEmpty = isChecklist ? cleanedItems.length === 0 && !title.trim() : !title.trim() && isRichContentEmpty(content);
+    const isEmpty = !title.trim() && isBlocksEmpty(blocks);
     if (!draftNoteIdRef.current && isEmpty && attachmentsRef.current.length === 0) {
       close('fade');
       return;
@@ -160,6 +159,12 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
     if (draftNoteIdRef.current) await api.deleteAttachment(draftNoteIdRef.current, attachmentId);
   }
 
+  function updateActiveBlockHtml(html: string) {
+    const id = activeTextBlockRef.current?.dataset.blockId;
+    if (!id) return;
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, html } : b)));
+  }
+
   // Shared by the Close button, Escape, and backdrop-click: try to save (when there's anything to
   // save) and only actually animate the modal away on success, so a failed create leaves the modal
   // open with the error and the user's text/attachments intact instead of losing them.
@@ -168,8 +173,8 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
       await Promise.all(pendingUploadsRef.current);
     }
 
-    const cleanedItems = items.filter((item) => item.text.trim().length > 0);
-    const isEmpty = isChecklist ? cleanedItems.length === 0 && !title.trim() : !title.trim() && isRichContentEmpty(content);
+    const cleaned = trimmedBlocks();
+    const isEmpty = !title.trim() && isBlocksEmpty(cleaned);
     const draftId = draftNoteIdRef.current;
 
     if (draftId) {
@@ -179,11 +184,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
       if (isEmpty && attachmentsRef.current.length === 0) {
         onDiscardDraft(draftId);
       } else {
-        onUpdateDraft(draftId, {
-          title: title.trim(),
-          content: content.trim(),
-          ...(isChecklist ? { isChecklist: true, items: cleanedItems } : {}),
-        });
+        onUpdateDraft(draftId, { title: title.trim(), blocks: cleaned });
       }
       close();
       return;
@@ -197,7 +198,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
     setSaving(true);
     setError(null);
     try {
-      await onCreate(title.trim(), content.trim(), color, isChecklist ? { isChecklist: true, items: cleanedItems } : undefined);
+      await onCreate(title.trim(), cleaned, color);
       close();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save the note. Please try again.');
@@ -245,27 +246,22 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-          {isChecklist ? (
-            <ChecklistEditor items={items} onChange={setItems} autoFocusLast />
-          ) : (
-            <RichTextEditor
-              ref={contentRef}
-              className="note-content note-modal-content"
-              placeholder="Take a note…"
-              value={content}
-              onChange={setContent}
-              autoFocus={startWith === null}
-            />
-          )}
+          <BlockEditor
+            blocks={blocks}
+            onChange={setBlocks}
+            activeTextBlockRef={activeTextBlockRef}
+            placeholder="Take a note…"
+            autoFocusFirstText={startWith === null}
+          />
           <AttachmentsPanel
             attachments={attachments}
             onUpload={uploadAttachment}
             onDelete={deleteAttachment}
             autoOpenFilePicker={startWith === 'image'}
             autoStartRecording={startWith === 'audio'}
-            onInsertImage={isChecklist ? undefined : (a) => insertEditorImage(contentRef.current, a, setContent)}
+            onInsertImage={(a) => insertEditorImage(activeTextBlockRef.current, a, updateActiveBlockHtml)}
           >
-            {!isChecklist && <TextFormatToolbar editorRef={contentRef} onChange={setContent} />}
+            <TextFormatToolbar editorRef={activeTextBlockRef} onChange={updateActiveBlockHtml} />
           </AttachmentsPanel>
           {showLabels && (
             <div className="note-labels-editor">

@@ -3,6 +3,35 @@
 All notable changes to Cleep are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## v0.4.0 — 2026-09-18
+
+### Added
+
+- **Mixed notes.** A note is no longer locked into being either plain text or a
+  checklist for its whole life — add text and checklist sections side by side in
+  the same note, and remove either one independently.
+- **Find in note.** `Cmd/Ctrl+F` (or the new search icon) while a note is open
+  searches its own text and checklist items, with a match count and next/previous
+  navigation.
+- **Lock a note with its own password.** Any note can be password-protected
+  independently of your account login. A locked note's content and attachments
+  are encrypted at rest — the server never stores the password or the derived
+  key, so there is no reset: losing a note's password permanently loses its
+  content.
+
+### Changed
+
+- Whole-library search now matches a note's rendered text instead of its raw
+  HTML, fixing a miss where a search term only matched because it happened to
+  appear inside a formatting tag.
+
+### Notes for self-hosters
+
+- New Postgres columns (`notes.blocks` and friends) are added automatically by
+  the usual migration step. Existing notes keep working immediately — their
+  content is derived on the fly from the old columns until you optionally run
+  `npm run db:backfill-blocks` once to populate the new column directly.
+
 ## v0.3.2 — 2026-09-09
 
 ### Fixed

@@ -73,6 +73,15 @@ export function parseWaveformPeaks(value: unknown): number[] | null {
   }
 }
 
+export function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    stream.on('data', (chunk) => chunks.push(chunk as Buffer));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on('error', reject);
+  });
+}
+
 export function sanitizeFilenameForHeader(name: string): string {
   return name.replace(/[\r\n"]/g, '').trim() || 'attachment';
 }

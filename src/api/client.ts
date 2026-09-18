@@ -1,4 +1,4 @@
-import type { AdminUser, Attachment, ChecklistItem, LinkPreview, Note, NoteColor, Label, PublicUser, View } from '../types';
+import type { AdminUser, Attachment, LinkPreview, Note, NoteBlock, NoteColor, Label, PublicUser, View } from '../types';
 import { mockApi } from './mockClient';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -77,20 +77,46 @@ const realApi = {
     const qs = params.toString();
     return request<{ notes: Note[] }>(`/notes${qs ? `?${qs}` : ''}`);
   },
-  createNote: (
-    title: string,
-    content: string,
-    color: string,
-    extra?: { isChecklist?: boolean; items?: ChecklistItem[]; isRecording?: boolean },
-  ) => request<{ note: Note }>('/notes', { method: 'POST', body: JSON.stringify({ title, content, color, ...extra }) }),
+  createNote: (title: string, blocks: NoteBlock[], color: string, extra?: { isRecording?: boolean }) =>
+    request<{ note: Note }>('/notes', { method: 'POST', body: JSON.stringify({ title, blocks, color, ...extra }) }),
   updateNote: (
     id: string,
-    patch: Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived' | 'isChecklist' | 'items' | 'position'>>,
+    patch: Partial<Pick<Note, 'title' | 'blocks' | 'color' | 'pinned' | 'archived' | 'position'>> & { password?: string },
   ) => request<{ note: Note }>(`/notes/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   trashNote: (id: string) => request<{ note: Note }>(`/notes/${id}/trash`, { method: 'POST' }),
   restoreNote: (id: string) => request<{ note: Note }>(`/notes/${id}/restore`, { method: 'POST' }),
   deleteNote: (id: string, options?: { keepalive?: boolean }) =>
     request<{ ok: true }>(`/notes/${id}`, { method: 'DELETE', keepalive: options?.keepalive }),
+
+  lockNote: (id: string, password: string, extra?: { blocks?: NoteBlock[]; title?: string }) =>
+    request<{ note: Note }>(`/notes/${id}/lock`, { method: 'POST', body: JSON.stringify({ password, ...extra }) }),
+  // Read-only: returns the decrypted body for this one response without changing `locked` server
+  // side -- the caller holds the password itself for the rest of the session (see NoteModal).
+  unlockNote: (id: string, password: string) =>
+    request<{ blocks: NoteBlock[]; attachments: Attachment[] }>(`/notes/${id}/unlock`, {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    }),
+  removeNoteLock: (id: string, password: string) =>
+    request<{ note: Note }>(`/notes/${id}/remove-lock`, { method: 'POST', body: JSON.stringify({ password }) }),
+  unlockAttachment: async (noteId: string, attachmentId: string, password: string): Promise<Blob> => {
+    const res = await fetch(`/api/notes/${noteId}/unlock-attachment/${attachmentId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ password }),
+    });
+    if (!res.ok) {
+      let message = 'Incorrect password.';
+      try {
+        message = (await res.json())?.error ?? message;
+      } catch {
+        // response body wasn't JSON (the success path is raw bytes, so this only happens on error)
+      }
+      throw new Error(message);
+    }
+    return res.blob();
+  },
 
   listLabels: () => request<{ labels: Label[] }>('/labels'),
   createLabel: (name: string, color?: NoteColor) =>

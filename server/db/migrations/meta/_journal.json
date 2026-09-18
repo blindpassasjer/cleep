@@ -64,6 +64,20 @@
       "when": 1788685260421,
       "tag": "0008_deep_the_twelve",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789729104572,
+      "tag": "0009_gigantic_mentor",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789731619615,
+      "tag": "0010_high_captain_universe",
+      "breakpoints": true
     }
   ]
 }

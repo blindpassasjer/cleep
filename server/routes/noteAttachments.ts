@@ -18,11 +18,20 @@ async function assertOwnsNote(userId: string, noteId: string): Promise<boolean> 
   return rows.length > 0;
 }
 
+async function isLocked(noteId: string): Promise<boolean> {
+  const rows = await db.select({ locked: notes.locked }).from(notes).where(eq(notes.id, noteId)).limit(1);
+  return rows[0]?.locked ?? false;
+}
+
 noteAttachmentsRouter.get('/', async (req, res) => {
   try {
     const noteId = (req.params as { noteId: string }).noteId;
     if (!(await assertOwnsNote(req.userId!, noteId))) {
       res.status(404).json({ error: 'Note not found.' });
+      return;
+    }
+    if (await isLocked(noteId)) {
+      res.json({ attachments: [] });
       return;
     }
     const rows = await db.select().from(attachments).where(eq(attachments.noteId, noteId)).orderBy(asc(attachments.createdAt));
@@ -38,6 +47,10 @@ noteAttachmentsRouter.post('/', uploadSingleAttachment, async (req, res) => {
     const noteId = (req.params as { noteId: string }).noteId;
     if (!(await assertOwnsNote(req.userId!, noteId))) {
       res.status(404).json({ error: 'Note not found.' });
+      return;
+    }
+    if (await isLocked(noteId)) {
+      res.status(403).json({ error: 'Unlock this note before adding attachments.' });
       return;
     }
     const file = req.file;

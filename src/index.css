@@ -1666,6 +1666,70 @@ button.sidebar-add-label-btn {
   flex-shrink: 0;
 }
 
+.note-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.note-find {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.4rem;
+  margin-bottom: 0.4rem;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  animation: drop-in 0.15s ease;
+}
+
+.note-find-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--fg);
+  font-size: 0.88rem;
+  font-family: inherit;
+}
+
+.note-find-count {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  padding: 0 0.2rem;
+}
+
+.note-find button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 8px;
+}
+
+.note-find button:hover:not(:disabled) {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.note-find button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.find-current-row {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 .note-modal input.note-title {
   flex-shrink: 0;
 }
@@ -1697,6 +1761,69 @@ button.sidebar-add-label-btn {
   flex: 1 0 auto;
   resize: none;
   font-size: 0.95rem;
+}
+
+.block-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1 0 auto;
+}
+
+.note-block {
+  position: relative;
+}
+
+.note-block .checklist-editor {
+  padding-right: 1.6rem;
+}
+
+.block-remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem;
+  border-radius: 6px;
+  visibility: hidden;
+}
+
+.note-block:hover .block-remove {
+  visibility: visible;
+}
+
+.block-remove:hover {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.block-editor-add {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.block-editor-add button {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+}
+
+.block-editor-add button:hover {
+  background: var(--surface);
+  color: var(--fg);
 }
 
 .note-modal-timestamp {
@@ -3136,7 +3263,8 @@ button.sidebar-add-label-btn {
      centered card has no such squeeze (plenty of vertical room, no keyboard overlay), so it keeps
      the simpler "grow the whole card, let .note-modal scroll" behavior instead. */
   .note-modal-content,
-  .note-modal .checklist-editor {
+  .note-modal .checklist-editor,
+  .note-modal .block-editor {
     flex: 1 1 0;
     min-height: 60px;
     overflow-y: auto;
@@ -3424,4 +3552,104 @@ a.settings-toggle {
   font: inherit;
   font-size: 0.8rem;
   text-align: center;
+}
+
+.lock-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1300;
+}
+
+.lock-modal {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-hover);
+  padding: 1.1rem 1.25rem 1.25rem;
+}
+
+.lock-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lock-modal-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.lock-modal-close {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+}
+
+.lock-modal-warning {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.lock-modal input[type='password'] {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.lock-modal-error {
+  font-size: 0.82rem;
+  color: #ff453a;
+}
+
+.lock-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.lock-modal-submit {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: #1a1a1a;
+  cursor: pointer;
+}
+
+.lock-modal-submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.note-locked-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.5rem 0;
+  color: var(--muted);
+  font-size: 0.88rem;
 }

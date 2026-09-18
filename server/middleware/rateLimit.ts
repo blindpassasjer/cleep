@@ -73,6 +73,15 @@ export const uploadRateLimit = createRateLimit({
 });
 
 /**
+ * Limiter for note-lock/unlock attempts -- effectively a password-guessing surface, same concern
+ * as authRateLimit on /api/auth. Tunable via NOTE_LOCK_RATE_LIMIT_MAX / _WINDOW_MS.
+ */
+export const noteLockRateLimit = createRateLimit({
+  windowMs: readIntEnv('NOTE_LOCK_RATE_LIMIT_WINDOW_MS', DEFAULT_AUTH_WINDOW_MS),
+  max: readIntEnv('NOTE_LOCK_RATE_LIMIT_MAX', DEFAULT_AUTH_MAX),
+});
+
+/**
  * Limiter for the link-preview endpoints. Opening a view full of linked notes fans out into one
  * metadata request plus an image/favicon proxy request per card, so this ceiling is higher than
  * the upload one. Tunable via LINK_PREVIEW_RATE_LIMIT_MAX / LINK_PREVIEW_RATE_LIMIT_WINDOW_MS.

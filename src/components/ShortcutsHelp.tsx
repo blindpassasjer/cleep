@@ -10,6 +10,7 @@ const SHORTCUTS: [keys: string[], label: string][] = [
   [['g', 'n'], 'Go to Notes'],
   [['g', 'a'], 'Go to Archive'],
   [['g', 't'], 'Go to Trash'],
+  [['⌘/Ctrl', 'F'], 'Find in open note'],
   [['?'], 'Show this help'],
   [['Esc'], 'Clear search / close'],
 ];

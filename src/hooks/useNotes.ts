@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
-import type { ChecklistItem, Note, NoteColor, View } from '../types';
+import type { Note, NoteBlock, NoteColor, View } from '../types';
 import type { NotifyFn } from './useToast';
 
 const DELETE_UNDO_MS = 5000;
@@ -83,13 +83,13 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
 
   async function createNote(
     title: string,
-    content: string,
+    blocks: NoteBlock[],
     color: NoteColor,
-    extra?: { isChecklist?: boolean; items?: ChecklistItem[]; isRecording?: boolean },
+    extra?: { isRecording?: boolean },
   ): Promise<Note> {
     setError(null);
     try {
-      const { note } = await api.createNote(title, content, color, extra);
+      const { note } = await api.createNote(title, blocks, color, extra);
       // Explicit "this one just got created" signal for the entrance animation -- distinct from
       // every other reload() (view switches, search, undo, background sync), which shouldn't
       // replay the pop-in for the whole grid. Cleared once the grid's had a chance to notice.
@@ -121,12 +121,13 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
 
   async function updateNote(
     id: string,
-    patch: Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived' | 'isChecklist' | 'items' | 'position'>>,
+    patch: Partial<Pick<Note, 'title' | 'blocks' | 'color' | 'pinned' | 'archived' | 'position'>>,
+    options?: { password?: string },
   ) {
     setError(null);
     setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, ...patch } : n)));
     try {
-      await api.updateNote(id, patch);
+      await api.updateNote(id, { ...patch, password: options?.password });
       if (patch.archived !== undefined) {
         // Archiving/unarchiving always moves the note out of whatever view it's currently shown
         // in (the notes list is already scoped server-side to one view), so drop it locally
@@ -142,6 +143,37 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
     } catch (err) {
       setError(errorMessage(err));
       await reload();
+    }
+  }
+
+  // Lock/unlock are dedicated endpoints, not a plain field patch (see server/routes/notes.ts) --
+  // `lockNote` re-encrypts whatever blocks/title the caller currently has on screen (which may not
+  // be saved yet), and `removeNoteLock` decrypts and hands the plaintext note back. Neither goes
+  // through `updateNote`'s optimistic-patch path; both just replace the note with the server's
+  // response once it resolves. Unlocking-to-view is intentionally NOT here -- it never changes
+  // `locked` or `blocks` in this hook's state, so it's called directly via api.unlockNote from the
+  // component that needs it, keeping "no server-side unlocked session state" true on the client too.
+  async function lockNote(id: string, password: string, extra?: { blocks?: Note['blocks']; title?: string }): Promise<Note> {
+    setError(null);
+    try {
+      const { note } = await api.lockNote(id, password, extra);
+      setNotes((prev) => prev.map((n) => (n.id === id ? note : n)));
+      return note;
+    } catch (err) {
+      setError(errorMessage(err));
+      throw err;
+    }
+  }
+
+  async function removeNoteLock(id: string, password: string): Promise<Note> {
+    setError(null);
+    try {
+      const { note } = await api.removeNoteLock(id, password);
+      setNotes((prev) => prev.map((n) => (n.id === id ? note : n)));
+      return note;
+    } catch (err) {
+      setError(errorMessage(err));
+      throw err;
     }
   }
 
@@ -274,6 +306,8 @@ export function useNotes(view: View, notify: NotifyFn, enabled: boolean) {
     createNote,
     discardDraftNote,
     updateNote,
+    lockNote,
+    removeNoteLock,
     setNoteAttachments,
     reorderNotes,
     trashNote,

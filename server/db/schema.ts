@@ -6,6 +6,20 @@ export interface ChecklistItem {
   checked: boolean;
 }
 
+export interface TextBlock {
+  id: string;
+  type: 'text';
+  html: string;
+}
+
+export interface ChecklistBlock {
+  id: string;
+  type: 'checklist';
+  items: ChecklistItem[];
+}
+
+export type NoteBlock = TextBlock | ChecklistBlock;
+
 export const users = pgTable(
   'users',
   {
@@ -42,9 +56,13 @@ export const notes = pgTable('notes', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   title: text('title').notNull().default(''),
+  // `content`/`isChecklist`/`items` are legacy columns kept as a shadow-written copy of `blocks`
+  // during the block-model migration (safe rollback target; see server/lib/blocks.ts). New code
+  // should read/write `blocks` only.
   content: text('content').notNull().default(''),
   isChecklist: boolean('is_checklist').notNull().default(false),
   items: jsonb('items').$type<ChecklistItem[]>().notNull().default([]),
+  blocks: jsonb('blocks').$type<NoteBlock[]>().notNull().default([]),
   color: text('color').notNull().default('default'),
   pinned: boolean('pinned').notNull().default(false),
   archived: boolean('archived').notNull().default(false),
@@ -53,6 +71,18 @@ export const notes = pgTable('notes', {
   position: bigint('position', { mode: 'number' }).notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  // Note-level password lock (see server/lib/noteCrypto.ts). When `locked`, `blocks` is reset to
+  // `[]` and the real content lives only in `encryptedBlocks` -- so a bulk read can never leak
+  // plaintext for a locked note even by accident. `lockSalt`/`lockVerifier` let the server check a
+  // password attempt without decrypting; `lockIv`/`lockAuthTag` are the AES-GCM parameters for
+  // `encryptedBlocks`. All four are null exactly when `locked` is false. Nothing here stores the
+  // derived key or the plaintext password -- forgetting a note's password permanently loses it.
+  locked: boolean('locked').notNull().default(false),
+  lockSalt: text('lock_salt'),
+  lockVerifier: text('lock_verifier'),
+  lockIv: text('lock_iv'),
+  lockAuthTag: text('lock_auth_tag'),
+  encryptedBlocks: text('encrypted_blocks'),
 });
 
 export const labels = pgTable(
@@ -114,4 +144,8 @@ export const attachments = pgTable('attachments', {
   sizeBytes: bigint('size_bytes', { mode: 'number' }).notNull(),
   waveformPeaks: jsonb('waveform_peaks').$type<number[] | null>(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  // Set together, only while the parent note is locked -- the file at `storageKey` is AES-GCM
+  // ciphertext instead of the original bytes. Both null when the note isn't locked.
+  encIv: text('enc_iv'),
+  encAuthTag: text('enc_auth_tag'),
 });

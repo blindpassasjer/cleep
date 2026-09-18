@@ -4,15 +4,10 @@ import { LiveWaveform } from './LiveWaveform';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { formatElapsed } from '../lib/formatElapsed';
 import { api } from '../api/client';
-import type { ChecklistItem, Note, NoteColor } from '../types';
+import type { Note, NoteBlock, NoteColor } from '../types';
 
 interface Props {
-  onCreate: (
-    title: string,
-    content: string,
-    color: NoteColor,
-    extra?: { isChecklist?: boolean; items?: ChecklistItem[]; isRecording?: boolean },
-  ) => Promise<Note>;
+  onCreate: (title: string, blocks: NoteBlock[], color: NoteColor, extra?: { isRecording?: boolean }) => Promise<Note>;
   onReload: () => Promise<void>;
 }
 
@@ -34,7 +29,7 @@ export function QuickRecorder({ onCreate, onReload }: Props) {
     setSaving(true);
     setError(null);
     try {
-      const note = await onCreate('', '', 'default', { isRecording: true });
+      const note = await onCreate('', [], 'default', { isRecording: true });
       await api.uploadAttachment(note.id, result.blob, `recording-${Date.now()}.webm`, result.peaks);
       await onReload();
     } catch (err) {

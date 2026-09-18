@@ -12,6 +12,7 @@ import { uploadRateLimit } from '../middleware/rateLimit.js';
 import { localStorageAdapter } from '../storage/localStorageAdapter.js';
 import { kindFromMime, sanitizeFilenameForPath } from '../lib/attachments.js';
 import { VALID_COLORS } from '../lib/colors.js';
+import { blocksFromLegacy, effectiveBlocks } from '../lib/blocks.js';
 
 export const dataTransferRouter = Router();
 dataTransferRouter.use(requireAuth);
@@ -54,6 +55,7 @@ dataTransferRouter.get('/export', uploadRateLimit, async (req, res) => {
       content: n.content,
       isChecklist: n.isChecklist,
       items: n.items,
+      blocks: effectiveBlocks(n),
       color: n.color,
       pinned: n.pinned,
       archived: n.archived,
@@ -62,14 +64,20 @@ dataTransferRouter.get('/export', uploadRateLimit, async (req, res) => {
       createdAt: n.createdAt.toISOString(),
       updatedAt: n.updatedAt.toISOString(),
       labelIds: labelsByNote.get(n.id) ?? [],
-      attachments: (attachmentsByNote.get(n.id) ?? []).map((a) => ({
-        id: a.id,
-        kind: a.kind,
-        originalName: a.originalName,
-        mimeType: a.mimeType,
-        sizeBytes: a.sizeBytes,
-        path: `attachments/${a.noteId}/${a.id}-${sanitizeFilenameForPath(a.originalName)}`,
-      })),
+      locked: n.locked,
+      // A locked note's attachment bytes are ciphertext on disk -- exporting them under their
+      // original filename would produce a silently-corrupt file, so skip them entirely rather than
+      // ship something misleading. The note itself is still exported (title, locked flag, labels).
+      attachments: n.locked
+        ? []
+        : (attachmentsByNote.get(n.id) ?? []).map((a) => ({
+            id: a.id,
+            kind: a.kind,
+            originalName: a.originalName,
+            mimeType: a.mimeType,
+            sizeBytes: a.sizeBytes,
+            path: `attachments/${a.noteId}/${a.id}-${sanitizeFilenameForPath(a.originalName)}`,
+          })),
     }));
 
     const stamp = new Date().toISOString().slice(0, 10);
@@ -289,14 +297,16 @@ dataTransferRouter.post('/import/keep', uploadRateLimit, uploadZip, async (req, 
         }
       }
 
+      const content = isChecklist ? '' : typeof parsed.textContent === 'string' ? parsed.textContent.slice(0, 20000) : '';
       await db.transaction(async (tx) => {
         await tx.insert(notes).values({
           id: noteId,
           userId,
           title: typeof parsed.title === 'string' ? parsed.title.slice(0, 300) : '',
-          content: isChecklist ? '' : typeof parsed.textContent === 'string' ? parsed.textContent.slice(0, 20000) : '',
+          content,
           isChecklist,
           items,
+          blocks: blocksFromLegacy({ content, items, isChecklist }),
           color: VALID_COLORS.has(color) ? color : 'default',
           pinned: Boolean(parsed.isPinned),
           archived: Boolean(parsed.isArchived),

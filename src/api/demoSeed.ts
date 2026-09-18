@@ -1,4 +1,5 @@
-import type { Label, LinkPreview, Note } from '../types';
+import type { ChecklistItem, Label, LinkPreview, Note, NoteBlock } from '../types';
+import { uuid } from '../lib/uuid';
 
 // Fixed ids/timestamps so the seed is deterministic across resets instead of drifting each load.
 const DAY = 24 * 60 * 60 * 1000;
@@ -42,15 +43,24 @@ export const DEMO_LABELS: Label[] = [
   { id: 'label-travel', userId: 'demo-user', name: 'Travel', color: 'teal' },
 ];
 
+function blocksFromLegacy(content: string, items: ChecklistItem[], isChecklist: boolean): NoteBlock[] {
+  return isChecklist ? [{ id: uuid(), type: 'checklist', items }] : [{ id: uuid(), type: 'text', html: content }];
+}
+
 function note(partial: Partial<Note> & Pick<Note, 'id' | 'title' | 'content'>): Note {
+  const content = partial.content ?? '';
+  const items = partial.items ?? [];
+  const isChecklist = partial.isChecklist ?? false;
   return {
     userId: 'demo-user',
-    isChecklist: false,
-    items: [],
+    isChecklist,
+    items,
+    blocks: blocksFromLegacy(content, items, isChecklist),
     color: 'default',
     pinned: false,
     archived: false,
     isRecording: false,
+    locked: false,
     trashedAt: null,
     position: 0,
     createdAt: ago(1),

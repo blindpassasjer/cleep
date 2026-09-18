@@ -17,6 +17,20 @@ export interface ChecklistItem {
   checked: boolean;
 }
 
+export interface TextBlock {
+  id: string;
+  type: 'text';
+  html: string;
+}
+
+export interface ChecklistBlock {
+  id: string;
+  type: 'checklist';
+  items: ChecklistItem[];
+}
+
+export type NoteBlock = TextBlock | ChecklistBlock;
+
 export type AttachmentKind = 'image' | 'video' | 'audio';
 
 export interface Attachment {
@@ -35,13 +49,21 @@ export interface Note {
   id: string;
   userId: string;
   title: string;
+  /** @deprecated legacy shadow field kept for one release during the blocks migration; use `blocks`. */
   content: string;
+  /** @deprecated legacy shadow field kept for one release during the blocks migration; use `blocks`. */
   isChecklist: boolean;
+  /** @deprecated legacy shadow field kept for one release during the blocks migration; use `blocks`. */
   items: ChecklistItem[];
+  blocks: NoteBlock[];
   color: NoteColor;
   pinned: boolean;
   archived: boolean;
   isRecording: boolean;
+  /** True once the note has a password set. When locked, `blocks` and `attachments` come back
+   *  empty from the API -- the real content only exists as ciphertext server-side until unlocked
+   *  with the password (see api.unlockNote). */
+  locked: boolean;
   trashedAt: string | null;
   position: number;
   createdAt: string;

@@ -7,6 +7,7 @@ import { useTheme } from './hooks/useTheme';
 import { useHotkeys } from './hooks/useHotkeys';
 import { api } from './api/client';
 import { withGridViewTransition } from './lib/viewTransition';
+import { stripHtmlToText } from './lib/stripHtmlToText';
 import { LoginPage } from './components/LoginPage';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
@@ -61,6 +62,8 @@ export default function App() {
     createNote,
     discardDraftNote,
     updateNote,
+    lockNote,
+    removeNoteLock,
     setNoteAttachments,
     reorderNotes,
     trashNote,
@@ -106,8 +109,11 @@ export default function App() {
     return notes.filter(
       (n) =>
         n.title.toLowerCase().includes(q) ||
-        n.content.toLowerCase().includes(q) ||
-        n.items.some((item) => item.text.toLowerCase().includes(q)),
+        n.blocks.some((b) =>
+          b.type === 'text'
+            ? stripHtmlToText(b.html).toLowerCase().includes(q)
+            : b.items.some((item) => item.text.toLowerCase().includes(q)),
+        ),
     );
   }, [notes, search]);
 
@@ -302,6 +308,8 @@ export default function App() {
                 selectedIds={selectedIds}
                 onToggleSelect={toggleSelect}
                 onUpdate={updateNote}
+                onLock={lockNote}
+                onRemoveLock={removeNoteLock}
                 onAttachmentsChange={setNoteAttachments}
                 onTrash={trashNote}
                 onRestore={restoreNote}

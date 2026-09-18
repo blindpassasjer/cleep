@@ -7,6 +7,7 @@ interface Props {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
+  onFocus?: () => void;
 }
 
 /**
@@ -17,7 +18,7 @@ interface Props {
  * this element's ref, not by anything in here.
  */
 export const RichTextEditor = forwardRef<HTMLDivElement, Props>(function RichTextEditor(
-  { value, onChange, placeholder, className, autoFocus },
+  { value, onChange, placeholder, className, autoFocus, onFocus },
   ref,
 ) {
   const elRef = useRef<HTMLDivElement>(null);
@@ -55,6 +56,7 @@ export const RichTextEditor = forwardRef<HTMLDivElement, Props>(function RichTex
       data-placeholder={placeholder}
       onInput={handleInput}
       onPaste={handlePaste}
+      onFocus={onFocus}
     />
   );
 });

@@ -3,7 +3,7 @@ import { NoteCard } from './NoteCard';
 import { useMasonryLayout } from '../hooks/useMasonryLayout';
 import type { Label, Note, View } from '../types';
 
-type NoteUpdatePatch = Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived' | 'isChecklist' | 'items'>>;
+type NoteUpdatePatch = Partial<Pick<Note, 'title' | 'blocks' | 'color' | 'pinned' | 'archived'>>;
 
 interface Props {
   notes: Note[];
@@ -12,7 +12,9 @@ interface Props {
   justCreatedId: string | null;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
-  onUpdate: (id: string, patch: NoteUpdatePatch) => void;
+  onUpdate: (id: string, patch: NoteUpdatePatch, options?: { password?: string }) => void;
+  onLock: (id: string, password: string, extra?: { blocks?: Note['blocks']; title?: string }) => Promise<Note>;
+  onRemoveLock: (id: string, password: string) => Promise<Note>;
   onAttachmentsChange: (id: string, attachments: Note['attachments']) => void;
   onTrash: (id: string) => void;
   onRestore: (id: string) => void;
@@ -29,6 +31,8 @@ export function NotesGrid({
   selectedIds,
   onToggleSelect,
   onUpdate,
+  onLock,
+  onRemoveLock,
   onAttachmentsChange,
   onTrash,
   onRestore,
@@ -98,6 +102,8 @@ export function NotesGrid({
               selectionActive={selectedIds.size > 0}
               onToggleSelect={onToggleSelect}
               onUpdate={onUpdate}
+              onLock={onLock}
+              onRemoveLock={onRemoveLock}
               onAttachmentsChange={onAttachmentsChange}
               onTrash={onTrash}
               onRestore={onRestore}

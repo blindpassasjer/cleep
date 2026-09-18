@@ -1,18 +1,17 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ColorPicker } from './ColorPicker';
 import { NoteModal } from './NoteModal';
+import { LockModal, type LockModalMode } from './LockModal';
 import { MiniWaveform } from './MiniWaveform';
 import { LinkPreviewCard } from './LinkPreviewCard';
+import { ChecklistPreviewBlock } from './ChecklistPreviewBlock';
 import { api } from '../api/client';
 import { sanitizeHtml } from '../lib/sanitizeHtml';
 import { extractLinks } from '../lib/extractLinks';
 import { useLinkPreviews } from '../hooks/useLinkPreviews';
-import { useFlipReorder } from '../hooks/useFlipReorder';
-import { orderChecklistItems } from '../lib/orderChecklistItems';
-import { checklistItemsToHtml, htmlToChecklistItems } from '../lib/checklistConversion';
 import { toggleNoteLabel } from '../lib/toggleNoteLabel';
-import { IconArchive, IconDragHandle, IconMic, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash, IconVideo } from './Icons';
-import type { Attachment, ChecklistItem, Label, Note, NoteColor, View } from '../types';
+import { IconArchive, IconDragHandle, IconLock, IconMic, IconPalette, IconPin, IconPinFilled, IconTag, IconTrash, IconVideo } from './Icons';
+import type { Attachment, Label, Note, NoteBlock, NoteColor, View } from '../types';
 
 interface Props {
   note: Note;
@@ -24,8 +23,11 @@ interface Props {
   onToggleSelect: (id: string) => void;
   onUpdate: (
     id: string,
-    patch: Partial<Pick<Note, 'title' | 'content' | 'color' | 'pinned' | 'archived' | 'isChecklist' | 'items'>>,
+    patch: Partial<Pick<Note, 'title' | 'blocks' | 'color' | 'pinned' | 'archived'>>,
+    options?: { password?: string },
   ) => void;
+  onLock: (id: string, password: string, extra?: { blocks?: NoteBlock[]; title?: string }) => Promise<Note>;
+  onRemoveLock: (id: string, password: string) => Promise<Note>;
   onAttachmentsChange: (id: string, attachments: Attachment[]) => void;
   onTrash: (id: string) => void;
   onRestore: (id: string) => void;
@@ -36,7 +38,6 @@ interface Props {
   onDrop?: () => void;
 }
 
-const CHECKLIST_PREVIEW_LIMIT = 6;
 const EXIT_ANIMATION_MS = 160;
 
 export function NoteCard({
@@ -48,6 +49,8 @@ export function NoteCard({
   selectionActive,
   onToggleSelect,
   onUpdate,
+  onLock,
+  onRemoveLock,
   onAttachmentsChange,
   onTrash,
   onRestore,
@@ -59,14 +62,12 @@ export function NoteCard({
 }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const checklistPreviewRef = useRef<HTMLDivElement>(null);
   const [bodyTruncated, setBodyTruncated] = useState(false);
   const [editing, setEditing] = useState(false);
   const [sourceHidden, setSourceHidden] = useState(false);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
   const [title, setTitle] = useState(note.title);
-  const [content, setContent] = useState(note.content);
-  const [items, setItems] = useState<ChecklistItem[]>(note.items);
+  const [blocks, setBlocks] = useState<NoteBlock[]>(note.blocks);
   const [attachments, setAttachments] = useState<Attachment[]>(note.attachments);
   // Mirrors `attachments` synchronously so uploadAttachment/deleteAttachment can read the latest
   // value without a stale closure over React state (matches the same pattern in NoteComposer).
@@ -75,6 +76,11 @@ export function NoteCard({
   const [showLabels, setShowLabels] = useState(false);
   const [showColors, setShowColors] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  // Set only for the duration this note is open, from a successful password entry -- never
+  // persisted, never sent anywhere except this note's own save/lock calls (see closeEditor). There
+  // is no server-side "unlocked" session state, so this is the only place that knowledge lives.
+  const [unlockPassword, setUnlockPassword] = useState<string | null>(null);
+  const [lockModalMode, setLockModalMode] = useState<LockModalMode | null>(null);
   const editable = view.kind === 'notes' || view.kind === 'recordings' || view.kind === 'archive' || view.kind === 'label';
 
   function leaveThen(action: () => void) {
@@ -88,9 +94,12 @@ export function NoteCard({
       return;
     }
     if (!editable) return;
+    if (note.locked) {
+      setLockModalMode('enter');
+      return;
+    }
     setTitle(note.title);
-    setContent(note.content);
-    setItems(note.items);
+    setBlocks(note.blocks);
     setAttachments(note.attachments);
     attachmentsRef.current = note.attachments;
     setOriginRect(cardRef.current?.getBoundingClientRect() ?? null);
@@ -98,31 +107,79 @@ export function NoteCard({
     setEditing(true);
   }
 
-  function closeEditor() {
-    const patch: Partial<Pick<Note, 'title' | 'content' | 'items'>> = {};
-    if (title !== note.title) patch.title = title;
-    if (!note.isChecklist && content !== note.content) patch.content = content;
-    if (note.isChecklist && JSON.stringify(items) !== JSON.stringify(note.items)) {
-      patch.items = items.filter((item) => item.text.trim().length > 0);
+  function releaseAttachmentBlobUrls() {
+    for (const a of attachmentsRef.current) {
+      if (a.url.startsWith('blob:')) URL.revokeObjectURL(a.url);
     }
-    if (Object.keys(patch).length > 0) onUpdate(note.id, patch);
-    setEditing(false);
-    setOriginRect(null);
   }
 
-  // Flip an open note between rich text and a checklist without losing anything: text splits into
-  // one item per line, and a checklist joins back into one line per item (see checklistConversion).
-  // Persisted immediately so the card preview and a mid-edit close both reflect the new shape.
-  function convertNote(toChecklist: boolean) {
-    if (toChecklist) {
-      const nextItems = htmlToChecklistItems(content);
-      setItems(nextItems);
-      onUpdate(note.id, { isChecklist: true, items: nextItems, content: '' });
-    } else {
-      const nextContent = checklistItemsToHtml(items);
-      setContent(nextContent);
-      onUpdate(note.id, { isChecklist: false, content: nextContent, items: [] });
-    }
+  function closeEditor() {
+    const patch: Partial<Pick<Note, 'title' | 'blocks'>> = {};
+    if (title !== note.title) patch.title = title;
+    // Drop empty checklist items on close, same trim the composer applies -- an item left blank
+    // while typing shouldn't stick around as a permanent empty row. A locked note's own `blocks`
+    // (as seen by the parent) is always `[]`, so it can never tell us "nothing changed" -- always
+    // include blocks in the save for a locked note rather than diffing against that placeholder.
+    const trimmedBlocks = blocks.map((b) => (b.type === 'checklist' ? { ...b, items: b.items.filter((i) => i.text.trim().length > 0) } : b));
+    if (note.locked || JSON.stringify(trimmedBlocks) !== JSON.stringify(note.blocks)) patch.blocks = trimmedBlocks;
+    if (Object.keys(patch).length > 0) onUpdate(note.id, patch, note.locked && unlockPassword ? { password: unlockPassword } : undefined);
+    if (note.locked) releaseAttachmentBlobUrls();
+    setEditing(false);
+    setOriginRect(null);
+    setUnlockPassword(null);
+  }
+
+  async function unlockToView(password: string) {
+    const { blocks: decryptedBlocks, attachments: rawAttachments } = await api.unlockNote(note.id, password);
+    const resolvedAttachments = await Promise.all(
+      rawAttachments.map(async (a) => {
+        try {
+          const blob = await api.unlockAttachment(note.id, a.id, password);
+          return { ...a, url: URL.createObjectURL(blob) };
+        } catch {
+          return a; // leave the (blocked) original url rather than failing the whole unlock over one file
+        }
+      }),
+    );
+    setTitle(note.title);
+    setBlocks(decryptedBlocks);
+    setAttachments(resolvedAttachments);
+    attachmentsRef.current = resolvedAttachments;
+    setUnlockPassword(password);
+    setOriginRect(cardRef.current?.getBoundingClientRect() ?? null);
+    setSourceHidden(true);
+    setEditing(true);
+  }
+
+  async function lockNow(password: string) {
+    const trimmedBlocks = blocks.map((b) => (b.type === 'checklist' ? { ...b, items: b.items.filter((i) => i.text.trim().length > 0) } : b));
+    await onLock(note.id, password, { blocks: trimmedBlocks, title });
+    // Bypasses FlipModal's own close() (this runs from the LockModal overlay, not from inside
+    // NoteModal's render-prop scope where `close` lives) -- so it has to redo the cleanup
+    // closeEditor would otherwise have done, or the source card stays hidden forever and this
+    // session's attachment blob URLs leak.
+    releaseAttachmentBlobUrls();
+    setEditing(false);
+    setOriginRect(null);
+    setSourceHidden(false);
+    setUnlockPassword(null);
+  }
+
+  async function removeLockNow(password: string) {
+    const updated = await onRemoveLock(note.id, password);
+    releaseAttachmentBlobUrls(); // drop this session's decrypt-to-view blob URLs; the note now has real server ones
+    setTitle(updated.title);
+    setBlocks(updated.blocks);
+    setAttachments(updated.attachments);
+    attachmentsRef.current = updated.attachments;
+    setUnlockPassword(null);
+  }
+
+  async function submitLockModal(password: string) {
+    if (lockModalMode === 'enter') await unlockToView(password);
+    else if (lockModalMode === 'set') await lockNow(password);
+    else if (lockModalMode === 'remove') await removeLockNow(password);
+    setLockModalMode(null);
   }
 
   async function toggleLabel(labelId: string) {
@@ -150,19 +207,12 @@ export function NoteCard({
     }
   }
 
-  const orderedItems = useMemo(() => orderChecklistItems(note.items), [note.items]);
-  const previewItems = orderedItems.slice(0, CHECKLIST_PREVIEW_LIMIT);
-  const hiddenItemCount = orderedItems.length - previewItems.length;
-  useFlipReorder(checklistPreviewRef, previewItems.map((item) => item.id));
   const coverImage = note.attachments.find((a) => a.kind === 'image');
   const videoCount = note.attachments.filter((a) => a.kind === 'video').length;
   const firstAudio = note.attachments.find((a) => a.kind === 'audio');
   const audioCount = note.attachments.filter((a) => a.kind === 'audio').length;
-  const sanitizedContent = useMemo(() => sanitizeHtml(note.content), [note.content]);
-  const links = useMemo(
-    () => extractLinks({ title: note.title, content: note.isChecklist ? '' : note.content }),
-    [note.title, note.content, note.isChecklist],
-  );
+  const textHtml = useMemo(() => note.blocks.filter((b) => b.type === 'text').map((b) => b.html).join('\n'), [note.blocks]);
+  const links = useMemo(() => extractLinks({ title: note.title, content: textHtml }), [note.title, textHtml]);
   const linkPreviews = useLinkPreviews(links);
 
   // The fade at the bottom of .note-body should only show up when content is actually clipped by
@@ -179,7 +229,7 @@ export function NoteCard({
     measure();
     el.addEventListener('load', measure, true);
     return () => el.removeEventListener('load', measure, true);
-  }, [note.title, note.content, note.items, note.isChecklist, note.attachments, labelIds, links]);
+  }, [note.title, note.blocks, note.attachments, labelIds, links]);
 
   return (
     <>
@@ -224,19 +274,21 @@ export function NoteCard({
               </div>
             )}
             {note.title && <div className="note-title">{note.title}</div>}
-            {note.isChecklist ? (
-              <div className="note-checklist-preview" ref={checklistPreviewRef}>
-                {previewItems.map((item) => (
-                  // Read-only preview -- ticking items happens in the open note, not the grid card.
-                  <div key={item.id} data-flip-id={item.id} className={`checklist-row preview ${item.checked ? 'checked' : ''}`}>
-                    <input type="checkbox" checked={item.checked} readOnly tabIndex={-1} aria-hidden="true" />
-                    <span>{item.text}</span>
-                  </div>
-                ))}
-                {hiddenItemCount > 0 && <div className="checklist-more">+{hiddenItemCount} more</div>}
+            {note.locked ? (
+              <div className="note-locked-placeholder">
+                <IconLock width={20} height={20} />
+                <span>Locked note</span>
               </div>
             ) : (
-              note.content && <div className="note-content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
+              note.blocks.map((block) =>
+                block.type === 'checklist' ? (
+                  block.items.length > 0 && <ChecklistPreviewBlock key={block.id} items={block.items} />
+                ) : (
+                  block.html && (
+                    <div key={block.id} className="note-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.html) }} />
+                  )
+                ),
+              )
             )}
           </div>
           {links.length > 0 && (
@@ -370,30 +422,31 @@ export function NoteCard({
           originRect={originRect}
           getOriginRect={() => cardRef.current?.getBoundingClientRect() ?? null}
           title={title}
-          content={content}
-          isChecklist={note.isChecklist}
-          items={items}
+          blocks={blocks}
           updatedAt={note.updatedAt}
           color={note.color as NoteColor}
           pinned={note.pinned}
+          locked={note.locked}
           labels={labels}
           labelIds={labelIds}
           attachments={attachments}
           onTitleChange={setTitle}
-          onContentChange={setContent}
-          onItemsChange={setItems}
-          onConvert={convertNote}
+          onBlocksChange={setBlocks}
           onColorChange={(color) => onUpdate(note.id, { color })}
           onTogglePin={() => onUpdate(note.id, { pinned: !note.pinned })}
           onToggleLabel={toggleLabel}
           onUploadAttachment={uploadAttachment}
           onDeleteAttachment={deleteAttachment}
+          onRequestLock={() => setLockModalMode('set')}
+          onRequestRemoveLock={() => setLockModalMode('remove')}
           onArchive={() => leaveThen(() => onUpdate(note.id, { archived: !note.archived }))}
           onTrash={() => leaveThen(() => onTrash(note.id))}
           onClose={closeEditor}
           onCloseStart={() => setSourceHidden(false)}
         />
       )}
+
+      {lockModalMode && <LockModal mode={lockModalMode} onSubmit={submitLockModal} onClose={() => setLockModalMode(null)} />}
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { and, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
-import { attachments } from '../db/schema.js';
+import { attachments, notes } from '../db/schema.js';
 import { requireAuth } from '../middleware/session.js';
 import { localStorageAdapter } from '../storage/localStorageAdapter.js';
 import { sanitizeFilenameForHeader } from '../lib/attachments.js';
@@ -19,6 +19,14 @@ attachmentFilesRouter.get('/:id/file', async (req, res) => {
     const row = rows[0];
     if (!row) {
       res.status(404).json({ error: 'Attachment not found.' });
+      return;
+    }
+
+    // The file on disk is AES-GCM ciphertext while the parent note is locked -- serve it only
+    // through POST /api/notes/:id/unlock-attachment/:attachmentId, which requires the password.
+    const [parentNote] = await db.select({ locked: notes.locked }).from(notes).where(eq(notes.id, row.noteId)).limit(1);
+    if (parentNote?.locked) {
+      res.status(403).json({ error: 'This note is locked.' });
       return;
     }
 
