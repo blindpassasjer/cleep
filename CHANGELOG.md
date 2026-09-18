@@ -3,6 +3,18 @@
 All notable changes to Cleep are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## v0.4.1 — 2026-09-18
+
+### Fixed
+
+- Adding a checklist section under a short paragraph left a large empty gap
+  between them — every text section reserved a 200px floor meant for a note's
+  only section, not each one individually.
+- The "add text" / "add checklist" buttons moved from their own row under the
+  note into the formatting toolbar, alongside bold/italic/lists — one toolbar
+  action instead of a separate type picker before you have anything to put in
+  it.
+
 ## v0.4.0 — 2026-09-18
 
 ### Added

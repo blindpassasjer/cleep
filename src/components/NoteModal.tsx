@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlipModal } from './FlipModal';
 import { ColorPicker } from './ColorPicker';
-import { BlockEditor } from './BlockEditor';
+import { BlockEditor, type AddBlockFn } from './BlockEditor';
 import { NoteFind } from './NoteFind';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
@@ -72,6 +72,7 @@ export function NoteModal({
 }: Props) {
   const activeTextBlockRef = useRef<HTMLDivElement | null>(null);
   const findScopeRef = useRef<HTMLDivElement | null>(null);
+  const addBlockRef = useRef<AddBlockFn | null>(null);
   const [showLabels, setShowLabels] = useState(false);
   const [showColors, setShowColors] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
@@ -192,6 +193,9 @@ export function NoteModal({
             onChange={onBlocksChange}
             activeTextBlockRef={activeTextBlockRef}
             placeholder="Take a note…"
+            onAddBlockReady={(fn) => {
+              addBlockRef.current = fn;
+            }}
           />
           {links.length > 0 && (
             <div className="note-link-previews">
@@ -207,7 +211,12 @@ export function NoteModal({
             onDelete={onDeleteAttachment}
             onInsertImage={(a) => insertEditorImage(activeTextBlockRef.current, a, updateActiveBlockHtml)}
           >
-            <TextFormatToolbar editorRef={activeTextBlockRef} onChange={updateActiveBlockHtml} />
+            <TextFormatToolbar
+              editorRef={activeTextBlockRef}
+              onChange={updateActiveBlockHtml}
+              onAddText={() => addBlockRef.current?.('text')}
+              onAddChecklist={() => addBlockRef.current?.('checklist')}
+            />
           </AttachmentsPanel>
           {labelIds.length > 0 && (
             <div className="note-labels">

@@ -1803,29 +1803,6 @@ button.sidebar-add-label-btn {
   color: var(--fg);
 }
 
-.block-editor-add {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.block-editor-add button {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 0.82rem;
-  padding: 0.3rem 0.5rem;
-  border-radius: 8px;
-}
-
-.block-editor-add button:hover {
-  background: var(--surface);
-  color: var(--fg);
-}
-
 .note-modal-timestamp {
   font-size: 0.78rem;
   color: var(--muted);

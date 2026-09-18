@@ -1,7 +1,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { FlipModal, type CloseFn } from './FlipModal';
 import { ColorPickerButton } from './ColorPickerButton';
-import { BlockEditor } from './BlockEditor';
+import { BlockEditor, type AddBlockFn } from './BlockEditor';
 import { TextFormatToolbar } from './TextFormatToolbar';
 import { AttachmentsPanel } from './AttachmentsPanel';
 import { api } from '../api/client';
@@ -41,6 +41,7 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
   const collapsedRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
   const activeTextBlockRef = useRef<HTMLDivElement | null>(null);
+  const addBlockRef = useRef<AddBlockFn | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
   const [title, setTitle] = useState('');
@@ -252,6 +253,9 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
             activeTextBlockRef={activeTextBlockRef}
             placeholder="Take a note…"
             autoFocusFirstText={startWith === null}
+            onAddBlockReady={(fn) => {
+              addBlockRef.current = fn;
+            }}
           />
           <AttachmentsPanel
             attachments={attachments}
@@ -261,7 +265,12 @@ export const NoteComposer = forwardRef<NoteComposerHandle, Props>(function NoteC
             autoStartRecording={startWith === 'audio'}
             onInsertImage={(a) => insertEditorImage(activeTextBlockRef.current, a, updateActiveBlockHtml)}
           >
-            <TextFormatToolbar editorRef={activeTextBlockRef} onChange={updateActiveBlockHtml} />
+            <TextFormatToolbar
+              editorRef={activeTextBlockRef}
+              onChange={updateActiveBlockHtml}
+              onAddText={() => addBlockRef.current?.('text')}
+              onAddChecklist={() => addBlockRef.current?.('checklist')}
+            />
           </AttachmentsPanel>
           {showLabels && (
             <div className="note-labels-editor">

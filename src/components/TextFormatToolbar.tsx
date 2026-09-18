@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { IconBold, IconBulletList, IconGif, IconHeading, IconItalic, IconNumberedList } from './Icons';
+import { IconBold, IconBulletList, IconChecklist, IconGif, IconHeading, IconItalic, IconNotes, IconNumberedList } from './Icons';
 import { sanitizeHtml } from '../lib/sanitizeHtml';
 
 interface Props {
   editorRef: React.RefObject<HTMLDivElement>;
   onChange: (html: string) => void;
+  /** Appends a new text/checklist section to the note -- rendered here (rather than inside the
+   *  block editor itself) so adding a section reads as one more toolbar action alongside
+   *  bold/italic/etc, not a separate decision made before you have anything to put in it. */
+  onAddText?: () => void;
+  onAddChecklist?: () => void;
 }
 
 interface FormatState {
@@ -53,7 +58,7 @@ function cycleHeading() {
   document.execCommand('formatBlock', false, `<${next.toLowerCase()}>`);
 }
 
-export function TextFormatToolbar({ editorRef, onChange }: Props) {
+export function TextFormatToolbar({ editorRef, onChange, onAddText, onAddChecklist }: Props) {
   const [format, setFormat] = useState<FormatState>(NO_FORMAT);
   const [showImageForm, setShowImageForm] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
@@ -190,6 +195,16 @@ export function TextFormatToolbar({ editorRef, onChange }: Props) {
           </form>
         )}
       </div>
+      {onAddText && (
+        <button type="button" title="Add text section" onMouseDown={preserveSelection} onClick={onAddText}>
+          <IconNotes width={16} height={16} />
+        </button>
+      )}
+      {onAddChecklist && (
+        <button type="button" title="Add checklist section" onMouseDown={preserveSelection} onClick={onAddChecklist}>
+          <IconChecklist width={16} height={16} />
+        </button>
+      )}
     </div>
   );
 }

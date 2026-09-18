@@ -1,9 +1,11 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { ChecklistEditor } from './ChecklistEditor';
 import { RichTextEditor } from './RichTextEditor';
-import { IconChecklist, IconClose, IconNotes } from './Icons';
+import { IconClose } from './Icons';
 import { uuid } from '../lib/uuid';
 import type { NoteBlock } from '../types';
+
+export type AddBlockFn = (type: 'text' | 'checklist') => void;
 
 interface Props {
   blocks: NoteBlock[];
@@ -16,6 +18,12 @@ interface Props {
   /** Autofocuses the first block's editor on mount, iff it's an empty text block -- used by the
    *  composer's "Take a note…" entry point, never by the modal opening an existing note. */
   autoFocusFirstText?: boolean;
+  /** Called after every render with the current `addBlock` function, so the caller's own toolbar
+   *  (rendered outside this component, alongside the formatting buttons) can add a section without
+   *  BlockEditor needing to render any button of its own. Plain callback rather than a second ref,
+   *  since forwardRef's one `ref` slot here is already the DOM element (see the find-in-note scope
+   *  use in NoteModal). */
+  onAddBlockReady?: (addBlock: AddBlockFn) => void;
 }
 
 /**
@@ -24,7 +32,7 @@ interface Props {
  * and checkboxes instead of being forced into one shape for its whole lifetime.
  */
 export const BlockEditor = forwardRef<HTMLDivElement, Props>(function BlockEditor(
-  { blocks, onChange, activeTextBlockRef, placeholder, autoFocusFirstText },
+  { blocks, onChange, activeTextBlockRef, placeholder, autoFocusFirstText, onAddBlockReady },
   ref,
 ) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -62,6 +70,13 @@ export const BlockEditor = forwardRef<HTMLDivElement, Props>(function BlockEdito
     onChange([...blocks, block]);
   }
 
+  // Refreshes the caller's reference to `addBlock` on every render rather than once -- it closes
+  // over `blocks`/`onChange`, both of which change on every edit, so a stale copy would silently
+  // append onto an outdated blocks array.
+  useEffect(() => {
+    onAddBlockReady?.(addBlock);
+  });
+
   return (
     <div className="block-editor" ref={rootRef}>
       {blocks.map((block, i) => (
@@ -72,7 +87,10 @@ export const BlockEditor = forwardRef<HTMLDivElement, Props>(function BlockEdito
                 blockElsRef.current[block.id] = el;
                 if (el) el.dataset.blockId = block.id;
               }}
-              className="note-content note-modal-content"
+              // Only the last block gets the modal's grow/min-height treatment -- giving every text
+              // block a 200px floor left a large empty gap under a short paragraph as soon as a
+              // second section (e.g. a checklist) was added below it.
+              className={`note-content ${i === blocks.length - 1 ? 'note-modal-content' : ''}`}
               placeholder={i === 0 ? placeholder : undefined}
               value={block.html}
               onChange={(html) => updateBlock(block.id, { ...block, html })}
@@ -95,14 +113,6 @@ export const BlockEditor = forwardRef<HTMLDivElement, Props>(function BlockEdito
           )}
         </div>
       ))}
-      <div className="block-editor-add">
-        <button type="button" onClick={() => addBlock('text')}>
-          <IconNotes width={16} height={16} /> Text
-        </button>
-        <button type="button" onClick={() => addBlock('checklist')}>
-          <IconChecklist width={16} height={16} /> Checklist
-        </button>
-      </div>
     </div>
   );
 });
