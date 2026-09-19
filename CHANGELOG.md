@@ -3,6 +3,15 @@
 All notable changes to Cleep are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## v0.4.2 — 2026-09-19
+
+### Fixed
+
+- The numbered-list button on the formatting toolbar looked blurry — its "2"
+  glyph was drawn with tiny Bezier curves that anti-aliased heavily at icon
+  size. Replaced it with straight line segments to match the rest of the
+  toolbar's icons.
+
 ## v0.4.1 — 2026-09-18
 
 ### Fixed
