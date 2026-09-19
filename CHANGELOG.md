@@ -3,6 +3,14 @@
 All notable changes to Cleep are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## v0.4.3 — 2026-09-19
+
+### Fixed
+
+- The numbered-list icon's "2" no longer reads as a stray zigzag — redrawn as
+  a proper seven-segment-style "2" (still straight lines, for crispness at
+  icon size).
+
 ## v0.4.2 — 2026-09-19
 
 ### Fixed

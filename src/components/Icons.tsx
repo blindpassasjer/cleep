@@ -162,7 +162,7 @@ export function IconNumberedList(props: SVGProps<SVGSVGElement>) {
     <Icon {...props}>
       <path d="M9.5 6.5h10M9.5 12h10M9.5 17.5h10" />
       <path d="M4 5.5h1v3M4 8.5h2" />
-      <path d="M4.2 11.1h1.8l-1.8 2.2h2.2" />
+      <path d="M4 10.5h2v1.5h-2v1.5h2" />
     </Icon>
   );
 }
