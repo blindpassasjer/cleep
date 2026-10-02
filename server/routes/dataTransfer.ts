@@ -329,7 +329,10 @@ dataTransferRouter.post('/import/keep', uploadRateLimit, uploadZip, async (req, 
           continue;
         }
         const buf = await media.buffer();
-        const mime = typeof att.mimetype === 'string' && att.mimetype ? att.mimetype : guessMime(fp);
+        const mime = (typeof att.mimetype === 'string' && att.mimetype ? att.mimetype : guessMime(fp))
+          .split(';')[0]
+          .trim()
+          .toLowerCase();
         const kind = kindFromMime(mime);
         if (!kind) {
           errors.push(`Unsupported attachment type "${mime}" for note "${parsed.title || noteId}"`);

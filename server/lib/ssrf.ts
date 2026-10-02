@@ -9,30 +9,48 @@ import net from 'node:net';
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
 const ALLOWED_PORTS = new Set(['', '80', '443']);
 
-function isPrivateIPv4(ip: string): boolean {
-  const [a, b] = ip.split('.').map(Number);
-  if (a === 10 || a === 127 || a === 0) return true;
-  if (a === 172 && b >= 16 && b <= 31) return true;
-  if (a === 192 && b === 168) return true;
-  if (a === 169 && b === 254) return true; // link-local / cloud metadata
-  if (a === 100 && b >= 64 && b <= 127) return true; // carrier-grade NAT
-  return false;
+// Every range that must never be reachable from a link-preview fetch. A BlockList matches on the
+// parsed address, so alternate spellings (hex IPv4-mapped IPv6, NAT64, ...) can't dodge it.
+// Separate lists per family: BlockList.check() on an IPv4 address also tests it against IPv6
+// rules as ::ffff:a.b.c.d, so the IPv4-mapped rule would otherwise block every IPv4 address.
+const BLOCKED_V4 = new net.BlockList();
+const BLOCKED_V6 = new net.BlockList();
+for (const [net4, prefix] of [
+  ['0.0.0.0', 8],
+  ['10.0.0.0', 8],
+  ['100.64.0.0', 10], // carrier-grade NAT
+  ['127.0.0.0', 8],
+  ['169.254.0.0', 16], // link-local / cloud metadata
+  ['172.16.0.0', 12],
+  ['192.0.0.0', 24],
+  ['192.168.0.0', 16],
+  ['198.18.0.0', 15], // benchmarking
+  ['224.0.0.0', 4], // multicast
+  ['240.0.0.0', 4], // reserved + broadcast
+] as const) {
+  BLOCKED_V4.addSubnet(net4, prefix, 'ipv4');
 }
-
-function isPrivateIPv6(ip: string): boolean {
-  const v = ip.toLowerCase();
-  if (v === '::1' || v === '::') return true;
-  if (v.startsWith('fe80:') || v.startsWith('fc') || v.startsWith('fd')) return true; // link-local, ULA
-  // IPv4-mapped (::ffff:a.b.c.d)
-  const mapped = v.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-  if (mapped) return isPrivateIPv4(mapped[1]);
-  return false;
+for (const [net6, prefix] of [
+  ['::', 128],
+  ['::1', 128],
+  ['::', 96], // IPv4-compatible (::a.b.c.d)
+  ['::ffff:0:0', 96], // IPv4-mapped (any spelling)
+  ['64:ff9b::', 96], // NAT64
+  ['64:ff9b:1::', 48], // local-use NAT64
+  ['100::', 64], // discard-only
+  ['2001::', 32], // Teredo
+  ['2002::', 16], // 6to4
+  ['fc00::', 7], // ULA
+  ['fe80::', 10], // link-local
+  ['ff00::', 8], // multicast
+] as const) {
+  BLOCKED_V6.addSubnet(net6, prefix, 'ipv6');
 }
 
 function isPrivateAddress(ip: string): boolean {
   const kind = net.isIP(ip);
-  if (kind === 4) return isPrivateIPv4(ip);
-  if (kind === 6) return isPrivateIPv6(ip);
+  if (kind === 4) return BLOCKED_V4.check(ip, 'ipv4');
+  if (kind === 6) return BLOCKED_V6.check(ip, 'ipv6');
   return true; // unknown format -- treat as unsafe
 }
 

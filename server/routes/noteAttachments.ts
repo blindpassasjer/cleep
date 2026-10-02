@@ -3,6 +3,7 @@ import { and, asc, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { attachments, notes } from '../db/schema.js';
 import { requireAuth } from '../middleware/session.js';
+import { uploadRateLimit } from '../middleware/rateLimit.js';
 import { localStorageAdapter } from '../storage/localStorageAdapter.js';
 import { attachmentToApi, kindFromMime, parseWaveformPeaks, sanitizeFilenameForPath, uploadSingleAttachment } from '../lib/attachments.js';
 
@@ -42,7 +43,7 @@ noteAttachmentsRouter.get('/', async (req, res) => {
   }
 });
 
-noteAttachmentsRouter.post('/', uploadSingleAttachment, async (req, res) => {
+noteAttachmentsRouter.post('/', uploadRateLimit, uploadSingleAttachment, async (req, res) => {
   try {
     const noteId = (req.params as { noteId: string }).noteId;
     if (!(await assertOwnsNote(req.userId!, noteId))) {

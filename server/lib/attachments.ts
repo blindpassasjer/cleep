@@ -10,7 +10,10 @@ export const ATTACHMENT_MAX_SIZE_BYTES = 100 * 1024 * 1024; // covers a short vi
 type AttachmentRow = typeof attachments.$inferSelect;
 export type AttachmentKind = 'image' | 'video' | 'audio';
 
-export function kindFromMime(mimeType: string): AttachmentKind | null {
+export function kindFromMime(rawMimeType: string): AttachmentKind | null {
+  // Normalize first: the import path passes through whatever the zip's JSON says, so
+  // "IMAGE/SVG+XML" or "image/svg+xml;charset=utf-8" must not slip past the exact-match check below.
+  const mimeType = rawMimeType.split(';')[0].trim().toLowerCase();
   // SVG is excluded even though it's an image/* type -- it can embed <script>, and attachment
   // files are served back with Content-Disposition: inline, so accepting it would let a script
   // execute in the app's origin whenever the file URL is opened directly.

@@ -3,6 +3,25 @@
 All notable changes to Cleep are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## v0.4.4 — 2026-10-02
+
+### Security
+
+- Link previews could be pointed at internal addresses through IPv6 spellings
+  the SSRF guard didn't recognise (`[::ffff:7f00:1]`, NAT64 `64:ff9b::/96`,
+  `::127.0.0.1`) and a few unfiltered IPv4 ranges (`198.18.0.0/15`, multicast,
+  reserved). The guard now matches on parsed address ranges, so alternate
+  spellings can't slip past it.
+- The SVG attachment block compared the MIME type as an exact string, so
+  `IMAGE/SVG+XML` or `image/svg+xml;charset=utf-8` in a Google Keep import
+  was accepted. MIME types are now normalised before the check, and stored
+  normalised.
+- Attachment uploads now go through the upload rate limiter (it was only
+  applied to export/import).
+- Updated dependencies to clear advisories in `multer` (several DoS issues,
+  including an upload size-limit bypass), `qs`/`express`/`body-parser`, and
+  `brace-expansion`.
+
 ## v0.4.3 — 2026-09-19
 
 ### Fixed
